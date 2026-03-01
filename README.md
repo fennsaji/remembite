@@ -31,7 +31,7 @@ A three-layer intelligence system:
 
 - **Phase 1** — Utility core (OCR, reactions, ratings)
 - **Phase 2** — Governance & data integrity (edit suggestions, moderation, access control)
-- **Phase 3** — AI layer (taste vectors, compatibility predictions, confidence-gated recommendations)
+- **Phase 3** — AI layer (taste vectors, compatibility predictions, confidence-gated predictions)
 
 ## License
 
