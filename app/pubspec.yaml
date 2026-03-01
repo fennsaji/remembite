@@ -57,7 +57,19 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   drift_dev: ^2.22.1
   build_runner: ^2.4.13
+  flutter_launcher_icons: ^0.14.3
   riverpod_generator: ^2.6.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  # Android adaptive icon (API 26+)
+  adaptive_icon_background: "#0F0D0B"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  min_sdk_android: 21
+  # Remove old icon files
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true
