@@ -83,6 +83,54 @@ Three-step flow:
 - Job queue implemented behind an interface abstraction to allow swap to Redis + workers without schema changes
 - Horizontal scaling target: Phase 3 launch
 
+## Design System — Turmeric & Nightfall
+
+### Dark Theme
+| Role | Token | Hex |
+|---|---|---|
+| Background | Abyss | `#0F0D0B` |
+| Surface | Embers | `#1A1612` |
+| Elevated surface | Char | `#241E18` |
+| Border | Dusk | `#2E2520` |
+| Primary text | Cream | `#F5EEE4` |
+| Secondary text | Parchment | `#B89F87` |
+| Muted text | Ash | `#6B5B4E` |
+| Accent | Turmeric | `#E6A830` |
+| Accent pressed | Saffron | `#C98A1A` |
+| Error | Chili | `#D95F3B` |
+| Pro surface | Gilded | `#2A2115` |
+| Pro accent | Gold Leaf | `#F0C060` |
+
+### Light Theme
+| Role | Token | Hex |
+|---|---|---|
+| Background | Linen | `#FAF7F2` |
+| Surface | Cotton | `#F2EDE5` |
+| Elevated surface | Pearl | `#EBE4D9` |
+| Border | Wheat | `#D9CFC3` |
+| Primary text | Espresso | `#1C1410` |
+| Secondary text | Bark | `#5C4A38` |
+| Muted text | Sand | `#9C8472` |
+| Accent | Turmeric | `#C47E10` |
+| Accent pressed | Deep Amber | `#A36808` |
+| Error | Chili | `#C04A28` |
+| Pro surface | Honey | `#FFF3D6` |
+| Pro accent | Amber Pro | `#B8720E` |
+
+### Typography
+- **Display / headlines** (dish names, screen titles, app name): **Fraunces** — variable serif, Google Fonts
+- **Body / labels / UI** (everything else): **DM Sans** — Google Fonts
+- Section labels: UPPERCASE, 11px, DM Sans 600, secondary text color, preceded by 24×2px accent bar
+- Tab bar: floating pill (`#241E18` pill, `#E6A830` active item)
+
+### Implementation
+- `AppColorsDark` and `AppColorsLight` are separate classes in `app/lib/core/theme/app_theme.dart`
+- `typedef AppColors = AppColorsDark` for convenience in screens using only dark
+- Pro surfaces use a subtle LinearGradient from base surface to proSurface at 15% opacity — not flat gold fill
+- `classifying` dish state: mutedText color + shimmer animation (not a spinner)
+
+UI must match design/remembite.pen exactly — open the design file in Pencil before building any screen. Use the exact colors, typography, spacing, component names, and layout defined there. Do not invent UI — implement what is designed.
+
 ## Development Roadmap
 
 - **Phase 1**: Utility core (OCR, reactions, ratings)
