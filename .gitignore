@@ -1,6 +1,9 @@
 # Environment
 .env
 .env.local
+.env.api
+.env.android
+.env.ios
 
 # macOS
 .DS_Store
