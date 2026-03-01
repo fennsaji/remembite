@@ -150,6 +150,7 @@ After Capture:
 --------------------------------------------------
 
 Backend triggers async AI classification.
+Saved dishes immediately visible with "Classifying..." attribute state until LLM job completes.
 
 ---
 
@@ -161,6 +162,7 @@ Backend triggers async AI classification.
 | ------------------------------------------------ |
 | Your Reaction: 🔥 So Yummy                       |
 |                                                  |
+| [Classifying...] (shown while LLM job pending)  |
 | 🔥 You’ll probably love this                     |
 | (Shown only if confidence threshold met)         |
 | ------------------------------------------------ |
@@ -210,7 +212,7 @@ Backend triggers async AI classification.
 
 ---
 
-Auto-apply if approvals ≥ N.
+Auto-apply when net upvotes ≥ 3 within 7 days. Edit expires if no consensus.
 
 ---
 

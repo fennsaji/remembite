@@ -155,7 +155,8 @@ Fully aligned UX behavior with deterministic backend logic.
 * Submit edit suggestion
 * Store pending state
 * Approval logic
-* Auto-apply if approvals ≥ N
+* Auto-apply when net upvotes ≥ 3 within 7 days
+* Edit expires if no consensus within 7 days
 
 ## 4.2 Admin Controls
 
