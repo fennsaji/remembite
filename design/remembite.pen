@@ -1,0 +1,4690 @@
+{
+  "version": "2.8",
+  "children": [
+    {
+      "type": "frame",
+      "id": "oExuc",
+      "x": 0,
+      "y": 0,
+      "name": "1 · Onboarding",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "WSiEY",
+          "name": "Status Bar",
+          "width": 390,
+          "height": 62,
+          "fill": "#0C0C0C",
+          "padding": [
+            0,
+            24
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "lnAjr",
+              "name": "ob_time",
+              "content": "9:41",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "VWS6R",
+              "name": "ob_icons",
+              "content": "●●● ▲ ▬",
+              "fontFamily": "DM Sans",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "oX9aU",
+          "name": "Content",
+          "width": 390,
+          "height": "fill_container",
+          "layout": "vertical",
+          "padding": [
+            56,
+            32,
+            52,
+            32
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "WdPG1",
+              "name": "Logo Area",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "3CaDA",
+                  "name": "ob_emoji_icon",
+                  "fill": "#FFFFFF",
+                  "content": "🍽️",
+                  "textAlign": "center",
+                  "fontFamily": "Sora",
+                  "fontSize": 72,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "EIgsV",
+                  "name": "ob_app_name",
+                  "fill": "#FFFFFF",
+                  "content": "Remembite",
+                  "textAlign": "center",
+                  "fontFamily": "Sora",
+                  "fontSize": 42,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "OIwS8",
+                  "name": "ob_tagline",
+                  "fill": "#8A8A8A",
+                  "content": "Remember What You Loved.",
+                  "textAlign": "center",
+                  "fontFamily": "Sora",
+                  "fontSize": 17,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "j706L",
+                  "name": "hero-accent-line",
+                  "width": 48,
+                  "height": 4,
+                  "fill": "#FF3B30",
+                  "cornerRadius": 2
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "iXIJ9",
+              "name": "hero-visual",
+              "width": "fill_container",
+              "height": 280,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "iriHJ",
+                  "name": "hero_card1",
+                  "width": "fill_container",
+                  "height": 76,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 16,
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "XZp6N",
+                      "name": "hero_c1_emoji",
+                      "content": "🔥",
+                      "fontFamily": "Inter",
+                      "fontSize": 26,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "5kDnB",
+                      "name": "hero_c1_info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "t7wNc",
+                          "name": "hero_c1_name",
+                          "fill": "#FFFFFF",
+                          "content": "Butter Chicken",
+                          "fontFamily": "Sora",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fo3hm",
+                          "name": "hero_c1_rest",
+                          "fill": "#525252",
+                          "content": "Barbeque Nation",
+                          "fontFamily": "Sora",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qzSbF",
+                      "name": "hero_c1_badge",
+                      "height": 28,
+                      "fill": "#FF3B30",
+                      "cornerRadius": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "cjIxp",
+                          "name": "hero_c1_badge_t",
+                          "fill": "#FFFFFF",
+                          "content": "SO YUMMY",
+                          "fontFamily": "Sora",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "CbEyE",
+                  "name": "hero_card2",
+                  "opacity": 0.6,
+                  "width": "fill_container",
+                  "height": 76,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 16,
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "kuieW",
+                      "name": "c2_emoji",
+                      "content": "😋",
+                      "fontFamily": "Inter",
+                      "fontSize": 26,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "saUrC",
+                      "name": "c2_info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "DPuZL",
+                          "name": "c2_name",
+                          "fill": "#FFFFFF",
+                          "content": "Tiramisu",
+                          "fontFamily": "Sora",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "R4hTo",
+                          "name": "c2_rest",
+                          "fill": "#525252",
+                          "content": "Cafe Delhi Heights",
+                          "fontFamily": "Sora",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "0YV0g",
+                      "name": "c2_badge",
+                      "height": 28,
+                      "fill": "#1E1E1E",
+                      "cornerRadius": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mSJjI",
+                          "name": "c2_badge_t",
+                          "fill": "#525252",
+                          "content": "TASTY",
+                          "fontFamily": "Sora",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gywwj",
+              "name": "CTAs",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "51eZu",
+                  "name": "Get Started",
+                  "width": "fill_container",
+                  "height": 56,
+                  "fill": "#FF3B30",
+                  "cornerRadius": 28,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "gqgkl",
+                      "name": "ob_primary_label",
+                      "fill": "#FFFFFF",
+                      "content": "Get Started",
+                      "textAlign": "center",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 17,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "rMA7g",
+                  "name": "Google Sign In",
+                  "width": "fill_container",
+                  "height": 56,
+                  "fill": "#0C0C0C",
+                  "cornerRadius": 28,
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IrfSb",
+                      "name": "ob_google_label",
+                      "fill": "#FFFFFF",
+                      "content": "Continue with Google",
+                      "textAlign": "center",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 17,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "LOAld",
+      "x": 490,
+      "y": 0,
+      "name": "2 · Home",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Y1iwR",
+          "name": "Status Bar",
+          "width": 390,
+          "height": 62,
+          "fill": "#0C0C0C",
+          "padding": [
+            0,
+            24
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "VDKQ5",
+              "name": "h_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "ujFcE",
+              "name": "h_icons",
+              "fill": "#FFFFFF",
+              "content": "●●● ▲ ▬",
+              "fontFamily": "DM Sans",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "doEki",
+          "name": "Content",
+          "width": 390,
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            0,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "J0fbe",
+              "name": "Header",
+              "width": "fill_container",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Y5O30",
+                  "name": "h_greet",
+                  "fill": "#FFFFFF",
+                  "content": "Good afternoon 👋",
+                  "fontFamily": "Sora",
+                  "fontSize": 26,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "cdbWr",
+                  "name": "h_bell",
+                  "content": "🔔",
+                  "fontFamily": "Sora",
+                  "fontSize": 22,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "aoR70",
+              "name": "Search Bar",
+              "width": "fill_container",
+              "height": 52,
+              "fill": "#1A1A1A",
+              "cornerRadius": 26,
+              "gap": 10,
+              "padding": [
+                0,
+                20
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Aofu0",
+                  "name": "h_srch_ph",
+                  "fill": "#525252",
+                  "content": "🔍  Search restaurants or dishes...",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "MUI0G",
+              "name": "bar-rv",
+              "width": 24,
+              "height": 2,
+              "fill": "#FF3B30"
+            },
+            {
+              "type": "text",
+              "id": "I3qwC",
+              "name": "h_rv_lbl",
+              "fill": "#8A8A8A",
+              "content": "RECENTLY VISITED",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "wogFK",
+              "name": "Recent Cards",
+              "width": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "RQZyK",
+                  "name": "Card 1",
+                  "width": 170,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "d9eKt",
+                      "name": "h_c1_name",
+                      "fill": "#FFFFFF",
+                      "content": "Barbeque Nation",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ADKWW",
+                      "name": "h_c1_react",
+                      "fill": "#6B7280",
+                      "content": "🔥 Butter Chicken",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nmJ1G",
+                      "name": "h_c1_date",
+                      "fill": "#525252",
+                      "content": "Jan 15",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "imTXW",
+                  "name": "Card 2",
+                  "width": 170,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zaW9y",
+                      "name": "h_c2_name",
+                      "fill": "#FFFFFF",
+                      "content": "Cafe Delhi Heights",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Thehn",
+                      "name": "h_c2_react",
+                      "fill": "#6B7280",
+                      "content": "🔥 Tiramisu",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XRE6T",
+                      "name": "h_c2_date",
+                      "fill": "#525252",
+                      "content": "Jan 10",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "iChJ1",
+              "name": "bar-nb",
+              "width": 24,
+              "height": 2,
+              "fill": "#FF3B30"
+            },
+            {
+              "type": "text",
+              "id": "KHe7i",
+              "name": "h_nb_lbl",
+              "fill": "#8A8A8A",
+              "content": "NEARBY RESTAURANTS",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "tEY6l",
+              "name": "Nearby List",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "2iQOc",
+                  "name": "h_n1",
+                  "width": "fill_container",
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TrxFv",
+                      "name": "h_n1_name",
+                      "fill": "#FFFFFF",
+                      "content": "Barbeque Nation",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "QlRgc",
+                      "name": "h_n1_rating",
+                      "fill": "#6B7280",
+                      "content": "⭐ 4.3",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "9x9x6",
+                  "name": "h_n2",
+                  "width": "fill_container",
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "oHeUr",
+                      "name": "h_n2_name",
+                      "fill": "#FFFFFF",
+                      "content": "Cafe Delhi Heights",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IeYRz",
+                      "name": "h_n2_rating",
+                      "fill": "#6B7280",
+                      "content": "⭐ 4.0",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "kkXTn",
+                  "name": "h_n3",
+                  "width": "fill_container",
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "5PgZi",
+                      "name": "h_n3_name",
+                      "fill": "#FFFFFF",
+                      "content": "Punjab Grill",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "8XPgu",
+                      "name": "h_n3_rating",
+                      "fill": "#6B7280",
+                      "content": "⭐ 4.1",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "2Ex74",
+              "name": "FAB",
+              "width": 160,
+              "height": 52,
+              "fill": "#FF3B30",
+              "cornerRadius": 26,
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "NwJkZ",
+                  "name": "h_fab_t",
+                  "fill": "#FFFFFF",
+                  "content": "📷  Scan Menu",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "wke8D",
+          "name": "Tab Bar",
+          "width": 390,
+          "height": 95,
+          "fill": "#0C0C0C",
+          "layout": "vertical",
+          "padding": [
+            12,
+            21,
+            21,
+            21
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "RPTWm",
+              "name": "Pill",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "#1C1C1C",
+              "cornerRadius": 36,
+              "padding": 4,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "AY7uw",
+                  "name": "Home",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "fill": "#FF3B30",
+                  "cornerRadius": 26,
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mtm2a",
+                      "name": "h_t1_icon",
+                      "fill": "#FFFFFF",
+                      "content": "⌂",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "oUtb4",
+                      "name": "h_t1_lbl",
+                      "fill": "#FFFFFF",
+                      "content": "HOME",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "0cveJ",
+                  "name": "Map",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "cornerRadius": 26,
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "u7xGm",
+                      "name": "h_t2_icon",
+                      "fill": "#D1D5DB",
+                      "content": "◎",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "hHOHS",
+                      "name": "h_t2_lbl",
+                      "fill": "#525252",
+                      "content": "MAP",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "uBoWL",
+                  "name": "Favorites",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "cornerRadius": 26,
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "N5PUn",
+                      "name": "h_t3_icon",
+                      "fill": "#D1D5DB",
+                      "content": "♡",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "LjNQh",
+                      "name": "h_t3_lbl",
+                      "fill": "#525252",
+                      "content": "FAVORITES",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "l2Wq4",
+                  "name": "Profile",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "cornerRadius": 26,
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CK5wl",
+                      "name": "h_t4_icon",
+                      "fill": "#D1D5DB",
+                      "content": "◉",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "I7uIp",
+                      "name": "h_t4_lbl",
+                      "fill": "#525252",
+                      "content": "PROFILE",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "4yYbQ",
+      "x": 980,
+      "y": 0,
+      "name": "3 · Restaurant",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "VwmUZ",
+          "name": "Status Bar",
+          "width": 390,
+          "height": 62,
+          "fill": "#0C0C0C",
+          "padding": [
+            0,
+            24
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "EggH7",
+              "name": "rss_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "cNzPc",
+              "name": "rss_icons",
+              "fill": "#FFFFFF",
+              "content": "●●● ▲ ▬",
+              "fontFamily": "DM Sans",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "woibC",
+          "name": "Content",
+          "width": 390,
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            0,
+            20,
+            32,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "Otzvo",
+              "name": "rss_nav",
+              "width": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UmN3x",
+                  "name": "rss_back",
+                  "fill": "#FF3B30",
+                  "content": "← Back",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "DhDqS",
+                  "name": "rss_rest_name",
+                  "fill": "#FFFFFF",
+                  "content": "Barbeque Nation",
+                  "textAlign": "right",
+                  "fontFamily": "Bricolage Grotesque",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "f7Uob",
+              "name": "rss_info",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 20,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hHwLO",
+                  "name": "rss_stars",
+                  "fill": "#FFFFFF",
+                  "content": "⭐ 4.3  ·  124 ratings",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "nJcBA",
+                  "name": "rss_actions",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "IZzPx",
+                      "name": "rss_rate_btn",
+                      "width": "fill_container",
+                      "height": 40,
+                      "fill": "#FF3B30",
+                      "cornerRadius": 20,
+                      "padding": [
+                        0,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "b2TPx",
+                          "name": "rss_rate_t",
+                          "fill": "#FFFFFF",
+                          "content": "Rate",
+                          "fontFamily": "DM Sans",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wjCJz",
+                      "name": "rss_edit_btn",
+                      "width": "fill_container",
+                      "height": 40,
+                      "fill": "#0C0C0C",
+                      "cornerRadius": 20,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wVelH",
+                          "name": "rss_edit_t",
+                          "fill": "#6B7280",
+                          "content": "Suggest Edit",
+                          "fontFamily": "DM Sans",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ls81V",
+              "name": "bar-tb",
+              "width": 24,
+              "height": 2,
+              "fill": "#FF3B30"
+            },
+            {
+              "type": "text",
+              "id": "zF0DT",
+              "name": "rss_tb_lbl",
+              "fill": "#8A8A8A",
+              "content": "YOUR TOP BITES",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "NlFOS",
+              "name": "rss_tb_list",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UU9J7",
+                  "name": "rss_d1",
+                  "width": "fill_container",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 14,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "5B16o",
+                      "name": "rss_d1_name",
+                      "fill": "#FFFFFF",
+                      "content": "Butter Chicken",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nLnpb",
+                      "name": "rss_d1_react",
+                      "content": "🔥",
+                      "fontFamily": "Sora",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "cYyzk",
+                  "name": "rss_d2",
+                  "width": "fill_container",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 14,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "PwLoA",
+                      "name": "rss_d2_name",
+                      "fill": "#FFFFFF",
+                      "content": "Paneer Lababdar",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ebCUf",
+                      "name": "rss_d2_react",
+                      "content": "😋",
+                      "fontFamily": "Sora",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ErwR4",
+              "name": "bar-cf",
+              "width": 24,
+              "height": 2,
+              "fill": "#FF3B30"
+            },
+            {
+              "type": "text",
+              "id": "HXzZx",
+              "name": "rss_cf_lbl",
+              "fill": "#8A8A8A",
+              "content": "COMMUNITY FAVORITES",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "mgdX8",
+              "name": "cf_list",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "fPbrK",
+                  "name": "cf1",
+                  "width": "fill_container",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 14,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "2uOsM",
+                      "name": "cf1_name",
+                      "fill": "#FFFFFF",
+                      "content": "Butter Chicken",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "FTONl",
+                      "name": "cf1_count",
+                      "fill": "#6B7280",
+                      "content": "🔥 124",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "yXF8a",
+                  "name": "cf2",
+                  "width": "fill_container",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 14,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IF2Om",
+                      "name": "cf2_name",
+                      "fill": "#FFFFFF",
+                      "content": "Dal Makhani",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "u00Xj",
+                      "name": "cf2_count",
+                      "fill": "#6B7280",
+                      "content": "🔥 98",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "sCNU7",
+              "name": "rss_menu_lbl",
+              "fill": "#8A8A8A",
+              "content": "FULL MENU  ▾",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "KLF3E",
+              "name": "rss_pending",
+              "fill": "#525252",
+              "content": "3 community updates pending →",
+              "fontFamily": "DM Sans",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "yI1KS",
+      "x": 1470,
+      "y": 0,
+      "name": "4 · Dish Detail",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "T0z6l",
+          "name": "Status Bar",
+          "width": 390,
+          "height": 62,
+          "fill": "#0C0C0C",
+          "padding": [
+            0,
+            24
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "7Yr8e",
+              "name": "dd_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "EXQZ1",
+              "name": "dd_icons",
+              "fill": "#FFFFFF",
+              "content": "●●● ▲ ▬",
+              "fontFamily": "DM Sans",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "bai8T",
+          "name": "Content",
+          "width": 390,
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            0,
+            20,
+            32,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "Wfhjs",
+              "name": "dd_nav",
+              "width": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UgOyi",
+                  "name": "dd_back",
+                  "fill": "#FF3B30",
+                  "content": "← Back",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "dOKid",
+                  "name": "dd_dish_name",
+                  "fill": "#FFFFFF",
+                  "content": "Butter Chicken",
+                  "textAlign": "right",
+                  "fontFamily": "Bricolage Grotesque",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "SQQxP",
+              "name": "dd_react_lbl",
+              "fill": "#8A8A8A",
+              "content": "YOUR REACTION",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "mDaXP",
+              "name": "dd_react_row",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 20,
+              "gap": 8,
+              "padding": [
+                12,
+                16
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZAMke",
+                  "name": "dd_r1_sel",
+                  "fill": "#FF3B30",
+                  "cornerRadius": 20,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "EX07g",
+                      "name": "dd_r1_t",
+                      "content": "🔥",
+                      "fontFamily": "Sora",
+                      "fontSize": 24,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "tbbwv",
+                  "name": "dd_r2",
+                  "content": "😋",
+                  "fontFamily": "Sora",
+                  "fontSize": 24,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "9PNBr",
+                  "name": "dd_r3",
+                  "content": "🙂",
+                  "fontFamily": "Sora",
+                  "fontSize": 24,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "DrEq6",
+                  "name": "dd_r4",
+                  "content": "😐",
+                  "fontFamily": "Sora",
+                  "fontSize": 24,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "0Z213",
+                  "name": "dd_r5",
+                  "content": "🤢",
+                  "fontFamily": "Sora",
+                  "fontSize": 24,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hJAbQ",
+              "name": "dd_ai",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "rIEvx",
+                  "name": "dd_ai_t",
+                  "fill": "#FF3B30",
+                  "content": "🔥  You'll probably love this",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "z9NMN",
+                  "name": "dd_ai_badge",
+                  "fill": "#FF3B30",
+                  "cornerRadius": 10,
+                  "padding": [
+                    4,
+                    10
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "5f0n4",
+                      "name": "dd_ai_badge_t",
+                      "fill": "#FFFFFF",
+                      "content": "PRO",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "iswy7",
+              "name": "dd_notes_lbl",
+              "fill": "#8A8A8A",
+              "content": "PRIVATE NOTES",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "SRcXY",
+              "name": "dd_notes_in",
+              "width": "fill_container",
+              "height": 88,
+              "fill": "#1A1A1A",
+              "cornerRadius": 14,
+              "padding": 14,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "QT8Y4",
+                  "name": "dd_notes_ph",
+                  "fill": "#525252",
+                  "content": "Add your thoughts about this dish...",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "tP2tx",
+              "name": "dd_spice_lbl",
+              "fill": "#8A8A8A",
+              "content": "HOW SPICY WAS IT?",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "cyDIY",
+              "name": "dd_spice_row",
+              "width": "fill_container",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Ej6M2",
+                  "name": "dd_sp_mild",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 20,
+                  "padding": [
+                    10,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CQ55Z",
+                      "name": "dd_sp_mild_t",
+                      "fill": "#FFFFFF",
+                      "content": "🌶 Mild",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "rFa87",
+                  "name": "dd_sp_med",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 20,
+                  "padding": [
+                    10,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "UwXYc",
+                      "name": "dd_sp_med_t",
+                      "fill": "#FFFFFF",
+                      "content": "🌶🌶 Med",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "64Kfo",
+                  "name": "dd_sp_hot",
+                  "fill": "#FF3B30",
+                  "cornerRadius": 20,
+                  "padding": [
+                    10,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "5Njpi",
+                      "name": "dd_sp_hot_t",
+                      "fill": "#FFFFFF",
+                      "content": "🌶🌶🌶 Hot",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vWuXp",
+              "name": "dd_save",
+              "width": "fill_container",
+              "height": 56,
+              "fill": "#FF3B30",
+              "cornerRadius": 28,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "3wKlO",
+                  "name": "dd_save_t",
+                  "fill": "#FFFFFF",
+                  "content": "Save Changes",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 17,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "TWV00",
+      "x": 1960,
+      "y": 0,
+      "name": "5 · Profile",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Yy6HE",
+          "name": "Status Bar",
+          "width": 390,
+          "height": 62,
+          "fill": "#0C0C0C",
+          "padding": [
+            0,
+            24
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "h8EcF",
+              "name": "pf_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "3cAvr",
+              "name": "pf_icons",
+              "fill": "#FFFFFF",
+              "content": "●●● ▲ ▬",
+              "fontFamily": "DM Sans",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "8UVNx",
+          "name": "Content",
+          "width": 390,
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            0,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "guH7w",
+              "name": "pf_title",
+              "fill": "#FFFFFF",
+              "content": "Profile",
+              "fontFamily": "Sora",
+              "fontSize": 32,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "6w5hh",
+              "name": "Stats",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 20,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "IJeIX",
+                  "name": "st_row",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "m23IB",
+                      "name": "st_c1",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        12,
+                        8
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "SY1pI",
+                          "name": "st_c1_num",
+                          "fill": "#FFFFFF",
+                          "content": "24",
+                          "textAlign": "center",
+                          "fontFamily": "Bricolage Grotesque",
+                          "fontSize": 28,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Egs44",
+                          "name": "st_c1_lbl",
+                          "fill": "#525252",
+                          "content": "Restaurants",
+                          "textAlign": "center",
+                          "fontFamily": "DM Sans",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DQd5x",
+                      "name": "st_div1",
+                      "width": 1,
+                      "height": 48,
+                      "fill": "#E5E7EB"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qAn6z",
+                      "name": "st_c2",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        12,
+                        8
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "djAMP",
+                          "name": "st_c2_num",
+                          "fill": "#FFFFFF",
+                          "content": "86",
+                          "textAlign": "center",
+                          "fontFamily": "Bricolage Grotesque",
+                          "fontSize": 28,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "E3kim",
+                          "name": "st_c2_lbl",
+                          "fill": "#525252",
+                          "content": "Dishes",
+                          "textAlign": "center",
+                          "fontFamily": "DM Sans",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "1SzCx",
+                      "name": "st_div2",
+                      "width": 1,
+                      "height": 48,
+                      "fill": "#E5E7EB"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "In1KY",
+                      "name": "st_c3",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        12,
+                        8
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iAQnu",
+                          "name": "st_c3_val",
+                          "content": "🔥",
+                          "textAlign": "center",
+                          "fontFamily": "Sora",
+                          "fontSize": 28,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Xk0MB",
+                          "name": "st_c3_lbl",
+                          "fill": "#525252",
+                          "content": "Top Reaction",
+                          "textAlign": "center",
+                          "fontFamily": "DM Sans",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "4dTfr",
+              "name": "Taste Profile",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 20,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "TuiwV",
+                  "name": "taste_hdr2",
+                  "fill": "#8A8A8A",
+                  "content": "YOUR TASTE PROFILE  ·  80% COMPLETE",
+                  "fontFamily": "Sora",
+                  "fontSize": 13,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "RooHL",
+                  "name": "pf_prog_bg",
+                  "width": "fill_container",
+                  "height": 8,
+                  "fill": "#2A2A2A",
+                  "cornerRadius": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "SZrfK",
+                      "name": "pf_prog_fill",
+                      "width": 250,
+                      "height": 8,
+                      "fill": "#FF3B30",
+                      "cornerRadius": 4
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "EgPqK",
+                  "name": "pf_taste_cap",
+                  "fill": "#8A8A8A",
+                  "content": "React to 2 more dishes to unlock your predictions",
+                  "fontFamily": "DM Sans",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "maDrn",
+              "name": "pf_upgrade_btn",
+              "width": "fill_container",
+              "height": 56,
+              "fill": "#FF3B30",
+              "cornerRadius": 28,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "L0amV",
+                  "name": "pf_upgrade_t",
+                  "fill": "#FFFFFF",
+                  "content": "Unlock Pro  →",
+                  "fontFamily": "Sora",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "2gqgH",
+          "name": "Tab Bar",
+          "width": 390,
+          "height": 95,
+          "fill": "#0C0C0C",
+          "layout": "vertical",
+          "padding": [
+            12,
+            21,
+            21,
+            21
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "JiHyW",
+              "name": "Pill",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "#1C1C1C",
+              "cornerRadius": 36,
+              "padding": 4,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "gsnoL",
+                  "name": "Home",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "cornerRadius": 26,
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "WLXHI",
+                      "name": "pf_t1_t",
+                      "fill": "#525252",
+                      "content": "⌂  HOME",
+                      "textAlign": "center",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "kIS0o",
+                  "name": "Map",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "cornerRadius": 26,
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Vqrfk",
+                      "name": "pf_t2_t",
+                      "fill": "#525252",
+                      "content": "◎  MAP",
+                      "textAlign": "center",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RvB46",
+                  "name": "Favorites",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "cornerRadius": 26,
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "v5rAo",
+                      "name": "pf_t3_t",
+                      "fill": "#525252",
+                      "content": "♡  FAVS",
+                      "textAlign": "center",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "fcPtM",
+                  "name": "Profile",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "fill": "#FF3B30",
+                  "cornerRadius": 26,
+                  "layout": "vertical",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "1OJlz",
+                      "name": "pf_t4_t",
+                      "fill": "#FFFFFF",
+                      "content": "◉  PROFILE",
+                      "textAlign": "center",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "OEkJI",
+      "x": 2450,
+      "y": 0,
+      "name": "6 · Upgrade",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "wi0kx",
+          "name": "Status Bar",
+          "width": 390,
+          "height": 62,
+          "fill": "#0C0C0C",
+          "padding": [
+            0,
+            24
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "aJ1cl",
+              "name": "up_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "YC8aB",
+              "name": "up_icons",
+              "fill": "#FFFFFF",
+              "content": "●●● ▲ ▬",
+              "fontFamily": "DM Sans",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "hYoHQ",
+          "name": "Content",
+          "width": 390,
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            0,
+            24,
+            40,
+            24
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "fzE3L",
+              "name": "up_nav",
+              "width": "fill_container",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "oNdTn",
+                  "name": "up_close",
+                  "fill": "#525252",
+                  "content": "✕",
+                  "fontFamily": "Sora",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "bwaGT",
+                  "name": "up_title",
+                  "fill": "#FFFFFF",
+                  "content": "UNLOCK PRO",
+                  "textAlign": "right",
+                  "fontFamily": "Sora",
+                  "fontSize": 28,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "EIoLi",
+              "name": "up_tagline",
+              "fill": "#8A8A8A",
+              "content": "Unlock intelligence behind every bite.",
+              "fontFamily": "DM Sans",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "jQC5S",
+              "name": "Features",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 20,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "nKhyY",
+                  "name": "up_f1",
+                  "fill": "#FFFFFF",
+                  "content": "✓  AI Taste Compatibility Predictions",
+                  "fontFamily": "Sora",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "bYT8G",
+                  "name": "up_f2",
+                  "fill": "#FFFFFF",
+                  "content": "✓  Advanced Taste Insights",
+                  "fontFamily": "Sora",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "drHCw",
+                  "name": "up_f3",
+                  "fill": "#FFFFFF",
+                  "content": "✓  Cloud Sync  (cross-device)",
+                  "fontFamily": "Sora",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "74YfI",
+                  "name": "up_f4",
+                  "fill": "#FFFFFF",
+                  "content": "✓  Unlimited Dish Tracking",
+                  "fontFamily": "Sora",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "wtSc5",
+              "name": "Pricing",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UYgJG",
+                  "name": "up_annual",
+                  "width": "fill_container",
+                  "fill": "#FF3B30",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "PRsg9",
+                      "name": "up_annual_hdr",
+                      "width": "fill_container",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "4LtoN",
+                          "name": "up_annual_amt",
+                          "fill": "#FFFFFF",
+                          "content": "₹399 / year",
+                          "fontFamily": "Bricolage Grotesque",
+                          "fontSize": 20,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "a9yKM",
+                          "name": "up_annual_badge",
+                          "fill": "#0C0C0C",
+                          "cornerRadius": 12,
+                          "padding": [
+                            4,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "J0O4X",
+                              "name": "up_annual_badge_t",
+                              "fill": "#FF3B30",
+                              "content": "Recommended",
+                              "fontFamily": "DM Sans",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "O9hCm",
+                      "name": "up_annual_sub",
+                      "fill": "rgba(255,255,255,0.8)",
+                      "content": "Just ₹33/month  ·  Save 32%",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "xnI9k",
+                  "name": "up_monthly",
+                  "width": "fill_container",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 16,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wgLLD",
+                      "name": "up_monthly_t",
+                      "fill": "#6B7280",
+                      "content": "₹49 / month",
+                      "fontFamily": "DM Sans",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "q1Bsu",
+                      "name": "up_monthly_radio",
+                      "width": 20,
+                      "height": 20,
+                      "fill": "#0C0C0C",
+                      "cornerRadius": 10
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "g97dj",
+              "name": "up_btn",
+              "width": "fill_container",
+              "height": 56,
+              "fill": "#FF3B30",
+              "cornerRadius": 28,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ZDCwW",
+                  "name": "up_btn_t",
+                  "fill": "#FFFFFF",
+                  "content": "SUBSCRIBE NOW",
+                  "fontFamily": "Sora",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "cIV3R",
+      "x": 2940,
+      "y": 0,
+      "name": "7 · Add Restaurant",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "jeHNq",
+          "name": "status-bar",
+          "width": 390,
+          "height": 44,
+          "fill": "#0C0C0C",
+          "padding": 16,
+          "children": [
+            {
+              "type": "text",
+              "id": "t63Sl",
+              "name": "ar_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "Sora",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "d6uRV",
+              "name": "ar_spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "text",
+              "id": "AyOL9",
+              "name": "ar_icons",
+              "fill": "#FFFFFF",
+              "content": "●●●",
+              "fontFamily": "Sora",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "PQdf7",
+          "name": "nav",
+          "width": 390,
+          "height": 56,
+          "fill": "#0C0C0C",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "MovbK",
+              "name": "ar_back",
+              "fill": "#FF3B30",
+              "content": "←",
+              "fontFamily": "Sora",
+              "fontSize": 22,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "xJPl9",
+              "name": "ar_title",
+              "fill": "#FFFFFF",
+              "content": "Add Restaurant",
+              "fontFamily": "Sora",
+              "fontSize": 18,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "U9Hc1",
+          "name": "body",
+          "width": 390,
+          "height": "fill_container",
+          "fill": "#0C0C0C",
+          "layout": "vertical",
+          "gap": 20,
+          "children": [
+            {
+              "type": "frame",
+              "id": "vN7cf",
+              "name": "field-name",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "4LCi2",
+                  "name": "l1",
+                  "fill": "#8A8A8A",
+                  "content": "Restaurant Name",
+                  "fontFamily": "Sora",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "PNQFw",
+                  "name": "i1",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JnZGf",
+                      "name": "i1t",
+                      "fill": "#525252",
+                      "content": "e.g. Barbeque Nation",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "VlEnD",
+              "name": "field-location",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "EmZRw",
+                  "name": "l2",
+                  "fill": "#8A8A8A",
+                  "content": "Location",
+                  "fontFamily": "Sora",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "kK31z",
+                  "name": "i2",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 12,
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zyubK",
+                      "name": "i2t",
+                      "fill": "#FFFFFF",
+                      "content": "📍 Auto Detect",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Tc3Z4",
+                      "name": "i2e",
+                      "fill": "#FF3B30",
+                      "content": "Edit",
+                      "fontFamily": "Sora",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "aFf5k",
+              "name": "field-cuisine",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ORQk5",
+                  "name": "l3",
+                  "fill": "#8A8A8A",
+                  "content": "Cuisine Type",
+                  "fontFamily": "Sora",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "1UfHM",
+                  "name": "i3",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "RHUSu",
+                      "name": "i3t",
+                      "fill": "#525252",
+                      "content": "Optional",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "x26IP",
+                      "name": "i3arr",
+                      "fill": "#8A8A8A",
+                      "content": "▾",
+                      "fontFamily": "Sora",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vWTvk",
+              "name": "duplicate-banner",
+              "width": "fill_container",
+              "fill": "#1A1500",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "VM8vv",
+                  "name": "dup_title",
+                  "fill": "#FFB800",
+                  "content": "Similar restaurant found nearby",
+                  "fontFamily": "Sora",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "JrbX2",
+                  "name": "dup_btns",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Bs3Lv",
+                      "name": "dup_view",
+                      "width": "fill_container",
+                      "height": 40,
+                      "fill": "#0C0C0C",
+                      "cornerRadius": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TEN0J",
+                          "name": "dup_view_t",
+                          "fill": "#FFB800",
+                          "content": "View Existing",
+                          "fontFamily": "Sora",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WohZi",
+                      "name": "dup_create",
+                      "width": "fill_container",
+                      "height": 40,
+                      "fill": "#FF3B30",
+                      "cornerRadius": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TQ9i8",
+                          "name": "dup_create_t",
+                          "fill": "#FFFFFF",
+                          "content": "Create Anyway",
+                          "fontFamily": "Sora",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "0ufLL",
+              "name": "spacer_ar",
+              "width": "fill_container",
+              "height": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "UET1Z",
+              "name": "save-btn",
+              "width": "fill_container",
+              "height": 56,
+              "fill": "#FF3B30",
+              "cornerRadius": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "enist",
+                  "name": "save_t",
+                  "fill": "#FFFFFF",
+                  "content": "Save Restaurant",
+                  "fontFamily": "Sora",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "CeTXy",
+      "x": 3430,
+      "y": 0,
+      "name": "8 · Menu Scan",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "N14mT",
+          "name": "ocr_nav",
+          "width": 390,
+          "height": 56,
+          "fill": "transparent",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "BQS1z",
+              "name": "ocr_close",
+              "fill": "#FFFFFF",
+              "content": "✕",
+              "fontFamily": "Sora",
+              "fontSize": 20,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "thbTr",
+              "name": "ocr_nav_t",
+              "fill": "#FFFFFF",
+              "content": "Scan Menu",
+              "fontFamily": "Sora",
+              "fontSize": 18,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "1XEih",
+          "name": "viewfinder",
+          "width": 390,
+          "height": 420,
+          "fill": "#111111",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "ZcNDH",
+              "name": "vf_corner_tl",
+              "width": 40,
+              "height": 40,
+              "fill": "transparent",
+              "cornerRadius": [
+                8,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "type": "text",
+              "id": "XQdXI",
+              "name": "vf_hint",
+              "opacity": 0.7,
+              "fill": "#FFFFFF",
+              "content": "Position menu within frame",
+              "fontFamily": "Sora",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "mf7x0",
+              "name": "vf_tap",
+              "fill": "#FFFFFF",
+              "content": "Tap to Capture",
+              "fontFamily": "Sora",
+              "fontSize": 16,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qYJ5G",
+          "name": "cap_btn_area",
+          "width": 390,
+          "height": 100,
+          "fill": "#0C0C0C",
+          "children": [
+            {
+              "type": "frame",
+              "id": "UBepK",
+              "name": "cap_btn",
+              "width": 70,
+              "height": 70,
+              "fill": "#FF3B30",
+              "cornerRadius": 35
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "f1NiV",
+      "x": 3830,
+      "y": 0,
+      "name": "8b · OCR Results",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "DxfCa",
+          "name": "ocr_r_status",
+          "width": 390,
+          "height": 44,
+          "fill": "#0C0C0C",
+          "children": [
+            {
+              "type": "text",
+              "id": "mYZrz",
+              "name": "ocr_r_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "Sora",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "2W765",
+              "name": "ocr_r_spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "text",
+              "id": "SVzzG",
+              "name": "ocr_r_icons2",
+              "fill": "#FFFFFF",
+              "content": "●●●",
+              "fontFamily": "Sora",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ugz1D",
+          "name": "ocr_r_nav",
+          "width": 390,
+          "height": 56,
+          "fill": "#0C0C0C",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "BhuBT",
+              "name": "ocr_r_back",
+              "fill": "#FF3B30",
+              "content": "←",
+              "fontFamily": "Sora",
+              "fontSize": 22,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "tRBpS",
+              "name": "ocr_r_title",
+              "fill": "#FFFFFF",
+              "content": "Extracted Dishes",
+              "fontFamily": "Sora",
+              "fontSize": 18,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "jDaHd",
+          "name": "ocr_r_body",
+          "width": 390,
+          "height": "fill_container",
+          "fill": "#0C0C0C",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "9uLhH",
+              "name": "ocr_r_note",
+              "fill": "#8A8A8A",
+              "content": "Review and edit before saving",
+              "fontFamily": "Sora",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "i8dFJ",
+              "name": "dish_row1",
+              "width": "fill_container",
+              "height": 52,
+              "fill": "#1A1A1A",
+              "cornerRadius": 12,
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "N9rmC",
+                  "name": "dish_chk1",
+                  "width": 22,
+                  "height": 22,
+                  "fill": "#FF3B30",
+                  "cornerRadius": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "syqs1",
+                      "name": "dish_chk1t",
+                      "fill": "#FFFFFF",
+                      "content": "✓",
+                      "fontFamily": "Sora",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "NLoEC",
+                  "name": "dish_name1",
+                  "fill": "#FFFFFF",
+                  "content": "Butter Chicken",
+                  "fontFamily": "Sora",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IqcHU",
+              "name": "dish_row2",
+              "width": "fill_container",
+              "height": 52,
+              "fill": "#1A1A1A",
+              "cornerRadius": 12,
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "qrCv6",
+                  "name": "dish_chk2",
+                  "width": 22,
+                  "height": 22,
+                  "fill": "#FF3B30",
+                  "cornerRadius": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "oGxd0",
+                      "name": "dish_chk2t",
+                      "fill": "#FFFFFF",
+                      "content": "✓",
+                      "fontFamily": "Sora",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "sIsWB",
+                  "name": "dish_name2",
+                  "fill": "#FFFFFF",
+                  "content": "Paneer Lababdar",
+                  "fontFamily": "Sora",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "fnV8R",
+              "name": "dish_row3",
+              "width": "fill_container",
+              "height": 52,
+              "fill": "#1A1A1A",
+              "cornerRadius": 12,
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ATVu5",
+                  "name": "dish_chk3",
+                  "width": 22,
+                  "height": 22,
+                  "fill": "#FF3B30",
+                  "cornerRadius": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "HsP9S",
+                      "name": "dish_chk3t",
+                      "fill": "#FFFFFF",
+                      "content": "✓",
+                      "fontFamily": "Sora",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "oLkmi",
+                  "name": "dish_name3",
+                  "fill": "#FFFFFF",
+                  "content": "Dal Makhani",
+                  "fontFamily": "Sora",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "4BmsK",
+              "name": "dish_actions",
+              "width": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "aHpi5",
+                  "name": "edit_btn",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#1E1E1E",
+                  "cornerRadius": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "w04IL",
+                      "name": "edit_btn_t",
+                      "fill": "#A0A0A0",
+                      "content": "Edit Text",
+                      "fontFamily": "Sora",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "STuki",
+              "name": "save-dishes-btn",
+              "width": "fill_container",
+              "height": 56,
+              "fill": "#FF3B30",
+              "cornerRadius": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "2DUg5",
+                  "name": "save_dishes_t",
+                  "fill": "#FFFFFF",
+                  "content": "Save Dishes",
+                  "fontFamily": "Sora",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "JPiTy",
+      "x": 4320,
+      "y": 0,
+      "name": "9 · Favorites",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "hNuoh",
+          "name": "fav_status",
+          "width": 390,
+          "height": 44,
+          "fill": "#0C0C0C",
+          "children": [
+            {
+              "type": "text",
+              "id": "y3VLh",
+              "name": "fav_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "Sora",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "WQSfd",
+              "name": "fav_status_sp",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "text",
+              "id": "rqBPC",
+              "name": "fav_icons",
+              "fill": "#FFFFFF",
+              "content": "●●●",
+              "fontFamily": "Sora",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "wIfUs",
+          "name": "fav_nav",
+          "width": 390,
+          "height": 56,
+          "fill": "#0C0C0C",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "5Ginf",
+              "name": "fav_back",
+              "fill": "#FF3B30",
+              "content": "←",
+              "fontFamily": "Sora",
+              "fontSize": 22,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "wtwAf",
+              "name": "fav_title",
+              "fill": "#FFFFFF",
+              "content": "Favorites",
+              "fontFamily": "Sora",
+              "fontSize": 18,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "2X3x6",
+          "name": "fav_body",
+          "width": 390,
+          "height": "fill_container",
+          "fill": "#0C0C0C",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "53U4A",
+              "name": "fav_filters",
+              "width": "fill_container",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PFKet",
+                  "name": "fav_f1",
+                  "height": 36,
+                  "fill": "#FF3B30",
+                  "cornerRadius": 18,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "eTzTv",
+                      "name": "fav_f1t",
+                      "fill": "#FFFFFF",
+                      "content": "By Reaction",
+                      "fontFamily": "Sora",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SDSss",
+                  "name": "fav_f2",
+                  "height": 36,
+                  "fill": "#1E1E1E",
+                  "cornerRadius": 18,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hDDch",
+                      "name": "fav_f2t",
+                      "fill": "#A0A0A0",
+                      "content": "By Restaurant",
+                      "fontFamily": "Sora",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "qZ5Pa",
+              "name": "fav_sort",
+              "width": "fill_container",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "o7nYE",
+                  "name": "fav_s1",
+                  "fill": "#FF3B30",
+                  "content": "Sort: Most Recent ▾",
+                  "fontFamily": "Sora",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "HUQ59",
+              "name": "fd1",
+              "width": "fill_container",
+              "height": 72,
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "hcjIB",
+                  "name": "fd1_info",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "eqWNG",
+                      "name": "fd1_name",
+                      "fill": "#FFFFFF",
+                      "content": "🔥  Butter Chicken",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "M41WX",
+                      "name": "fd1_rest",
+                      "fill": "#8A8A8A",
+                      "content": "Barbeque Nation · Jan 2026",
+                      "fontFamily": "Sora",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "LgpHB",
+              "name": "fd2",
+              "width": "fill_container",
+              "height": 72,
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "lWufJ",
+                  "name": "fd2_info",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qcb7G",
+                      "name": "fd2_name",
+                      "fill": "#FFFFFF",
+                      "content": "🔥  Tiramisu",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "MitVt",
+                      "name": "fd2_rest",
+                      "fill": "#8A8A8A",
+                      "content": "Cafe Delhi Heights · Dec 2025",
+                      "fontFamily": "Sora",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "WhrNl",
+              "name": "fd3",
+              "width": "fill_container",
+              "height": 72,
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "56EMc",
+                  "name": "fd3_info",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "yGAQK",
+                      "name": "fd3_name",
+                      "fill": "#FFFFFF",
+                      "content": "😋  Dal Makhani",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Hmwd3",
+                      "name": "fd3_rest",
+                      "fill": "#8A8A8A",
+                      "content": "Punjab Grill · Nov 2025",
+                      "fontFamily": "Sora",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "UGaaS",
+          "name": "fav_tabbar",
+          "width": 390,
+          "height": 80,
+          "fill": "#0C0C0C",
+          "children": [
+            {
+              "type": "frame",
+              "id": "dbpuh",
+              "name": "tab_home_fav",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "8nrkM",
+                  "name": "tab_home_icon_fav",
+                  "fill": "#525252",
+                  "content": "⌂",
+                  "fontFamily": "Sora",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Pj4rc",
+                  "name": "tab_home_lbl_fav",
+                  "fill": "#525252",
+                  "content": "Home",
+                  "fontFamily": "Sora",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "eEuZO",
+              "name": "tab_map_fav",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "OmWsy",
+                  "name": "tab_map_icon_fav",
+                  "fill": "#525252",
+                  "content": "◎",
+                  "fontFamily": "Sora",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "cuP6s",
+                  "name": "tab_map_lbl_fav",
+                  "fill": "#525252",
+                  "content": "Map",
+                  "fontFamily": "Sora",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "OsHuv",
+              "name": "tab_fav_fav",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "J18qx",
+                  "name": "tab_fav_icon_fav",
+                  "fill": "#FF3B30",
+                  "content": "♥",
+                  "fontFamily": "Sora",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "B13cn",
+                  "name": "tab_fav_lbl_fav",
+                  "fill": "#FF3B30",
+                  "content": "Favorites",
+                  "fontFamily": "Sora",
+                  "fontSize": 10,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "MxGLc",
+              "name": "tab_prof_fav",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "EcmN6",
+                  "name": "tab_prof_icon_fav",
+                  "fill": "#525252",
+                  "content": "◉",
+                  "fontFamily": "Sora",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "rmB7Q",
+                  "name": "tab_prof_lbl_fav",
+                  "fill": "#525252",
+                  "content": "Profile",
+                  "fontFamily": "Sora",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "9tyoJ",
+      "x": 4810,
+      "y": 0,
+      "name": "10 · Visit Timeline",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "QjjXG",
+          "name": "tl_status",
+          "width": 390,
+          "height": 44,
+          "fill": "#0C0C0C",
+          "children": [
+            {
+              "type": "text",
+              "id": "IZg5J",
+              "name": "tl_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "Sora",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "9oRZf",
+              "name": "tl_sp",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "text",
+              "id": "89fTl",
+              "name": "tl_icons",
+              "fill": "#FFFFFF",
+              "content": "●●●",
+              "fontFamily": "Sora",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Uc1e3",
+          "name": "tl_nav",
+          "width": 390,
+          "height": 56,
+          "fill": "#0C0C0C",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "Kz2i2",
+              "name": "tl_back",
+              "fill": "#FF3B30",
+              "content": "←",
+              "fontFamily": "Sora",
+              "fontSize": 22,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "Tzlf4",
+              "name": "tl_navtitle",
+              "fill": "#FFFFFF",
+              "content": "Visit Timeline",
+              "fontFamily": "Sora",
+              "fontSize": 18,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "atCgB",
+          "name": "tl_body",
+          "width": 390,
+          "height": "fill_container",
+          "fill": "#0C0C0C",
+          "layout": "vertical",
+          "gap": 20,
+          "children": [
+            {
+              "type": "text",
+              "id": "r55At",
+              "name": "tl_month1",
+              "fill": "#8A8A8A",
+              "content": "January 2026",
+              "fontFamily": "Sora",
+              "fontSize": 13,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "eBjgx",
+              "name": "tl_card1",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "QcEJ7",
+                  "name": "tl_c1_rest",
+                  "fill": "#FFFFFF",
+                  "content": "Cafe Delhi Heights",
+                  "fontFamily": "Sora",
+                  "fontSize": 15,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "CZOpM",
+                  "name": "tl_c1_dish",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "znBVh",
+                      "name": "tl_c1_dish_name",
+                      "fill": "#A0A0A0",
+                      "content": "🔥  Tiramisu",
+                      "fontFamily": "Sora",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "a1Ep6",
+              "name": "tl_month2",
+              "fill": "#8A8A8A",
+              "content": "December 2025",
+              "fontFamily": "Sora",
+              "fontSize": 13,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "7c0ik",
+              "name": "tl_card2",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "8dHS0",
+                  "name": "tl_c2_rest",
+                  "fill": "#FFFFFF",
+                  "content": "Barbeque Nation",
+                  "fontFamily": "Sora",
+                  "fontSize": 15,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "0DBDc",
+                  "name": "tl_c2_dish",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hlH6D",
+                      "name": "tl_c2_dish_name",
+                      "fill": "#A0A0A0",
+                      "content": "🔥  Butter Chicken",
+                      "fontFamily": "Sora",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lXXRu",
+              "name": "tl_card3",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "FcyIs",
+                  "name": "tl_c3_rest",
+                  "fill": "#FFFFFF",
+                  "content": "Punjab Grill",
+                  "fontFamily": "Sora",
+                  "fontSize": 15,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "MNiAF",
+                  "name": "tl_c3_dish",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "0MSL4",
+                      "name": "tl_c3_name",
+                      "fill": "#A0A0A0",
+                      "content": "😋  Dal Makhani",
+                      "fontFamily": "Sora",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "rkh95",
+      "x": 5300,
+      "y": 0,
+      "name": "11 · Search Results",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "aCVm7",
+          "name": "sr_status",
+          "width": 390,
+          "height": 44,
+          "fill": "#0C0C0C",
+          "children": [
+            {
+              "type": "text",
+              "id": "XYCBQ",
+              "name": "sr_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "Sora",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "C22g4",
+              "name": "sr_sp",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "text",
+              "id": "VArX4",
+              "name": "sr_icons",
+              "fill": "#FFFFFF",
+              "content": "●●●",
+              "fontFamily": "Sora",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "8c3BS",
+          "name": "sr_searchbar",
+          "width": 390,
+          "height": 64,
+          "fill": "#0C0C0C",
+          "children": [
+            {
+              "type": "frame",
+              "id": "XjHdZ",
+              "name": "sr_input",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#242424",
+              "cornerRadius": 14,
+              "gap": 10,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "NiyTO",
+                  "name": "sr_search_icon",
+                  "content": "🔍",
+                  "fontFamily": "Sora",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "3CGgG",
+                  "name": "sr_query",
+                  "fill": "#FFFFFF",
+                  "content": "butter chicken",
+                  "fontFamily": "Sora",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "af8C1",
+          "name": "sr_body",
+          "width": 390,
+          "height": "fill_container",
+          "fill": "#0C0C0C",
+          "layout": "vertical",
+          "gap": 20,
+          "children": [
+            {
+              "type": "frame",
+              "id": "jeQht",
+              "name": "sr_rest_section",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "zU3zS",
+                  "name": "sr_rest_header",
+                  "fill": "#8A8A8A",
+                  "content": "RESTAURANTS",
+                  "fontFamily": "Sora",
+                  "fontSize": 11,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "oxKFv",
+                  "name": "sr_rest_row",
+                  "width": "fill_container",
+                  "height": 60,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 14,
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "KNqAI",
+                      "name": "sr_rest_info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pWYmN",
+                          "name": "sr_rest_name",
+                          "fill": "#FFFFFF",
+                          "content": "🍽  Barbeque Nation",
+                          "fontFamily": "Sora",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "hhbwF",
+                          "name": "sr_rest_rating",
+                          "fill": "#8A8A8A",
+                          "content": "⭐ 4.3 · Indian",
+                          "fontFamily": "Sora",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ipzOu",
+              "name": "sr_dish_section",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "RbSGL",
+                  "name": "sr_dish_header",
+                  "fill": "#8A8A8A",
+                  "content": "DISHES",
+                  "fontFamily": "Sora",
+                  "fontSize": 11,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "jRMvR",
+                  "name": "sr_dish_row1",
+                  "width": "fill_container",
+                  "height": 60,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 14,
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TPgc8",
+                      "name": "sr_dish_info1",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "nVWvN",
+                          "name": "sr_dish_name1",
+                          "fill": "#FFFFFF",
+                          "content": "🔥  Butter Chicken",
+                          "fontFamily": "Sora",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "59S9f",
+                          "name": "sr_dish_sub1",
+                          "fill": "#8A8A8A",
+                          "content": "3 restaurants",
+                          "fontFamily": "Sora",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "4KgUk",
+                  "name": "sr_dish_row2",
+                  "width": "fill_container",
+                  "height": 60,
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 14,
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "BGYjQ",
+                      "name": "sr_dish_info2",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "jSBgj",
+                          "name": "sr_dish_name2",
+                          "fill": "#FFFFFF",
+                          "content": "😋  Butter Chicken Masala",
+                          "fontFamily": "Sora",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "uWIwu",
+                          "name": "sr_dish_sub2",
+                          "fill": "#8A8A8A",
+                          "content": "1 restaurant",
+                          "fontFamily": "Sora",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "EKnbX",
+      "x": 5790,
+      "y": 0,
+      "name": "12 · Settings",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "hMXXm",
+          "name": "st_status",
+          "width": 390,
+          "height": 44,
+          "fill": "#0C0C0C",
+          "children": [
+            {
+              "type": "text",
+              "id": "A8BvU",
+              "name": "st_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "Sora",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "mfcAA",
+              "name": "st_sp",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "text",
+              "id": "QrwgK",
+              "name": "st_icons",
+              "fill": "#FFFFFF",
+              "content": "●●●",
+              "fontFamily": "Sora",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "kmbDM",
+          "name": "st_nav",
+          "width": 390,
+          "height": 56,
+          "fill": "#0C0C0C",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "1hwWe",
+              "name": "st_back",
+              "fill": "#FF3B30",
+              "content": "←",
+              "fontFamily": "Sora",
+              "fontSize": 22,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "IAe3S",
+              "name": "st_title",
+              "fill": "#FFFFFF",
+              "content": "Settings",
+              "fontFamily": "Sora",
+              "fontSize": 18,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Fc5mK",
+          "name": "st_body",
+          "width": 390,
+          "height": "fill_container",
+          "fill": "#0C0C0C",
+          "layout": "vertical",
+          "gap": 8,
+          "children": [
+            {
+              "type": "text",
+              "id": "XZoKw",
+              "name": "st_sec1",
+              "fill": "#AAAAAA",
+              "content": "ACCOUNT",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "VafYN",
+              "name": "st_grp1",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "38SPL",
+                  "name": "st_row1",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "transparent",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "BELJi",
+                      "name": "st_row1_icon",
+                      "content": "👤",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rzJG2",
+                      "name": "st_row1_label",
+                      "fill": "#FFFFFF",
+                      "content": "Account",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mybzE",
+                      "name": "st_row1_arrow",
+                      "fill": "#525252",
+                      "content": "›",
+                      "fontFamily": "Sora",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "4yLzK",
+                  "name": "st_row2",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "transparent",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "EkpNe",
+                      "name": "st_row2_icon",
+                      "fill": "#A0A0A0",
+                      "content": "☁",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ri5EG",
+                      "name": "st_row2_label",
+                      "fill": "#FFFFFF",
+                      "content": "Cloud Sync",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uHCJL",
+                      "name": "st_row2_badge",
+                      "height": 22,
+                      "fill": "#FF3B30",
+                      "cornerRadius": 11,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fg77L",
+                          "name": "st_row2_badge_t",
+                          "fill": "#FFFFFF",
+                          "content": "Pro",
+                          "fontFamily": "Sora",
+                          "fontSize": 11,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "KnNru",
+                      "name": "st_row2_arrow",
+                      "fill": "#525252",
+                      "content": "›",
+                      "fontFamily": "Sora",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "IefUC",
+              "name": "st_sec2",
+              "fill": "#AAAAAA",
+              "content": "DATA",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "09faT",
+              "name": "st_grp2",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ouQrS",
+                  "name": "st_row3",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "transparent",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "GYtHs",
+                      "name": "st_row3_icon",
+                      "fill": "#A0A0A0",
+                      "content": "⬇",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "raTF2",
+                      "name": "st_row3_label",
+                      "fill": "#FFFFFF",
+                      "content": "Export Data",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "2wbTW",
+                      "name": "st_row3_arrow",
+                      "fill": "#525252",
+                      "content": "›",
+                      "fontFamily": "Sora",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "yQ83T",
+                  "name": "st_row4",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "transparent",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NPwhD",
+                      "name": "st_row4_icon",
+                      "content": "💳",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ntUj8",
+                      "name": "st_row4_label",
+                      "fill": "#FFFFFF",
+                      "content": "Subscription",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XYzXU",
+                      "name": "st_row4_arrow",
+                      "fill": "#525252",
+                      "content": "›",
+                      "fontFamily": "Sora",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "am0NK",
+              "name": "st_sec3",
+              "fill": "#AAAAAA",
+              "content": "PRIVACY & SUPPORT",
+              "fontFamily": "Sora",
+              "fontSize": 11,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "mzVBW",
+              "name": "st_grp3",
+              "width": "fill_container",
+              "fill": "#1A1A1A",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XDFMN",
+                  "name": "st_row5",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "transparent",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IK7cV",
+                      "name": "st_row5_icon",
+                      "content": "🔒",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "cNMzo",
+                      "name": "st_row5_label",
+                      "fill": "#FFFFFF",
+                      "content": "Privacy Controls",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "kUDhT",
+                      "name": "st_row5_arrow",
+                      "fill": "#525252",
+                      "content": "›",
+                      "fontFamily": "Sora",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "s4LJf",
+                  "name": "st_row6",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "transparent",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "cwYB7",
+                      "name": "st_row6_icon",
+                      "content": "❓",
+                      "fontFamily": "Sora",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wdld9",
+                      "name": "st_row6_label",
+                      "fill": "#FFFFFF",
+                      "content": "Help & Support",
+                      "fontFamily": "Sora",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XE7ng",
+                      "name": "st_row6_arrow",
+                      "fill": "#525252",
+                      "content": "›",
+                      "fontFamily": "Sora",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "JAcKk",
+              "name": "st_version",
+              "fill": "#525252",
+              "content": "Remembite v0.1.0",
+              "fontFamily": "Sora",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "WFZQE",
+      "x": 6280,
+      "y": 0,
+      "name": "13 · Map View",
+      "width": 390,
+      "height": 844,
+      "fill": "#0C0C0C",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "eimx1",
+          "name": "map_status",
+          "width": 390,
+          "height": 44,
+          "fill": "transparent",
+          "children": [
+            {
+              "type": "text",
+              "id": "JLKuZ",
+              "name": "map_time",
+              "fill": "#FFFFFF",
+              "content": "9:41",
+              "fontFamily": "Sora",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "m6YFY",
+              "name": "map_sp",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "text",
+              "id": "rsnt4",
+              "name": "map_icons",
+              "fill": "#FFFFFF",
+              "content": "●●●",
+              "fontFamily": "Sora",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Jexar",
+          "name": "map-canvas",
+          "width": 390,
+          "height": "fill_container",
+          "fill": "#1A1A1A",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "FOuK8",
+              "name": "map_pin1",
+              "width": 120,
+              "height": 40,
+              "fill": "#FF3B30",
+              "cornerRadius": 20,
+              "gap": 6,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tQls0",
+                  "name": "map_pin1_dot",
+                  "width": 10,
+                  "height": 10,
+                  "fill": "#0C0C0C",
+                  "cornerRadius": 5
+                },
+                {
+                  "type": "text",
+                  "id": "Vn1yN",
+                  "name": "map_pin1_t",
+                  "fill": "#FFFFFF",
+                  "content": "Barbeque Nation",
+                  "fontFamily": "Sora",
+                  "fontSize": 11,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "9GZD1",
+              "name": "map_pin2",
+              "width": 130,
+              "height": 40,
+              "fill": "#0C0C0C",
+              "cornerRadius": 20,
+              "gap": 6,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "gCEdC",
+                  "name": "map_pin2_dot",
+                  "width": 10,
+                  "height": 10,
+                  "fill": "#888888",
+                  "cornerRadius": 5
+                },
+                {
+                  "type": "text",
+                  "id": "GdFpX",
+                  "name": "map_pin2_t",
+                  "fill": "#A0A0A0",
+                  "content": "Cafe Delhi Heights",
+                  "fontFamily": "Sora",
+                  "fontSize": 11,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "pZUgV",
+          "name": "map-toggle",
+          "width": 390,
+          "height": 72,
+          "fill": "#111111",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "lSASc",
+              "name": "map_toggle_text",
+              "fill": "#FFFFFF",
+              "content": "Show Nearby Restaurants",
+              "fontFamily": "Sora",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "pOH7B",
+              "name": "map_toggle_sw",
+              "width": 44,
+              "height": 26,
+              "fill": "#FF3B30",
+              "cornerRadius": 13,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "mCJbW",
+                  "name": "map_toggle_sw_knob",
+                  "width": 20,
+                  "height": 20,
+                  "fill": "#0C0C0C",
+                  "cornerRadius": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ndRKl",
+          "name": "map_tabbar",
+          "width": 390,
+          "height": 80,
+          "fill": "#0C0C0C",
+          "children": [
+            {
+              "type": "frame",
+              "id": "m8vaN",
+              "name": "tab_home_map",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "0zLs2",
+                  "name": "tab_home_icon_map",
+                  "fill": "#525252",
+                  "content": "⌂",
+                  "fontFamily": "Sora",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "zAI85",
+                  "name": "tab_home_lbl_map",
+                  "fill": "#525252",
+                  "content": "Home",
+                  "fontFamily": "Sora",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "SJrpi",
+              "name": "tab_map_active",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "FcxoC",
+                  "name": "tab_map_active_icon",
+                  "fill": "#FF3B30",
+                  "content": "◎",
+                  "fontFamily": "Sora",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "7Nc2B",
+                  "name": "tab_map_active_lbl",
+                  "fill": "#FF3B30",
+                  "content": "Map",
+                  "fontFamily": "Sora",
+                  "fontSize": 10,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vR4df",
+              "name": "tab_fav_map",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "GUsE8",
+                  "name": "tab_fav_icon_map",
+                  "fill": "#525252",
+                  "content": "♥",
+                  "fontFamily": "Sora",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "BiXy3",
+                  "name": "tab_fav_lbl_map",
+                  "fill": "#525252",
+                  "content": "Favorites",
+                  "fontFamily": "Sora",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "aTo7B",
+              "name": "tab_prof_map",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "HbJ1Y",
+                  "name": "tab_prof_icon_map",
+                  "fill": "#525252",
+                  "content": "◉",
+                  "fontFamily": "Sora",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "z5Ded",
+                  "name": "tab_prof_lbl_map",
+                  "fill": "#525252",
+                  "content": "Profile",
+                  "fontFamily": "Sora",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
