@@ -31,27 +31,54 @@
 
 ---
 
+### After Sign-In: Taste Bootstrapping (Optional)
+
+---
+
+| Quick — let us learn your taste               |
+| (Takes about 30 seconds. You can skip.)       |
+|                                               |
+| Butter Chicken                                |
+| 🔥  😋  🙂  😐  🤢  [ Skip ]                  |
+|                                               |
+| Biryani                                       |
+| 🔥  😋  🙂  😐  🤢  [ Skip ]                  |
+|                                               |
+| Tiramisu                                      |
+| 🔥  😋  🙂  😐  🤢  [ Skip ]                  |
+|                                               |
+| ... (10–15 common dishes across cuisines)     |
+|                                               |
+| [ Done ]         [ Skip All ]                 |
+-------------------------------------------------
+
+Note: Bootstrapping reactions count toward ≥10 personal reaction threshold for AI predictions. Skipping is always visible and never blocked.
+
+---
+
 ## 2. Home Screen (Decision-Optimized)
 
 ---
 
 | Search Restaurants / Dishes...                   |     |           |         |
 | ------------------------------------------------ | --- | --------- | ------- |
+| 🕘 Recently Visited                              |     |           |         |
+| • Barbeque Nation                                |     |           |         |
+| ------------------------------------------------ |     |           |         |
 | 📍 Nearby Restaurants                            |     |           |         |
 | • Barbeque Nation ⭐4.3                           |     |           |         |
 | • Cafe Delhi Heights ⭐4.0                        |     |           |         |
 | ------------------------------------------------ |     |           |         |
-| 🕘 Recently Visited                              |     |           |         |
-| • Barbeque Nation                                |     |           |         |
-| ------------------------------------------------ |     |           |         |
 | [ Scan Menu ]                                    |     |           |         |
-| (Primary Floating Action Button)                 |     |           |         |
+| (Floating Action Button — secondary action)      |     |           |         |
 | ------------------------------------------------ |     |           |         |
 | Bottom Navigation                                |     |           |         |
 | Home                                             | Map | Favorites | Profile |
 
 ---
 
+Recently Visited is surfaced first — returning users act on existing context, not OCR.
+Scan Menu FAB is available but not the primary CTA.
 Search includes fuzzy matching across restaurants & dishes.
 
 ---
@@ -163,8 +190,8 @@ Saved dishes immediately visible with "Classifying..." attribute state until LLM
 | Your Reaction: 🔥 So Yummy                       |
 |                                                  |
 | [Classifying...] (shown while LLM job pending)  |
-| 🔥 You’ll probably love this                     |
-| (Shown only if confidence threshold met)         |
+| 🔥 You'll probably love this                     |
+| (Shown only if confidence threshold met — Pro)  |
 | ------------------------------------------------ |
 | Notes (Private)                                  |
 | [ ____________________________ ]                 |
@@ -213,6 +240,7 @@ Saved dishes immediately visible with "Classifying..." attribute state until LLM
 ---
 
 Auto-apply when net upvotes ≥ 3 within 7 days. Edit expires if no consensus.
+In early stages, admin manually reviews and applies edits.
 
 ---
 
@@ -296,9 +324,14 @@ Results prioritized by:
 | Total Dishes Tracked: 86                         |
 | Most Used Reaction: 🔥 So Yummy                  |
 | ------------------------------------------------ |
+| Your Taste Profile                               |
+| ████████░░  80% complete                         |
+| "React to 2 more dishes to unlock predictions"  |
+| ------------------------------------------------ |
 | Taste Insights (Pro)                             |
 | • Prefers spicy food                             |
 | • Frequently dislikes very sweet dishes          |
+| [ Unlock Taste Insights → ]                      |
 | ------------------------------------------------ |
 | [ Upgrade to Pro ]                               |
 | [ Settings ]                                     |
@@ -306,6 +339,8 @@ Results prioritized by:
 ---
 
 Taste vector is private.
+"Taste Profile" progress bar drives organic upgrade pressure without artificial dish caps.
+Clicking "Unlock Taste Insights →" takes user to Upgrade Screen.
 
 ---
 
@@ -328,18 +363,21 @@ Taste vector is private.
 
 ## 16. Upgrade Screen (Pro Intelligence)
 
+Feature order leads with the primary value driver. Annual plan is highlighted as recommended.
+
 ---
 
-| Unlock Pro                     |
-| ------------------------------ |
-| ✓ Unlimited Dish Tracking      |
-| ✓ AI Compatibility Predictions |
-| ✓ Cloud Sync                   |
-| ✓ Advanced Taste Insights      |
-|                                |
-| ₹49 / month                    |
-|                                |
-| [ Subscribe Now ]              |
+| Unlock Pro                              |
+| --------------------------------------- |
+| ✓ AI Taste Compatibility Predictions   |
+| ✓ Advanced Taste Insights              |
+| ✓ Cloud Sync (cross-device)            |
+| ✓ Unlimited Dish Tracking              |
+|                                         |
+| ₹399 / year   ← Recommended (save 32%) |
+| ₹49 / month                            |
+|                                         |
+| [ Subscribe Now ]                       |
 
 ---
 

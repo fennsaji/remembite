@@ -13,13 +13,14 @@ Components:
 * Search bar (fuzzy match across restaurants & dishes)
 * Nearby Restaurants list (with star rating)
 * Recently Visited list
-* Floating Action Button: Scan Menu
+* Floating Action Button: Scan Menu (secondary flow — not primary onboarding path)
 * Bottom Navigation: Home | Map | Favorites | Profile
 
 Behavior:
 
 * Auto-detect nearby restaurants via GPS
 * Manual "Add New" option inside search
+* Default entry point for returning users is the Recently Visited list, not OCR
 
 ---
 
@@ -80,6 +81,8 @@ Pending Edits View:
 * Auto-apply when net upvotes ≥ 3 within 7 days
 * Edit expires if no consensus within 7 days
 
+Note: In early stages (pre-community scale), admin manually applies edits. Community voting UI is visible but approval is admin-gated until user density justifies automation.
+
 ---
 
 ### 1.6 Map View
@@ -117,6 +120,7 @@ Must display:
 * Total restaurants visited
 * Total dishes tracked
 * Most used reaction
+* Taste Profile Completion indicator (e.g., "Your taste profile is 60% complete — react to 4 more dishes to unlock predictions")
 
 Pro Section:
 
@@ -127,14 +131,22 @@ Pro Section:
 
 ### 1.9 Upgrade Screen
 
-Must display:
+Feature order must lead with the primary value driver (AI intelligence), not restriction removal:
 
-* Unlimited dish tracking
-* AI taste predictions
-* Cloud sync
-* Advanced insights
-* Monthly pricing (₹49/month)
+* AI Taste Compatibility Predictions
+* Advanced Taste Insights
+* Cloud Sync (cross-device access)
+* Unlimited Dish Tracking
+
+Pricing:
+
+* ₹49 / month
+* ₹399 / year (save 32%) — displayed as primary option
+
+Behavior:
+
 * Subscribe button
+* Annual plan highlighted as recommended
 
 ---
 
@@ -177,6 +189,26 @@ Must include:
 * Subscription management
 * Privacy Controls
 * Help & Support
+
+---
+
+### 1.13 Onboarding Screen
+
+Must support:
+
+* App intro + tagline ("Remember What You Loved.")
+* Sign in / continue with Google
+* Taste bootstrapping step: "Quick — pick a few dishes you love or hate" (optional, skippable)
+  * Presents 10–15 common dishes across cuisines
+  * User reacts (🔥 / 🤢 / Skip)
+  * Pre-populates taste vector to accelerate first predictions
+  * Clearly labeled as "Help us learn your taste — takes 30 seconds"
+* Skip option must always be visible
+
+Behavior:
+
+* Bootstrapping reactions count toward the ≥10 personal reaction threshold for AI predictions
+* Skipping does not block access — user builds profile through normal use
 
 ---
 
@@ -236,6 +268,8 @@ Search results prioritized by:
 1. Exact match
 2. Partial match
 3. Popularity (rating count or reaction count)
+
+Note: Basic functional search must ship with core utility (Phase 1), not deferred to later optimization phases.
 
 ---
 
@@ -316,6 +350,52 @@ Compatibility predictions displayed only when both conditions are met:
 * Dish has ≥ 10 community votes (attribute confidence stable)
 
 Below either threshold → no prediction shown. Never display an uncertain AI guess.
+
+Threshold progression path:
+
+* Onboarding taste bootstrapping counts toward user's 10-reaction threshold
+* "Taste Profile Completion" indicator on Profile screen shows progress toward first prediction
+* Thresholds may be tuned post-launch based on observed data density — start at 10, loosen to 5 if warranted
+
+---
+
+## 8. Free Tier Definition
+
+The free tier is gated by intelligence access, not by data quantity. Users may use Remembite without limits on tracking, then discover the insights behind their data require Pro.
+
+| Feature | Free | Pro |
+|---|---|---|
+| Dish reactions (unlimited) | ✓ | ✓ |
+| Restaurant tracking (unlimited) | ✓ | ✓ |
+| Private notes | ✓ | ✓ |
+| Menu OCR | ✓ | ✓ |
+| Visit timeline | ✓ | ✓ |
+| Community reactions & favorites | ✓ | ✓ |
+| Community dish attributes | ✓ | ✓ |
+| AI taste compatibility predictions | — | ✓ |
+| Advanced taste insights | — | ✓ |
+| Cloud sync (cross-device) | — | ✓ |
+| Data export | — | ✓ |
+
+No hard cap on dish count. Free users build rich history; upgrading reveals the intelligence behind it.
+
+Free-to-Pro conversion trigger: User sees "Taste Profile Complete" on Profile, clicks taste insights → paywall. This is the natural upgrade moment.
+
+---
+
+## 9. Payment Infrastructure Requirements
+
+Must support:
+
+* Indian payment stack: Razorpay or equivalent (UPI, cards, netbanking)
+* Monthly subscription at ₹49/month
+* Annual subscription at ₹399/year
+* In-app subscription management (upgrade, downgrade, cancel)
+* Graceful degradation on cancellation (data retained, Pro features locked)
+* Webhook handling for payment events
+* Pro feature flag enforcement at API layer
+
+Note: Payment infrastructure must be implemented before AI predictions ship, so the upgrade moment exists when users first see predictions gated.
 
 ---
 
