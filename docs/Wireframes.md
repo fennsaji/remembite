@@ -372,7 +372,7 @@ Feature order leads with the primary value driver. Annual plan is highlighted as
 | ✓ AI Taste Compatibility Predictions   |
 | ✓ Advanced Taste Insights              |
 | ✓ Cloud Sync (cross-device)            |
-| ✓ Unlimited Dish Tracking              |
+| ✓ Data Export                          |
 |                                         |
 | ₹399 / year   ← Recommended (save 32%) |
 | ₹49 / month                            |

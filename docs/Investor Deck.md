@@ -292,9 +292,9 @@ Frontend:
 
 Backend:
 
-* Rust (Actix/Axum)
-* PostgreSQL
-* VPS deployment
+* Rust (Axum)
+* PostgreSQL (Neon managed)
+* VPS deployment (Hetzner)
 * Async job queue (interface-abstracted for future Redis swap)
 
 AI Layer:
@@ -304,14 +304,15 @@ AI Layer:
 
 Payments:
 
-* Razorpay (India-first: UPI, cards, netbanking)
+* Google Play Billing (Android, mandatory for in-app subscriptions)
+* Apple App Store / StoreKit 2 (iOS, post-Phase 3)
 
 System designed for:
 
 * Low latency
 * Offline-first UX
 * Async intelligence
-* Horizontal scaling in Phase 3
+* Horizontal scaling when load demands it (load balancer + additional VPS instances, Redis job queue)
 
 ---
 
@@ -325,8 +326,8 @@ Phase 1 – Utility Core + Validated Habit Loop
 
 Phase 2 – Monetization Infrastructure
 
-* Payment integration (Razorpay)
-* Pro tier live before AI features ship
+* Google Play Billing integration
+* Pro tier live before public launch
 * Upgrade flow built around Taste Profile Completion trigger
 
 Phase 3 – Governance & Data Integrity
@@ -334,14 +335,14 @@ Phase 3 – Governance & Data Integrity
 * Community layer (reactions aggregated, admin-mediated edits)
 * Access control, rate limiting
 
-Phase 4 – AI Layer (after real data exists)
+Phase 4 – AI Layer
 
-* LLM classification
+* LLM classification (Gemini 2.0 Flash)
 * Bayesian blending
 * Taste vector engine
 * Confidence-gated predictions (Pro only)
 
-Total: ~16 weeks. Learning gates between phases prevent building intelligence without a user base.
+Total: ~16 weeks. All phases built before scaling user acquisition — full product ships first, then grows.
 
 ---
 
@@ -365,7 +366,7 @@ Long-term potential:
 * LLM classification cost is low and falling
 * Dining behavior is habitual and recurring
 * No category leader in dish intelligence
-* Indian subscription app market is maturing — ₹149/month is a viable price point
+* Indian subscription app market is maturing — ₹49/month is an accessible, habit-friendly price point
 
 Technology + behavior alignment enables this category now.
 

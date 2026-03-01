@@ -136,7 +136,9 @@ Feature order must lead with the primary value driver (AI intelligence), not res
 * AI Taste Compatibility Predictions
 * Advanced Taste Insights
 * Cloud Sync (cross-device access)
-* Unlimited Dish Tracking
+* Data Export
+
+Note: Do NOT list "Unlimited Dish Tracking" as a Pro feature — dish tracking is unlimited on the free tier. Listing it implies a cap that does not exist.
 
 Pricing:
 
@@ -387,13 +389,16 @@ Free-to-Pro conversion trigger: User sees "Taste Profile Complete" on Profile, c
 
 Must support:
 
-* Indian payment stack: Razorpay or equivalent (UPI, cards, netbanking)
+* **Google Play Billing** (Android) — mandatory for in-app digital subscriptions on the Play Store
 * Monthly subscription at ₹49/month
 * Annual subscription at ₹399/year
+* Server-side purchase token verification via Google Play Developer API
+* Real-time cancellation/refund handling via Google Play Pub/Sub notifications
 * In-app subscription management (upgrade, downgrade, cancel)
 * Graceful degradation on cancellation (data retained, Pro features locked)
-* Webhook handling for payment events
 * Pro feature flag enforcement at API layer
+
+Note: Third-party payment providers (Razorpay, Stripe, etc.) cannot be used for in-app subscriptions — Google mandates Play Billing for digital goods. iOS billing (StoreKit 2) added post-Phase 3.
 
 Note: Payment infrastructure must be implemented before AI predictions ship, so the upgrade moment exists when users first see predictions gated.
 

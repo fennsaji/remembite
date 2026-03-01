@@ -28,18 +28,20 @@ These projections are planning assumptions, not forecasts. They exist to stress-
 
 ## 3. Revenue Per User
 
+All LTV figures are **net** (after 15% Google Play / Apple App Store fee).
+
 ### Monthly Plan
-* Price: ₹49/month
+* Gross: ₹49/month → Net: ₹41.65/month
 * Average retention: ~10 months (before churn at 8%/month)
-* LTV: ₹49 × 10 = **~₹490**
+* Net LTV: ₹41.65 × 10 = **~₹416**
 
 ### Annual Plan
-* Price: ₹399/year
+* Gross: ₹399/year → Net: ₹339.15/year
 * Renewal rate: 75% (25% churn at renewal)
-* LTV (Year 1 + renewal): ₹399 + 0.75 × ₹399 = **~₹699**
+* Net LTV (Year 1 + renewal): ₹339.15 + 0.75 × ₹339.15 = **~₹594**
 
 ### Blended LTV (60% annual, 40% monthly)
-* Blended LTV: 0.6 × ₹699 + 0.4 × ₹490 = **~₹615 per paying user**
+* Net blended LTV: 0.6 × ₹594 + 0.4 × ₹416 = **~₹523 per paying user**
 
 ---
 
@@ -55,41 +57,42 @@ MRR = (monthly_subs × ₹49) + (annual_subs × ₹33)
 
 ---
 
-## 5. Growth Projections by Phase
+## 5. Growth Projections
 
-### Phase 1 — Closed Beta (Months 1–2)
-Goal: Validate habit loop. No revenue.
+All figures are **gross revenue** (what users pay before 15% platform fee). Net revenue = gross × 0.85.
+
+### Early Access — Closed Beta (Months 1–2)
+Goal: Test core habit loop with real users. No revenue.
 
 | Metric | Target |
 |---|---|
 | Test users | 20–50 |
 | Paying users | 0 |
 | MRR | ₹0 |
-| Key question | Do users return within 7 days? |
 
 ---
 
-### Phase 2 — Soft Launch with Pro Tier (Months 3–4)
-Pro tier live. AI predictions not yet available — cloud sync and early access position the upgrade.
+### Soft Launch — Pro Tier Live (Months 3–4)
+Full product live — all features including AI predictions shipped before public launch.
 
 | Metric | Conservative | Base | Optimistic |
 |---|---|---|---|
 | Total users | 200 | 400 | 800 |
 | Active users (≥1 visit/month) | 100 | 200 | 400 |
 | Pro subscribers (4%) | 4 | 8 | 16 |
-| MRR | ₹200 | ₹400 | ₹800 |
+| MRR (gross) | ₹200 | ₹400 | ₹800 |
 
 ---
 
-### Phase 3 — AI Layer Live (Months 5–6)
-AI taste predictions unlock. This is the first genuine upgrade moment.
+### Growth Phase (Months 5–6)
+Word of mouth and App Store discovery begin driving organic growth.
 
 | Metric | Conservative | Base | Optimistic |
 |---|---|---|---|
 | Total users | 800 | 2,000 | 5,000 |
 | Active users | 400 | 1,000 | 2,500 |
 | Pro subscribers (4%) | 16 | 40 | 100 |
-| MRR | ₹800 | ₹2,000 | ₹5,000 |
+| MRR (gross) | ₹800 | ₹2,000 | ₹5,000 |
 
 ---
 
@@ -131,27 +134,37 @@ Infrastructure costs at MVP scale are low (single VPS, object storage, LLM API c
 
 | Cost Item | Monthly Estimate |
 |---|---|
-| VPS (Rust backend + PostgreSQL) | ₹2,000–5,000 |
-| Object storage (images, CDN) | ₹500–2,000 |
-| LLM API (per dish classified) | ₹0.05–0.10 per dish; ~₹500–2,000/month at early scale |
-| Payment gateway fees (Razorpay ~2%) | Variable |
-| Total operating costs | ~₹3,000–9,000/month |
+| Hetzner VPS (Rust backend + Nginx) | ₹340–400 (~€3.79/mo) |
+| Neon PostgreSQL | ₹0 (free tier through early scale; ~₹1,350/mo on Launch plan if needed) |
+| Cloudflare R2 (images, CDN) | ₹0 (free tier: 10GB, zero egress) |
+| LLM API — Gemini 2.0 Flash | ₹0 (free tier covers early scale; ~₹0.01–0.03/dish beyond) |
+| Google Play Store fee (15% of revenue) | Variable — deducted from gross revenue |
+| Total infrastructure costs | ~₹340–500/month at MVP scale |
+
+### Platform Fee Impact on Revenue
+
+Google Play and Apple App Store take 15% of all subscription revenue. All revenue figures below are **net** (after platform fees).
+
+| Plan | Gross | Net (after 15%) |
+|---|---|---|
+| Monthly ₹49 | ₹49 | ₹41.65 |
+| Annual ₹399/year (₹33/mo equiv.) | ₹33 | ₹28.05 |
 
 ### Break-Even MRR
 
-At ₹6,000/month operating cost midpoint:
+At ₹500/month infrastructure cost:
 
 ```
-Break-even = ₹6,000 / blended revenue per subscriber per month
-Blended monthly revenue per Pro user = 0.6 × ₹33 + 0.4 × ₹49 = ₹39.40
-Break-even subscribers = ₹6,000 / ₹39.40 ≈ 152 Pro subscribers
+Break-even = ₹500 / net blended revenue per subscriber per month
+Net blended monthly revenue per Pro user = 0.6 × ₹28.05 + 0.4 × ₹41.65 = ₹33.49
+Break-even subscribers = ₹500 / ₹33.49 ≈ 15 Pro subscribers
 ```
 
-**152 paying Pro users covers operating costs.**
+**15 paying Pro users covers infrastructure costs.** (Infrastructure is extremely lean at MVP scale.)
 
-At 4% conversion, this requires ~3,800 monthly active users.
+At 4% conversion, this requires ~375 monthly active users — achievable in closed beta.
 
-This is a realistic Year 1 milestone for a focused single-city launch.
+Note: The platform fee (15%) is a revenue share, not a fixed cost — it scales proportionally with revenue and does not affect break-even at the infrastructure level.
 
 ---
 
@@ -159,42 +172,45 @@ This is a realistic Year 1 milestone for a focused single-city launch.
 
 The model is sensitive to two variables more than any other: **MAU growth** and **conversion rate**.
 
+All MRR figures are **net** (after 15% platform fee). Net blended revenue per Pro subscriber = ₹33.49/month.
+
 ### Conversion Rate Sensitivity (at 10,000 MAU)
 
-| Conversion Rate | Pro Subscribers | MRR |
+| Conversion Rate | Pro Subscribers | Net MRR |
 |---|---|---|
-| 2% | 200 | ₹7,880 |
-| 4% | 400 | ₹15,760 |
-| 6% | 600 | ₹23,640 |
-| 8% | 800 | ₹31,520 |
+| 2% | 200 | ₹6,698 |
+| 4% | 400 | ₹13,396 |
+| 6% | 600 | ₹20,094 |
+| 8% | 800 | ₹26,792 |
 
 If conversion stays below 2%, revisit upgrade trigger design before scaling user acquisition.
 
 ### MAU Sensitivity (at 4% conversion)
 
-| MAU | Pro Subscribers | MRR |
+| MAU | Pro Subscribers | Net MRR |
 |---|---|---|
-| 2,000 | 80 | ₹3,152 |
-| 5,000 | 200 | ₹7,880 |
-| 10,000 | 400 | ₹15,760 |
-| 25,000 | 1,000 | ₹39,400 |
-| 50,000 | 2,000 | ₹78,800 |
+| 2,000 | 80 | ₹2,679 |
+| 5,000 | 200 | ₹6,698 |
+| 10,000 | 400 | ₹13,396 |
+| 25,000 | 1,000 | ₹33,490 |
+| 50,000 | 2,000 | ₹66,980 |
+| 75,000 | 3,000 | ₹1,00,470 |
 
-Meaningful monthly revenue (₹1L+) requires ~25,000 MAU at current pricing. That is a significant but achievable growth target for Year 2 in a metro with strong dining culture.
+Meaningful net monthly revenue (₹1L+) requires ~75,000 MAU at 4% conversion and current pricing. This is a Year 2–3 growth target for a multi-city presence.
 
 ---
 
 ## 8. LLM Cost Monitoring
 
-LLM classification is the main variable cost that could surprise.
+LLM classification cost is negligible with Gemini 2.0 Flash (~₹0.02/dish).
 
-| Scale | New dishes/month (est.) | LLM cost @ ₹0.10/dish |
+| Scale | New dishes/month (est.) | LLM cost @ ₹0.02/dish |
 |---|---|---|
-| 1,000 MAU | ~500 new dishes | ₹50/month |
-| 10,000 MAU | ~3,000 new dishes | ₹300/month |
-| 1,00,000 MAU | ~20,000 new dishes | ₹2,000/month |
+| 1,000 MAU | ~500 new dishes | ~₹10/month |
+| 10,000 MAU | ~3,000 new dishes | ~₹60/month |
+| 1,00,000 MAU | ~20,000 new dishes | ~₹400/month |
 
-LLM costs are not a concern at early scale. Monitor at 50,000+ MAU.
+LLM costs are not a concern at any practical scale. Free tier covers the first several thousand classifications.
 
 Caching: dishes are classified once and reused. LLM cost does not scale with reactions, only with new dish additions.
 
@@ -205,11 +221,11 @@ Caching: dishes are classified once and reused. LLM cost does not scale with rea
 | Milestone | Target | Signal |
 |---|---|---|
 | First paying subscriber | Month 3 | Payment stack works |
-| Break-even (ops costs) | Month 10–14 | ~152 Pro subscribers |
-| ₹1L MRR | Year 2 | ~2,500 Pro subscribers |
-| ₹10L MRR | Year 3+ | ~25,000 Pro subscribers |
+| Break-even (infrastructure costs) | Early — ~15 Pro subscribers | Infrastructure is lean (~₹500/mo) |
+| ₹1L net MRR | Year 2–3 | ~3,000 Pro subscribers / ~75,000 MAU |
+| ₹10L net MRR | Year 3+ | ~30,000 Pro subscribers / ~750,000 MAU |
 
-₹10L MRR is a meaningful scale target. At current pricing it requires either a very large user base (250,000+ MAU at 4% conversion) or a price increase in Year 2.
+₹10L net MRR requires ~750,000 MAU at 4% conversion and current pricing — requires either significant national scale or a price increase. A move to ₹99/month in Year 2 cuts the MAU requirement by roughly half.
 
 ---
 
@@ -219,8 +235,8 @@ Review ₹49/month pricing if:
 
 * Conversion rate exceeds 8% (demand signal — the product is priced below willingness to pay)
 * Annual plan mix falls below 40% (users treating Pro as low-commitment monthly, churn will be high)
-* CAC rises above ₹200 (blended LTV of ₹615 gives ~3× payback at ₹200 CAC, which is acceptable but thin)
-* Operating costs exceed ₹50,000/month (requires ~1,270 Pro subscribers to cover at current pricing)
+* CAC rises above ₹170 (net blended LTV of ₹523 gives ~3× payback at ₹170 CAC, which is acceptable but thin)
+* Infrastructure costs scale significantly (currently ~₹500/mo; at ₹50,000/mo scale requires ~1,493 net subscribers to cover)
 
 A move to ₹79 or ₹99/month in Year 2 roughly doubles revenue per subscriber without requiring growth in user base.
 

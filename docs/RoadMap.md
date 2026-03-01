@@ -4,36 +4,30 @@
 
 # 1. Strategic Objective
 
-Ship the full intelligent Remembite system in a sequence driven by **learning milestones**, not technical layers.
+Build the complete Remembite intelligent system end-to-end before user growth begins. Ship a fully-featured product, then scale infrastructure as users arrive.
 
-Phases are ordered to validate the core habit loop first, monetize second, and layer intelligence only after real behavioral data exists.
+Phases are ordered by technical dependency — each phase unblocks the next. No phase waits for user validation to proceed.
 
 This roadmap assumes:
 
 * Rust backend on VPS
-* PostgreSQL
+* PostgreSQL (Neon)
 * Flutter frontend
-* LLM classification layer
+* LLM classification layer (Gemini 2.0 Flash)
 * Bayesian blending
 * Taste vector modeling
 
-Goal: Production-ready intelligent platform, validated at each stage before moving forward.
+Goal: Production-ready intelligent platform, fully built and hardened before scaling.
 
 ---
 
 # 2. Execution Philosophy
 
-Build in layers.
-Phase by what you need to learn, not by what is technically interesting.
-Never block the habit loop for the intelligence layer.
-Let real data accumulate.
-Monetize before predictions ship — so the upgrade moment exists when the magic first appears.
+Build everything. Then grow.
 
-Remembite succeeds if:
+All 7 phases are built sequentially without stopping for user growth signals. Infrastructure upscaling is a separate track triggered by actual user load — not a phase in the product build.
 
-* The core reaction system is addictive without AI.
-* The intelligence layer feels magical when it arrives.
-* The upgrade moment is natural, not forced.
+The learning gates from earlier drafts are removed as blockers. Post-launch monitoring will surface the same signals, but they will not delay development.
 
 ---
 
@@ -67,9 +61,9 @@ Deliverables:
 
 ## 3.2 Backend Core Setup (Rust)
 
-* Actix/Axum setup
+* Axum setup
 * JWT authentication
-* PostgreSQL integration
+* PostgreSQL integration (SQLx)
 * Structured logging
 * Error handling layer
 * Basic rate limiting
@@ -80,9 +74,6 @@ Stable API skeleton.
 ---
 
 # 4. Phase 1 – Core Utility Layer (Week 3–5)
-
-This must work perfectly before intelligence layer matters.
-**Learning milestone: Do users return? Do they react to 5+ dishes per visit?**
 
 ## 4.1 Restaurant Management
 
@@ -136,7 +127,7 @@ Note: Search ships with the utility layer. Ranking optimization is deferred to P
 * "Taste Profile Completion" indicator set up from day one
 
 Deliverable:
-Fully usable decision tool without AI. Ship to 20–30 test users.
+Fully usable decision tool without AI.
 
 ---
 
@@ -178,28 +169,18 @@ Fully aligned UX behavior with deterministic backend logic.
 
 ---
 
-**LEARNING GATE — End of Phase 1.5**
-
-Before proceeding, validate:
-
-* Are test users returning within 7 days after first visit?
-* Are users reacting to 5+ dishes per restaurant visit?
-* Is the OCR extraction error rate acceptable in real conditions?
-
-If retention is not observed, investigate and iterate on the habit loop before adding more layers.
-
----
-
 # 6. Phase 2 – Payment Infrastructure + Pro Tier (Week 6–7)
 
 Payment ships before AI predictions. This ensures the upgrade moment exists when intelligence first appears.
 
-## 6.1 Payment Provider Integration
+## 6.1 Google Play Billing Integration (Android)
 
-* Razorpay integration (UPI, cards, netbanking — India-first)
-* Monthly subscription: ₹149/month
-* Annual subscription: ₹999/year
-* Webhook handling for payment lifecycle events
+* `in_app_purchase` Flutter plugin integration
+* Monthly subscription: ₹49/month
+* Annual subscription: ₹399/year
+* Server-side purchase token verification via Google Play Developer API
+* Real-time cancellation/refund webhooks via Google Play Pub/Sub notifications
+* Webhook handler updates `pro_status` in PostgreSQL
 
 ## 6.2 Pro Feature Flag System
 
@@ -215,8 +196,8 @@ Payment ships before AI predictions. This ensures the upgrade moment exists when
 
 ## 6.4 Upgrade Flow UX
 
-* Upgrade Screen: AI Taste Predictions first, then Taste Insights, Cloud Sync, Unlimited Tracking
-* ₹149/month + ₹999/year (annual highlighted as recommended)
+* Upgrade Screen: AI Taste Predictions first, then Taste Insights, Cloud Sync, Data Export
+* ₹399/year (annual highlighted as recommended) + ₹49/month
 * Upgrade trigger: Taste Profile Completion → "See your taste insights" → paywall
 * Subscription management in Settings
 
@@ -232,8 +213,6 @@ Monetization infrastructure in place. Pro tier live but AI features not yet popu
 ---
 
 # 7. Phase 3 – Community Layer (Week 8)
-
-Simplified governance appropriate for early user density. Full community voting deferred until density warrants it.
 
 ## 7.1 Community Reactions Visible
 
@@ -290,26 +269,14 @@ Data consistency + secure visibility boundaries.
 
 ---
 
-**LEARNING GATE — End of Phase 3.5**
-
-Before building AI layer, validate:
-
-* Is there sufficient real user reaction data to test whether predictions will be meaningful?
-* Are community reaction counts on dishes reaching the ≥5 threshold that enables Community Favorites?
-* Is there a Pro subscriber base, even small, to validate the upgrade funnel?
-
-If the data is too sparse, extend Phase 3 with additional seeding and user acquisition before proceeding.
-
----
-
 # 9. Phase 4 – AI Classification Layer (Week 9–10)
 
-## 9.1 LLM Integration
+## 9.1 LLM Integration (Gemini 2.0 Flash)
 
 Async job pipeline:
 
 * Dish created → enqueue job
-* Send dish name + cuisine to LLM
+* Send dish name + cuisine to LLM via `LlmProvider` trait
 * Parse structured JSON
 * Store priors
 
@@ -403,10 +370,10 @@ Personalized predictions live (Pro only). Self-correcting attribute scores.
 
 ## 11.1 Image Storage Architecture
 
-* Use object storage (S3-compatible)
+* Cloudflare R2 (S3-compatible)
 * Signed URL generation for private images
-* Public image CDN delivery
-* Size and format validation
+* Public image CDN delivery via Cloudflare
+* Size and format validation (max 5MB per upload)
 
 ## 11.2 Image Moderation Workflow
 
@@ -418,7 +385,7 @@ Personalized predictions live (Pro only). Self-correcting attribute scores.
 Deliverable:
 Scalable and abuse-resistant image handling.
 
-Note: Image upload UI on Dish Detail screen is visible from Phase 1 but non-functional until this phase. Communicate clearly in internal builds.
+Note: Image upload UI on Dish Detail screen is visible from Phase 1 but non-functional until this phase.
 
 ---
 
@@ -451,16 +418,16 @@ High-quality, performant discoverability.
 * AI failure handling tests
 
 Deliverable:
-Production-ready stable system.
+Production-ready stable system. Ready for user growth.
 
 ---
 
 # 14. Launch Readiness Checklist
 
-✔ Core utility stable and validated with real users
-✔ Payment infrastructure live and tested
+✔ Core utility stable and tested
+✔ Google Play Billing live and verified end-to-end
 ✔ Pro upgrade flow creates natural conversion moments
-✔ Governance stable (admin-mediated until community scale)
+✔ Governance stable (admin-mediated)
 ✔ AI classification async and safe
 ✔ Bayesian blending tested
 ✔ Taste vector producing reasonable predictions
@@ -470,7 +437,32 @@ Production-ready stable system.
 
 ---
 
-# 15. Post-Launch Monitoring Plan
+# 15. Scale-Up Track (Separate — Triggered by User Load)
+
+This is not a phase in the product build. Infrastructure scaling happens post-launch, driven by real load metrics. No date can be set in advance.
+
+## Trigger Signals
+
+| Signal | Action |
+|---|---|
+| VPS CPU sustained >70% | Add a second backend VPS instance |
+| API p95 latency >500ms | Profile and optimize; consider horizontal scale |
+| Neon compute hours approaching limit | Upgrade to Neon Launch plan (~$15/mo) |
+| Job queue depth growing | Migrate in-process queue to Redis + workers |
+| R2 storage approaching 10GB free tier | Move to R2 paid tier ($0.015/GB) |
+
+## Scale-Up Steps (in order)
+
+1. **Add Hetzner Load Balancer (LB11, ~€5.99/mo)** — routes traffic across backend instances
+2. **Add second Hetzner CX21 VPS** — stateless backend, identical config, Docker deployment
+3. **Upgrade Neon to Launch plan** — no migration required, same connection string
+4. **Migrate job queue to Redis** — `LlmProvider` and job queue traits are already abstracted; swap implementation only
+5. **Add read replicas on Neon** (Scale plan) — for analytics and reporting queries
+6. **iOS billing (StoreKit 2)** — add Apple App Store subscription flow; `in_app_purchase` plugin already supports it
+
+---
+
+# 16. Post-Launch Monitoring Plan
 
 Track:
 
@@ -491,26 +483,11 @@ Adjust:
 
 ---
 
-# 16. Total Estimated Timeline
+# 17. Total Estimated Timeline
 
-~16 weeks (4 months) disciplined execution.
+~16 weeks (4 months) disciplined sequential execution.
 
-Learning gates at end of Phase 1.5 and Phase 3.5 may extend timeline if retention signals are not observed — this is by design.
-
----
-
-# 17. MVP Scope Boundary
-
-The following features are **explicitly out of MVP** and must not be built until learning gates are passed:
-
-| Deferred Feature | Reason |
-|---|---|
-| Community edit voting (auto-apply) | Requires user density. Admin-only until then. |
-| Image upload and CDN | Deferred to Phase 6 |
-| Bayesian blending | Requires community data to exist |
-| AI taste predictions | Requires real user data + community vote threshold |
-| Pro subscription charging | Ships in Phase 2 — before AI, not after |
-| Search ranking optimization | Basic search ships in Phase 1; optimization in Phase 7 |
+No phase waits for user growth. Infrastructure scaling is handled post-launch as a separate track triggered by real load.
 
 ---
 
