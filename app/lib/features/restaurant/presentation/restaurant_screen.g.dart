@@ -270,5 +270,125 @@ class _RestaurantDishesProviderElement
   String get restaurantId => (origin as RestaurantDishesProvider).restaurantId;
 }
 
+String _$yourTopBitesHash() => r'473586fa3e44c06bf150c0e2f7a21b0c669789c2';
+
+/// See also [yourTopBites].
+@ProviderFor(yourTopBites)
+const yourTopBitesProvider = YourTopBitesFamily();
+
+/// See also [yourTopBites].
+class YourTopBitesFamily extends Family<AsyncValue<List<TopBiteRow>>> {
+  /// See also [yourTopBites].
+  const YourTopBitesFamily();
+
+  /// See also [yourTopBites].
+  YourTopBitesProvider call(String restaurantId) {
+    return YourTopBitesProvider(restaurantId);
+  }
+
+  @override
+  YourTopBitesProvider getProviderOverride(
+    covariant YourTopBitesProvider provider,
+  ) {
+    return call(provider.restaurantId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'yourTopBitesProvider';
+}
+
+/// See also [yourTopBites].
+class YourTopBitesProvider extends AutoDisposeFutureProvider<List<TopBiteRow>> {
+  /// See also [yourTopBites].
+  YourTopBitesProvider(String restaurantId)
+    : this._internal(
+        (ref) => yourTopBites(ref as YourTopBitesRef, restaurantId),
+        from: yourTopBitesProvider,
+        name: r'yourTopBitesProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$yourTopBitesHash,
+        dependencies: YourTopBitesFamily._dependencies,
+        allTransitiveDependencies:
+            YourTopBitesFamily._allTransitiveDependencies,
+        restaurantId: restaurantId,
+      );
+
+  YourTopBitesProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.restaurantId,
+  }) : super.internal();
+
+  final String restaurantId;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<TopBiteRow>> Function(YourTopBitesRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: YourTopBitesProvider._internal(
+        (ref) => create(ref as YourTopBitesRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        restaurantId: restaurantId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<TopBiteRow>> createElement() {
+    return _YourTopBitesProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is YourTopBitesProvider && other.restaurantId == restaurantId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, restaurantId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin YourTopBitesRef on AutoDisposeFutureProviderRef<List<TopBiteRow>> {
+  /// The parameter `restaurantId` of this provider.
+  String get restaurantId;
+}
+
+class _YourTopBitesProviderElement
+    extends AutoDisposeFutureProviderElement<List<TopBiteRow>>
+    with YourTopBitesRef {
+  _YourTopBitesProviderElement(super.provider);
+
+  @override
+  String get restaurantId => (origin as YourTopBitesProvider).restaurantId;
+}
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

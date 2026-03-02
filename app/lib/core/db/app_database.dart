@@ -36,7 +36,20 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(reactions, reactions.updatedAt);
+        // Backfill: existing rows get created_at as their initial updated_at
+        await m.database.customStatement(
+          'UPDATE reactions SET updated_at = created_at WHERE updated_at IS NULL',
+        );
+      }
+    },
+  );
 }
 
 LazyDatabase _openConnection() {

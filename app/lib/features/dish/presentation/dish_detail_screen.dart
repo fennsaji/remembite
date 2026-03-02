@@ -7,6 +7,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/dish_repository.dart';
+import '../../restaurant/presentation/session_state.dart';
 
 part 'dish_detail_screen.g.dart';
 
@@ -328,6 +329,10 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
           dishId: dish.id,
           reaction: _selectedReaction!,
         );
+        // Notify restaurant session state for passive rating trigger
+        ref
+            .read(restaurantSessionStateProvider(dish.restaurantId).notifier)
+            .incrementReaction();
       }
 
       if (_selectedSpice != null) {

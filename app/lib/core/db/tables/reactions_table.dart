@@ -9,6 +9,7 @@ class Reactions extends Table {
   TextColumn get dishId => text()();
   TextColumn get reaction => text()();
   DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get syncedAt => dateTime().nullable()();
 
   @override

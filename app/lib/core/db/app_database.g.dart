@@ -1197,6 +1197,18 @@ class $ReactionsTable extends Reactions
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
   static const VerificationMeta _syncedAtMeta = const VerificationMeta(
     'syncedAt',
   );
@@ -1215,6 +1227,7 @@ class $ReactionsTable extends Reactions
     dishId,
     reaction,
     createdAt,
+    updatedAt,
     syncedAt,
   ];
   @override
@@ -1266,6 +1279,12 @@ class $ReactionsTable extends Reactions
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
     if (data.containsKey('synced_at')) {
       context.handle(
         _syncedAtMeta,
@@ -1301,6 +1320,10 @@ class $ReactionsTable extends Reactions
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
       syncedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}synced_at'],
@@ -1320,6 +1343,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
   final String dishId;
   final String reaction;
   final DateTime createdAt;
+  final DateTime updatedAt;
   final DateTime? syncedAt;
   const ReactionRow({
     required this.id,
@@ -1327,6 +1351,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
     required this.dishId,
     required this.reaction,
     required this.createdAt,
+    required this.updatedAt,
     this.syncedAt,
   });
   @override
@@ -1337,6 +1362,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
     map['dish_id'] = Variable<String>(dishId);
     map['reaction'] = Variable<String>(reaction);
     map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || syncedAt != null) {
       map['synced_at'] = Variable<DateTime>(syncedAt);
     }
@@ -1350,6 +1376,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
       dishId: Value(dishId),
       reaction: Value(reaction),
       createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
       syncedAt: syncedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(syncedAt),
@@ -1367,6 +1394,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
       dishId: serializer.fromJson<String>(json['dishId']),
       reaction: serializer.fromJson<String>(json['reaction']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
     );
   }
@@ -1379,6 +1407,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
       'dishId': serializer.toJson<String>(dishId),
       'reaction': serializer.toJson<String>(reaction),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'syncedAt': serializer.toJson<DateTime?>(syncedAt),
     };
   }
@@ -1389,6 +1418,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
     String? dishId,
     String? reaction,
     DateTime? createdAt,
+    DateTime? updatedAt,
     Value<DateTime?> syncedAt = const Value.absent(),
   }) => ReactionRow(
     id: id ?? this.id,
@@ -1396,6 +1426,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
     dishId: dishId ?? this.dishId,
     reaction: reaction ?? this.reaction,
     createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
     syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
   );
   ReactionRow copyWithCompanion(ReactionsCompanion data) {
@@ -1405,6 +1436,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
       dishId: data.dishId.present ? data.dishId.value : this.dishId,
       reaction: data.reaction.present ? data.reaction.value : this.reaction,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
     );
   }
@@ -1417,6 +1449,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
           ..write('dishId: $dishId, ')
           ..write('reaction: $reaction, ')
           ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('syncedAt: $syncedAt')
           ..write(')'))
         .toString();
@@ -1424,7 +1457,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
 
   @override
   int get hashCode =>
-      Object.hash(id, userId, dishId, reaction, createdAt, syncedAt);
+      Object.hash(id, userId, dishId, reaction, createdAt, updatedAt, syncedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1434,6 +1467,7 @@ class ReactionRow extends DataClass implements Insertable<ReactionRow> {
           other.dishId == this.dishId &&
           other.reaction == this.reaction &&
           other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
           other.syncedAt == this.syncedAt);
 }
 
@@ -1443,6 +1477,7 @@ class ReactionsCompanion extends UpdateCompanion<ReactionRow> {
   final Value<String> dishId;
   final Value<String> reaction;
   final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
   final Value<DateTime?> syncedAt;
   final Value<int> rowid;
   const ReactionsCompanion({
@@ -1451,6 +1486,7 @@ class ReactionsCompanion extends UpdateCompanion<ReactionRow> {
     this.dishId = const Value.absent(),
     this.reaction = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1460,6 +1496,7 @@ class ReactionsCompanion extends UpdateCompanion<ReactionRow> {
     required String dishId,
     required String reaction,
     required DateTime createdAt,
+    this.updatedAt = const Value.absent(),
     this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1473,6 +1510,7 @@ class ReactionsCompanion extends UpdateCompanion<ReactionRow> {
     Expression<String>? dishId,
     Expression<String>? reaction,
     Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
     Expression<DateTime>? syncedAt,
     Expression<int>? rowid,
   }) {
@@ -1482,6 +1520,7 @@ class ReactionsCompanion extends UpdateCompanion<ReactionRow> {
       if (dishId != null) 'dish_id': dishId,
       if (reaction != null) 'reaction': reaction,
       if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
       if (syncedAt != null) 'synced_at': syncedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1493,6 +1532,7 @@ class ReactionsCompanion extends UpdateCompanion<ReactionRow> {
     Value<String>? dishId,
     Value<String>? reaction,
     Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
     Value<DateTime?>? syncedAt,
     Value<int>? rowid,
   }) {
@@ -1502,6 +1542,7 @@ class ReactionsCompanion extends UpdateCompanion<ReactionRow> {
       dishId: dishId ?? this.dishId,
       reaction: reaction ?? this.reaction,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       syncedAt: syncedAt ?? this.syncedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1525,6 +1566,9 @@ class ReactionsCompanion extends UpdateCompanion<ReactionRow> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
     if (syncedAt.present) {
       map['synced_at'] = Variable<DateTime>(syncedAt.value);
     }
@@ -1542,6 +1586,7 @@ class ReactionsCompanion extends UpdateCompanion<ReactionRow> {
           ..write('dishId: $dishId, ')
           ..write('reaction: $reaction, ')
           ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('syncedAt: $syncedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2809,6 +2854,7 @@ typedef $$ReactionsTableCreateCompanionBuilder =
       required String dishId,
       required String reaction,
       required DateTime createdAt,
+      Value<DateTime> updatedAt,
       Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
@@ -2819,6 +2865,7 @@ typedef $$ReactionsTableUpdateCompanionBuilder =
       Value<String> dishId,
       Value<String> reaction,
       Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
       Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
@@ -2854,6 +2901,11 @@ class $$ReactionsTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2897,6 +2949,11 @@ class $$ReactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
     column: $table.syncedAt,
     builder: (column) => ColumnOrderings(column),
@@ -2926,6 +2983,9 @@ class $$ReactionsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
   GeneratedColumn<DateTime> get syncedAt =>
       $composableBuilder(column: $table.syncedAt, builder: (column) => column);
@@ -2967,6 +3027,7 @@ class $$ReactionsTableTableManager
                 Value<String> dishId = const Value.absent(),
                 Value<String> reaction = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ReactionsCompanion(
@@ -2975,6 +3036,7 @@ class $$ReactionsTableTableManager
                 dishId: dishId,
                 reaction: reaction,
                 createdAt: createdAt,
+                updatedAt: updatedAt,
                 syncedAt: syncedAt,
                 rowid: rowid,
               ),
@@ -2985,6 +3047,7 @@ class $$ReactionsTableTableManager
                 required String dishId,
                 required String reaction,
                 required DateTime createdAt,
+                Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ReactionsCompanion.insert(
@@ -2993,6 +3056,7 @@ class $$ReactionsTableTableManager
                 dishId: dishId,
                 reaction: reaction,
                 createdAt: createdAt,
+                updatedAt: updatedAt,
                 syncedAt: syncedAt,
                 rowid: rowid,
               ),

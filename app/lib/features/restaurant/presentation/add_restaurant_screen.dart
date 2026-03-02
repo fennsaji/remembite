@@ -25,6 +25,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
   DuplicateCheckResult? _duplicateResult;
   bool _loadingLocation = false;
   bool _saving = false;
+  bool _bypassDuplicateCheck = false;
   Timer? _debounce;
 
   static const _cuisines = [
@@ -49,6 +50,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
   }
 
   void _onNameChanged() {
+    _bypassDuplicateCheck = false;
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 800), _checkDuplicates);
   }
@@ -90,11 +92,13 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
             lat: _latitude!,
             lng: _longitude!,
           );
-      if (mounted) setState(() => _duplicateResult = result);
+      if (!mounted || _bypassDuplicateCheck) return;
+      setState(() => _duplicateResult = result);
     } catch (_) {}
   }
 
-  Future<void> _save() async {
+  Future<void> _save({bool force = false}) async {
+    if (_saving) return;
     if (_nameController.text.trim().isEmpty) return;
     if (_latitude == null || _longitude == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -117,6 +121,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
             cuisineType: _selectedCuisine,
           );
       if (mounted) {
+        if (force) setState(() => _duplicateResult = null);
         context.pushReplacement('/restaurant/${detail.id}');
       }
     } catch (e) {
@@ -170,6 +175,10 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
               result: _duplicateResult!,
               onViewExisting: () => context
                   .push('/restaurant/${_duplicateResult!.candidates.first.id}'),
+              onCreateAnyway: () {
+                _bypassDuplicateCheck = true;
+                _save(force: true);
+              },
             ),
             const SizedBox(height: 16),
           ],
@@ -261,10 +270,12 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
 class _DuplicateBanner extends StatelessWidget {
   final DuplicateCheckResult result;
   final VoidCallback onViewExisting;
+  final VoidCallback onCreateAnyway;
 
   const _DuplicateBanner({
     required this.result,
     required this.onViewExisting,
+    required this.onCreateAnyway,
   });
 
   @override
@@ -312,6 +323,17 @@ class _DuplicateBanner extends StatelessWidget {
                     minimumSize: const Size(0, 36),
                   ),
                   child: const Text('View Existing'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextButton(
+                  onPressed: onCreateAnyway,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.secondaryText,
+                    minimumSize: const Size(0, 36),
+                  ),
+                  child: const Text('Create Anyway'),
                 ),
               ),
             ],

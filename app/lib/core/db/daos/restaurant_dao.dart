@@ -19,18 +19,23 @@ class RestaurantDao extends DatabaseAccessor<AppDatabase>
       into(restaurants).insertOnConflictUpdate(row);
 
   Future<List<RestaurantRow>> getRecentlyVisited(String userId, {int limit = 5}) {
-    // Returns restaurants that have reactions from this user, ordered by most recent
+    // Returns restaurants that have reactions from this user, ordered by most recent.
+    // Uses GROUP BY + MAX(updated_at) to avoid the SQLite DISTINCT + ORDER BY non-selected
+    // column pitfall, and lists all three read tables so Drift invalidates the query correctly.
     final query = customSelect(
       '''
-      SELECT DISTINCT r.* FROM restaurants r
+      SELECT r.id, r.name, r.city, r.latitude, r.longitude,
+             r.cuisine_type, r.avg_rating, r.rating_count, r.synced_at
+      FROM restaurants r
       JOIN dishes d ON d.restaurant_id = r.id
       JOIN reactions rx ON rx.dish_id = d.id
       WHERE rx.user_id = ?
-      ORDER BY rx.created_at DESC
+      GROUP BY r.id
+      ORDER BY MAX(rx.updated_at) DESC
       LIMIT ?
       ''',
       variables: [Variable.withString(userId), Variable.withInt(limit)],
-      readsFrom: {restaurants},
+      readsFrom: {restaurants, attachedDatabase.dishes, attachedDatabase.reactions},
     );
 
     return query.map((row) => RestaurantRow(

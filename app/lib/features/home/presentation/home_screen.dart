@@ -14,6 +14,9 @@ part 'home_screen.g.dart';
 Future<List<RestaurantSummary>> nearbyRestaurants(Ref ref) async {
   final repo = ref.watch(restaurantRepositoryProvider);
   try {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return [];
+
     final permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
@@ -22,6 +25,7 @@ Future<List<RestaurantSummary>> nearbyRestaurants(Ref ref) async {
     final pos = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.medium,
+        timeLimit: Duration(seconds: 10),
       ),
     );
     return repo.getNearbyRestaurants(pos.latitude, pos.longitude);

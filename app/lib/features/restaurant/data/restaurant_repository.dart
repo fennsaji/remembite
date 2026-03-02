@@ -215,6 +215,13 @@ class RestaurantRepository {
     });
   }
 
+  Future<void> upsertRating(String restaurantId, int stars) async {
+    await _dio.post(
+      '/restaurants/$restaurantId/ratings',
+      data: {'stars': stars},
+    );
+  }
+
   Future<List<RestaurantRow>> getRecentlyVisited(String userId) =>
       _db.restaurantDao.getRecentlyVisited(userId);
 }
