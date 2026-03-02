@@ -49,5 +49,20 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+	<string>RememBite uses your location to show nearby restaurants.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>RememBite uses your camera to scan restaurant menus.</string>
+	<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.googleusercontent.apps.763682263460-q2k3dmguv83qdsvveio81u6dcs9qmpv7</string>
+				</array>
+			</dict>
+		</array>
 	</dict>
 </plist>

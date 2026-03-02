@@ -2,7 +2,7 @@ use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 
-use crate::{llm::LlmProvider, jobs::queue::Job, AppState};
+use crate::{llm::LlmProvider as _, jobs::queue::Job, AppState};
 
 /// Background worker — drains the job queue and processes jobs.
 /// Runs as a separate Tokio task spawned at startup.
@@ -26,7 +26,7 @@ async fn process_job(job: Job, state: Arc<AppState>) -> anyhow::Result<()> {
         Job::ClassifyDish { dish_id, dish_name, cuisine } => {
             classify_dish_with_retry(dish_id, &dish_name, &cuisine, &state).await
         }
-        Job::ParseMenuOcr { raw_text, restaurant_id, user_id } => {
+        Job::ParseMenuOcr { raw_text: _, restaurant_id, user_id } => {
             // OCR parsing result is returned to the client via a separate endpoint.
             // This job is fire-and-forget; results stored in a temporary table or returned via FCM.
             tracing::info!("OCR parse job received for restaurant {restaurant_id} by user {user_id}");

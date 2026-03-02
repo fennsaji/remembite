@@ -72,8 +72,22 @@ async fn main() -> anyhow::Result<()> {
 
     // Router
     let app = Router::new()
+        // Health
         .route("/health", get(routes::health_check))
+        // Auth
         .route("/auth/google", post(routes::auth::google_auth))
+        // Restaurants
+        .nest("/restaurants", routes::restaurants::router())
+        // Dishes nested under restaurant
+        .nest("/restaurants/:id/dishes", routes::dishes::restaurant_dishes_router())
+        // Dishes standalone
+        .nest("/dishes", routes::dishes::dishes_router())
+        // Ratings
+        .nest("/restaurants/:id/ratings", routes::ratings::router())
+        // Search
+        .nest("/search", routes::search::router())
+        // Timeline (under /users/me)
+        .nest("/users/me", routes::timeline::router())
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
         .with_state(state);

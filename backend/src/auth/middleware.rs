@@ -13,6 +13,7 @@ use crate::{
 
 /// Authenticated user extracted from JWT — injected into handlers via extractor.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct AuthUser {
     pub id: Uuid,
     pub email: String,
@@ -20,6 +21,7 @@ pub struct AuthUser {
     pub admin: bool,
 }
 
+#[allow(dead_code)]
 impl AuthUser {
     /// Returns Err if user is not Pro.
     pub fn require_pro(&self) -> Result<(), AppError> {

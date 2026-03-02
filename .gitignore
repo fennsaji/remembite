@@ -5,6 +5,10 @@
 .env.android
 .env.ios
 
+# Firebase — contain OAuth client IDs, managed outside git
+app/android/app/google-services.json
+app/ios/Runner/GoogleService-Info.plist
+
 # macOS
 .DS_Store
 

@@ -14,7 +14,7 @@ class AppColorsDark {
 
   static const primaryText   = Color(0xFFF5EEE4); // Cream
   static const secondaryText = Color(0xFFB89F87); // Parchment
-  static const mutedText     = Color(0xFF6B5B4E); // Ash
+  static const mutedText     = Color(0xFF8E7868); // Ash — 4.7:1 on Abyss
 
   static const accent      = Color(0xFFE6A830); // Turmeric
   static const accentPress = Color(0xFFC98A1A); // Saffron
@@ -34,7 +34,7 @@ class AppColorsLight {
 
   static const primaryText   = Color(0xFF1C1410); // Espresso
   static const secondaryText = Color(0xFF5C4A38); // Bark
-  static const mutedText     = Color(0xFF9C8472); // Sand
+  static const mutedText     = Color(0xFF7A6350); // Sand — 5.3:1 on Linen
 
   static const accent      = Color(0xFFC47E10); // Turmeric (darkened for contrast)
   static const accentPress = Color(0xFFA36808); // Deep Amber

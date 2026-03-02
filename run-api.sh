@@ -22,8 +22,8 @@ fi
 
 CMD="${1:-up}"
 
-echo -e "${BLUE}🐳 docker compose --env-file $ENV_FILE $*${NC}"
-docker compose --env-file "$ENV_FILE" "$@"
+echo -e "${BLUE}🐳 docker compose --env-file $ENV_FILE $CMD ${*:2}${NC}"
+docker compose --env-file "$ENV_FILE" "$CMD" "${@:2}"
 
 if [ "$CMD" = "up" ] || [ "$CMD" = "-d" ]; then
   echo -e "${GREEN}✅ Backend running at http://localhost:8080${NC}"
