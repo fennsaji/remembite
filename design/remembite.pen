@@ -9,7 +9,7 @@
       "name": "1 · Onboarding",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -18,7 +18,7 @@
           "name": "Status Bar",
           "width": 390,
           "height": 62,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "padding": [
             0,
             24
@@ -73,7 +73,7 @@
                   "fill": "#FFFFFF",
                   "content": "🍽️",
                   "textAlign": "center",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 72,
                   "fontWeight": "normal"
                 },
@@ -84,7 +84,7 @@
                   "fill": "#FFFFFF",
                   "content": "Remembite",
                   "textAlign": "center",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 42,
                   "fontWeight": "700"
                 },
@@ -92,10 +92,10 @@
                   "type": "text",
                   "id": "OIwS8",
                   "name": "ob_tagline",
-                  "fill": "#8A8A8A",
+                  "fill": "#B89F87",
                   "content": "Remember What You Loved.",
                   "textAlign": "center",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 17,
                   "fontWeight": "normal"
                 },
@@ -105,7 +105,7 @@
                   "name": "hero-accent-line",
                   "width": 48,
                   "height": 4,
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 2
                 }
               ]
@@ -125,7 +125,7 @@
                   "name": "hero_card1",
                   "width": "fill_container",
                   "height": 76,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 16,
                   "gap": 12,
                   "children": [
@@ -152,7 +152,7 @@
                           "name": "hero_c1_name",
                           "fill": "#FFFFFF",
                           "content": "Butter Chicken",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 15,
                           "fontWeight": "700"
                         },
@@ -160,9 +160,9 @@
                           "type": "text",
                           "id": "fo3hm",
                           "name": "hero_c1_rest",
-                          "fill": "#525252",
+                          "fill": "#6B5B4E",
                           "content": "Barbeque Nation",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 12,
                           "fontWeight": "normal"
                         }
@@ -173,7 +173,7 @@
                       "id": "qzSbF",
                       "name": "hero_c1_badge",
                       "height": 28,
-                      "fill": "#FF3B30",
+                      "fill": "#E6A830",
                       "cornerRadius": 8,
                       "children": [
                         {
@@ -182,7 +182,7 @@
                           "name": "hero_c1_badge_t",
                           "fill": "#FFFFFF",
                           "content": "SO YUMMY",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 10,
                           "fontWeight": "700"
                         }
@@ -197,7 +197,7 @@
                   "opacity": 0.6,
                   "width": "fill_container",
                   "height": 76,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 16,
                   "gap": 12,
                   "children": [
@@ -224,7 +224,7 @@
                           "name": "c2_name",
                           "fill": "#FFFFFF",
                           "content": "Tiramisu",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 15,
                           "fontWeight": "700"
                         },
@@ -232,9 +232,9 @@
                           "type": "text",
                           "id": "R4hTo",
                           "name": "c2_rest",
-                          "fill": "#525252",
+                          "fill": "#6B5B4E",
                           "content": "Cafe Delhi Heights",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 12,
                           "fontWeight": "normal"
                         }
@@ -245,16 +245,16 @@
                       "id": "0YV0g",
                       "name": "c2_badge",
                       "height": 28,
-                      "fill": "#1E1E1E",
+                      "fill": "#241E18",
                       "cornerRadius": 8,
                       "children": [
                         {
                           "type": "text",
                           "id": "mSJjI",
                           "name": "c2_badge_t",
-                          "fill": "#525252",
+                          "fill": "#6B5B4E",
                           "content": "TASTY",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 10,
                           "fontWeight": "700"
                         }
@@ -278,7 +278,7 @@
                   "name": "Get Started",
                   "width": "fill_container",
                   "height": 56,
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 28,
                   "children": [
                     {
@@ -300,7 +300,7 @@
                   "name": "Google Sign In",
                   "width": "fill_container",
                   "height": 56,
-                  "fill": "#0C0C0C",
+                  "fill": "#0F0D0B",
                   "cornerRadius": 28,
                   "gap": 8,
                   "children": [
@@ -331,7 +331,7 @@
       "name": "2 · Home",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -340,7 +340,7 @@
           "name": "Status Bar",
           "width": 390,
           "height": 62,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "padding": [
             0,
             24
@@ -395,7 +395,7 @@
                   "name": "h_greet",
                   "fill": "#FFFFFF",
                   "content": "Good afternoon 👋",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 26,
                   "fontWeight": "700"
                 },
@@ -404,7 +404,7 @@
                   "id": "cdbWr",
                   "name": "h_bell",
                   "content": "🔔",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 22,
                   "fontWeight": "normal"
                 }
@@ -416,7 +416,7 @@
               "name": "Search Bar",
               "width": "fill_container",
               "height": 52,
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 26,
               "gap": 10,
               "padding": [
@@ -428,7 +428,7 @@
                   "type": "text",
                   "id": "Aofu0",
                   "name": "h_srch_ph",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "🔍  Search restaurants or dishes...",
                   "fontFamily": "DM Sans",
                   "fontSize": 15,
@@ -442,15 +442,15 @@
               "name": "bar-rv",
               "width": 24,
               "height": 2,
-              "fill": "#FF3B30"
+              "fill": "#E6A830"
             },
             {
               "type": "text",
               "id": "I3qwC",
               "name": "h_rv_lbl",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "RECENTLY VISITED",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -466,7 +466,7 @@
                   "id": "RQZyK",
                   "name": "Card 1",
                   "width": 170,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 16,
                   "layout": "vertical",
                   "gap": 6,
@@ -486,7 +486,7 @@
                       "type": "text",
                       "id": "ADKWW",
                       "name": "h_c1_react",
-                      "fill": "#6B7280",
+                      "fill": "#B89F87",
                       "content": "🔥 Butter Chicken",
                       "fontFamily": "DM Sans",
                       "fontSize": 13,
@@ -496,7 +496,7 @@
                       "type": "text",
                       "id": "nmJ1G",
                       "name": "h_c1_date",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "Jan 15",
                       "fontFamily": "DM Sans",
                       "fontSize": 12,
@@ -509,7 +509,7 @@
                   "id": "imTXW",
                   "name": "Card 2",
                   "width": 170,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 16,
                   "layout": "vertical",
                   "gap": 6,
@@ -529,7 +529,7 @@
                       "type": "text",
                       "id": "Thehn",
                       "name": "h_c2_react",
-                      "fill": "#6B7280",
+                      "fill": "#B89F87",
                       "content": "🔥 Tiramisu",
                       "fontFamily": "DM Sans",
                       "fontSize": 13,
@@ -539,7 +539,7 @@
                       "type": "text",
                       "id": "XRE6T",
                       "name": "h_c2_date",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "Jan 10",
                       "fontFamily": "DM Sans",
                       "fontSize": 12,
@@ -555,15 +555,15 @@
               "name": "bar-nb",
               "width": 24,
               "height": 2,
-              "fill": "#FF3B30"
+              "fill": "#E6A830"
             },
             {
               "type": "text",
               "id": "KHe7i",
               "name": "h_nb_lbl",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "NEARBY RESTAURANTS",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -572,7 +572,7 @@
               "id": "tEY6l",
               "name": "Nearby List",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "layout": "vertical",
               "children": [
@@ -600,7 +600,7 @@
                       "type": "text",
                       "id": "QlRgc",
                       "name": "h_n1_rating",
-                      "fill": "#6B7280",
+                      "fill": "#B89F87",
                       "content": "⭐ 4.3",
                       "fontFamily": "DM Sans",
                       "fontSize": 13,
@@ -632,7 +632,7 @@
                       "type": "text",
                       "id": "IeYRz",
                       "name": "h_n2_rating",
-                      "fill": "#6B7280",
+                      "fill": "#B89F87",
                       "content": "⭐ 4.0",
                       "fontFamily": "DM Sans",
                       "fontSize": 13,
@@ -664,7 +664,7 @@
                       "type": "text",
                       "id": "8XPgu",
                       "name": "h_n3_rating",
-                      "fill": "#6B7280",
+                      "fill": "#B89F87",
                       "content": "⭐ 4.1",
                       "fontFamily": "DM Sans",
                       "fontSize": 13,
@@ -680,7 +680,7 @@
               "name": "FAB",
               "width": 160,
               "height": 52,
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "cornerRadius": 26,
               "gap": 8,
               "children": [
@@ -704,7 +704,7 @@
           "name": "Tab Bar",
           "width": 390,
           "height": 95,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "layout": "vertical",
           "padding": [
             12,
@@ -719,7 +719,7 @@
               "name": "Pill",
               "width": "fill_container",
               "height": "fill_container",
-              "fill": "#1C1C1C",
+              "fill": "#241E18",
               "cornerRadius": 36,
               "padding": 4,
               "children": [
@@ -729,7 +729,7 @@
                   "name": "Home",
                   "width": "fill_container",
                   "height": "fill_container",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 26,
                   "layout": "vertical",
                   "gap": 3,
@@ -740,7 +740,7 @@
                       "name": "h_t1_icon",
                       "fill": "#FFFFFF",
                       "content": "⌂",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -770,9 +770,9 @@
                       "type": "text",
                       "id": "u7xGm",
                       "name": "h_t2_icon",
-                      "fill": "#D1D5DB",
+                      "fill": "#B89F87",
                       "content": "◎",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -780,7 +780,7 @@
                       "type": "text",
                       "id": "hHOHS",
                       "name": "h_t2_lbl",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "MAP",
                       "fontFamily": "DM Sans",
                       "fontSize": 10,
@@ -802,9 +802,9 @@
                       "type": "text",
                       "id": "N5PUn",
                       "name": "h_t3_icon",
-                      "fill": "#D1D5DB",
+                      "fill": "#B89F87",
                       "content": "♡",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -812,7 +812,7 @@
                       "type": "text",
                       "id": "LjNQh",
                       "name": "h_t3_lbl",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "FAVORITES",
                       "fontFamily": "DM Sans",
                       "fontSize": 10,
@@ -834,9 +834,9 @@
                       "type": "text",
                       "id": "CK5wl",
                       "name": "h_t4_icon",
-                      "fill": "#D1D5DB",
+                      "fill": "#B89F87",
                       "content": "◉",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -844,7 +844,7 @@
                       "type": "text",
                       "id": "I7uIp",
                       "name": "h_t4_lbl",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "PROFILE",
                       "fontFamily": "DM Sans",
                       "fontSize": 10,
@@ -866,7 +866,7 @@
       "name": "3 · Restaurant",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -875,7 +875,7 @@
           "name": "Status Bar",
           "width": 390,
           "height": 62,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "padding": [
             0,
             24
@@ -929,7 +929,7 @@
                   "type": "text",
                   "id": "UmN3x",
                   "name": "rss_back",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "content": "← Back",
                   "fontFamily": "DM Sans",
                   "fontSize": 15,
@@ -942,7 +942,7 @@
                   "fill": "#FFFFFF",
                   "content": "Barbeque Nation",
                   "textAlign": "right",
-                  "fontFamily": "Bricolage Grotesque",
+                  "fontFamily": "Fraunces",
                   "fontSize": 20,
                   "fontWeight": "700"
                 }
@@ -953,7 +953,7 @@
               "id": "f7Uob",
               "name": "rss_info",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 20,
               "layout": "vertical",
               "gap": 16,
@@ -982,7 +982,7 @@
                       "name": "rss_rate_btn",
                       "width": "fill_container",
                       "height": 40,
-                      "fill": "#FF3B30",
+                      "fill": "#E6A830",
                       "cornerRadius": 20,
                       "padding": [
                         0,
@@ -1007,7 +1007,7 @@
                       "name": "rss_edit_btn",
                       "width": "fill_container",
                       "height": 40,
-                      "fill": "#0C0C0C",
+                      "fill": "#0F0D0B",
                       "cornerRadius": 20,
                       "padding": [
                         0,
@@ -1018,7 +1018,7 @@
                           "type": "text",
                           "id": "wVelH",
                           "name": "rss_edit_t",
-                          "fill": "#6B7280",
+                          "fill": "#B89F87",
                           "content": "Suggest Edit",
                           "fontFamily": "DM Sans",
                           "fontSize": 14,
@@ -1036,15 +1036,15 @@
               "name": "bar-tb",
               "width": 24,
               "height": 2,
-              "fill": "#FF3B30"
+              "fill": "#E6A830"
             },
             {
               "type": "text",
               "id": "zF0DT",
               "name": "rss_tb_lbl",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "YOUR TOP BITES",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -1061,7 +1061,7 @@
                   "id": "UU9J7",
                   "name": "rss_d1",
                   "width": "fill_container",
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 14,
                   "padding": [
                     14,
@@ -1083,7 +1083,7 @@
                       "id": "nLnpb",
                       "name": "rss_d1_react",
                       "content": "🔥",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 20,
                       "fontWeight": "normal"
                     }
@@ -1094,7 +1094,7 @@
                   "id": "cYyzk",
                   "name": "rss_d2",
                   "width": "fill_container",
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 14,
                   "padding": [
                     14,
@@ -1116,7 +1116,7 @@
                       "id": "ebCUf",
                       "name": "rss_d2_react",
                       "content": "😋",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 20,
                       "fontWeight": "normal"
                     }
@@ -1130,15 +1130,15 @@
               "name": "bar-cf",
               "width": 24,
               "height": 2,
-              "fill": "#FF3B30"
+              "fill": "#E6A830"
             },
             {
               "type": "text",
               "id": "HXzZx",
               "name": "rss_cf_lbl",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "COMMUNITY FAVORITES",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -1155,7 +1155,7 @@
                   "id": "fPbrK",
                   "name": "cf1",
                   "width": "fill_container",
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 14,
                   "padding": [
                     14,
@@ -1176,7 +1176,7 @@
                       "type": "text",
                       "id": "FTONl",
                       "name": "cf1_count",
-                      "fill": "#6B7280",
+                      "fill": "#B89F87",
                       "content": "🔥 124",
                       "fontFamily": "DM Sans",
                       "fontSize": 13,
@@ -1189,7 +1189,7 @@
                   "id": "yXF8a",
                   "name": "cf2",
                   "width": "fill_container",
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 14,
                   "padding": [
                     14,
@@ -1210,7 +1210,7 @@
                       "type": "text",
                       "id": "u00Xj",
                       "name": "cf2_count",
-                      "fill": "#6B7280",
+                      "fill": "#B89F87",
                       "content": "🔥 98",
                       "fontFamily": "DM Sans",
                       "fontSize": 13,
@@ -1224,9 +1224,9 @@
               "type": "text",
               "id": "sCNU7",
               "name": "rss_menu_lbl",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "FULL MENU  ▾",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -1234,7 +1234,7 @@
               "type": "text",
               "id": "KLF3E",
               "name": "rss_pending",
-              "fill": "#525252",
+              "fill": "#6B5B4E",
               "content": "3 community updates pending →",
               "fontFamily": "DM Sans",
               "fontSize": 13,
@@ -1252,7 +1252,7 @@
       "name": "4 · Dish Detail",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -1261,7 +1261,7 @@
           "name": "Status Bar",
           "width": 390,
           "height": 62,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "padding": [
             0,
             24
@@ -1315,7 +1315,7 @@
                   "type": "text",
                   "id": "UgOyi",
                   "name": "dd_back",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "content": "← Back",
                   "fontFamily": "DM Sans",
                   "fontSize": 15,
@@ -1328,7 +1328,7 @@
                   "fill": "#FFFFFF",
                   "content": "Butter Chicken",
                   "textAlign": "right",
-                  "fontFamily": "Bricolage Grotesque",
+                  "fontFamily": "Fraunces",
                   "fontSize": 20,
                   "fontWeight": "700"
                 }
@@ -1338,9 +1338,9 @@
               "type": "text",
               "id": "SQQxP",
               "name": "dd_react_lbl",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "YOUR REACTION",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -1349,7 +1349,7 @@
               "id": "mDaXP",
               "name": "dd_react_row",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 20,
               "gap": 8,
               "padding": [
@@ -1361,7 +1361,7 @@
                   "type": "frame",
                   "id": "ZAMke",
                   "name": "dd_r1_sel",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 20,
                   "padding": [
                     8,
@@ -1373,7 +1373,7 @@
                       "id": "EX07g",
                       "name": "dd_r1_t",
                       "content": "🔥",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 24,
                       "fontWeight": "normal"
                     }
@@ -1384,7 +1384,7 @@
                   "id": "tbbwv",
                   "name": "dd_r2",
                   "content": "😋",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 24,
                   "fontWeight": "normal"
                 },
@@ -1393,7 +1393,7 @@
                   "id": "9PNBr",
                   "name": "dd_r3",
                   "content": "🙂",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 24,
                   "fontWeight": "normal"
                 },
@@ -1402,7 +1402,7 @@
                   "id": "DrEq6",
                   "name": "dd_r4",
                   "content": "😐",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 24,
                   "fontWeight": "normal"
                 },
@@ -1411,7 +1411,7 @@
                   "id": "0Z213",
                   "name": "dd_r5",
                   "content": "🤢",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 24,
                   "fontWeight": "normal"
                 }
@@ -1422,7 +1422,7 @@
               "id": "hJAbQ",
               "name": "dd_ai",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "gap": 10,
               "padding": 16,
@@ -1431,7 +1431,7 @@
                   "type": "text",
                   "id": "rIEvx",
                   "name": "dd_ai_t",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "content": "🔥  You'll probably love this",
                   "fontFamily": "DM Sans",
                   "fontSize": 15,
@@ -1441,7 +1441,7 @@
                   "type": "frame",
                   "id": "z9NMN",
                   "name": "dd_ai_badge",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 10,
                   "padding": [
                     4,
@@ -1466,9 +1466,9 @@
               "type": "text",
               "id": "iswy7",
               "name": "dd_notes_lbl",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "PRIVATE NOTES",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -1478,7 +1478,7 @@
               "name": "dd_notes_in",
               "width": "fill_container",
               "height": 88,
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 14,
               "padding": 14,
               "children": [
@@ -1486,7 +1486,7 @@
                   "type": "text",
                   "id": "QT8Y4",
                   "name": "dd_notes_ph",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "Add your thoughts about this dish...",
                   "fontFamily": "DM Sans",
                   "fontSize": 15,
@@ -1498,9 +1498,9 @@
               "type": "text",
               "id": "tP2tx",
               "name": "dd_spice_lbl",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "HOW SPICY WAS IT?",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -1515,7 +1515,7 @@
                   "type": "frame",
                   "id": "Ej6M2",
                   "name": "dd_sp_mild",
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 20,
                   "padding": [
                     10,
@@ -1538,7 +1538,7 @@
                   "type": "frame",
                   "id": "rFa87",
                   "name": "dd_sp_med",
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 20,
                   "padding": [
                     10,
@@ -1561,7 +1561,7 @@
                   "type": "frame",
                   "id": "64Kfo",
                   "name": "dd_sp_hot",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 20,
                   "padding": [
                     10,
@@ -1588,7 +1588,7 @@
               "name": "dd_save",
               "width": "fill_container",
               "height": 56,
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "cornerRadius": 28,
               "children": [
                 {
@@ -1615,7 +1615,7 @@
       "name": "5 · Profile",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -1624,7 +1624,7 @@
           "name": "Status Bar",
           "width": 390,
           "height": 62,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "padding": [
             0,
             24
@@ -1673,7 +1673,7 @@
               "name": "pf_title",
               "fill": "#FFFFFF",
               "content": "Profile",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 32,
               "fontWeight": "700"
             },
@@ -1682,7 +1682,7 @@
               "id": "6w5hh",
               "name": "Stats",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 20,
               "layout": "vertical",
               "gap": 16,
@@ -1713,7 +1713,7 @@
                           "fill": "#FFFFFF",
                           "content": "24",
                           "textAlign": "center",
-                          "fontFamily": "Bricolage Grotesque",
+                          "fontFamily": "Fraunces",
                           "fontSize": 28,
                           "fontWeight": "700"
                         },
@@ -1721,7 +1721,7 @@
                           "type": "text",
                           "id": "Egs44",
                           "name": "st_c1_lbl",
-                          "fill": "#525252",
+                          "fill": "#6B5B4E",
                           "content": "Restaurants",
                           "textAlign": "center",
                           "fontFamily": "DM Sans",
@@ -1757,7 +1757,7 @@
                           "fill": "#FFFFFF",
                           "content": "86",
                           "textAlign": "center",
-                          "fontFamily": "Bricolage Grotesque",
+                          "fontFamily": "Fraunces",
                           "fontSize": 28,
                           "fontWeight": "700"
                         },
@@ -1765,7 +1765,7 @@
                           "type": "text",
                           "id": "E3kim",
                           "name": "st_c2_lbl",
-                          "fill": "#525252",
+                          "fill": "#6B5B4E",
                           "content": "Dishes",
                           "textAlign": "center",
                           "fontFamily": "DM Sans",
@@ -1800,7 +1800,7 @@
                           "name": "st_c3_val",
                           "content": "🔥",
                           "textAlign": "center",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 28,
                           "fontWeight": "normal"
                         },
@@ -1808,7 +1808,7 @@
                           "type": "text",
                           "id": "Xk0MB",
                           "name": "st_c3_lbl",
-                          "fill": "#525252",
+                          "fill": "#6B5B4E",
                           "content": "Top Reaction",
                           "textAlign": "center",
                           "fontFamily": "DM Sans",
@@ -1826,7 +1826,7 @@
               "id": "4dTfr",
               "name": "Taste Profile",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 20,
               "layout": "vertical",
               "gap": 12,
@@ -1836,9 +1836,9 @@
                   "type": "text",
                   "id": "TuiwV",
                   "name": "taste_hdr2",
-                  "fill": "#8A8A8A",
+                  "fill": "#B89F87",
                   "content": "YOUR TASTE PROFILE  ·  80% COMPLETE",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 13,
                   "fontWeight": "700"
                 },
@@ -1848,7 +1848,7 @@
                   "name": "pf_prog_bg",
                   "width": "fill_container",
                   "height": 8,
-                  "fill": "#2A2A2A",
+                  "fill": "#2E2520",
                   "cornerRadius": 4,
                   "children": [
                     {
@@ -1857,7 +1857,7 @@
                       "name": "pf_prog_fill",
                       "width": 250,
                       "height": 8,
-                      "fill": "#FF3B30",
+                      "fill": "#E6A830",
                       "cornerRadius": 4
                     }
                   ]
@@ -1866,7 +1866,7 @@
                   "type": "text",
                   "id": "EgPqK",
                   "name": "pf_taste_cap",
-                  "fill": "#8A8A8A",
+                  "fill": "#B89F87",
                   "content": "React to 2 more dishes to unlock your predictions",
                   "fontFamily": "DM Sans",
                   "fontSize": 13,
@@ -1880,7 +1880,7 @@
               "name": "pf_upgrade_btn",
               "width": "fill_container",
               "height": 56,
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "cornerRadius": 28,
               "children": [
                 {
@@ -1889,7 +1889,7 @@
                   "name": "pf_upgrade_t",
                   "fill": "#FFFFFF",
                   "content": "Unlock Pro  →",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 16,
                   "fontWeight": "700"
                 }
@@ -1903,7 +1903,7 @@
           "name": "Tab Bar",
           "width": 390,
           "height": 95,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "layout": "vertical",
           "padding": [
             12,
@@ -1918,7 +1918,7 @@
               "name": "Pill",
               "width": "fill_container",
               "height": "fill_container",
-              "fill": "#1C1C1C",
+              "fill": "#241E18",
               "cornerRadius": 36,
               "padding": 4,
               "children": [
@@ -1936,7 +1936,7 @@
                       "type": "text",
                       "id": "WLXHI",
                       "name": "pf_t1_t",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "⌂  HOME",
                       "textAlign": "center",
                       "fontFamily": "DM Sans",
@@ -1959,7 +1959,7 @@
                       "type": "text",
                       "id": "Vqrfk",
                       "name": "pf_t2_t",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "◎  MAP",
                       "textAlign": "center",
                       "fontFamily": "DM Sans",
@@ -1982,7 +1982,7 @@
                       "type": "text",
                       "id": "v5rAo",
                       "name": "pf_t3_t",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "♡  FAVS",
                       "textAlign": "center",
                       "fontFamily": "DM Sans",
@@ -1997,7 +1997,7 @@
                   "name": "Profile",
                   "width": "fill_container",
                   "height": "fill_container",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 26,
                   "layout": "vertical",
                   "gap": 3,
@@ -2029,7 +2029,7 @@
       "name": "6 · Upgrade",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -2038,7 +2038,7 @@
           "name": "Status Bar",
           "width": 390,
           "height": 62,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "padding": [
             0,
             24
@@ -2091,9 +2091,9 @@
                   "type": "text",
                   "id": "oNdTn",
                   "name": "up_close",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "✕",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 20,
                   "fontWeight": "normal"
                 },
@@ -2104,7 +2104,7 @@
                   "fill": "#FFFFFF",
                   "content": "UNLOCK PRO",
                   "textAlign": "right",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 28,
                   "fontWeight": "700"
                 }
@@ -2114,7 +2114,7 @@
               "type": "text",
               "id": "EIoLi",
               "name": "up_tagline",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "Unlock intelligence behind every bite.",
               "fontFamily": "DM Sans",
               "fontSize": 15,
@@ -2125,7 +2125,7 @@
               "id": "jQC5S",
               "name": "Features",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 20,
               "layout": "vertical",
               "gap": 14,
@@ -2137,7 +2137,7 @@
                   "name": "up_f1",
                   "fill": "#FFFFFF",
                   "content": "✓  AI Taste Compatibility Predictions",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 14,
                   "fontWeight": "500"
                 },
@@ -2147,7 +2147,7 @@
                   "name": "up_f2",
                   "fill": "#FFFFFF",
                   "content": "✓  Advanced Taste Insights",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 14,
                   "fontWeight": "500"
                 },
@@ -2157,7 +2157,7 @@
                   "name": "up_f3",
                   "fill": "#FFFFFF",
                   "content": "✓  Cloud Sync  (cross-device)",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 14,
                   "fontWeight": "500"
                 },
@@ -2167,7 +2167,7 @@
                   "name": "up_f4",
                   "fill": "#FFFFFF",
                   "content": "✓  Unlimited Dish Tracking",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 14,
                   "fontWeight": "500"
                 }
@@ -2186,7 +2186,7 @@
                   "id": "UYgJG",
                   "name": "up_annual",
                   "width": "fill_container",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 16,
                   "layout": "vertical",
                   "gap": 6,
@@ -2204,7 +2204,7 @@
                           "name": "up_annual_amt",
                           "fill": "#FFFFFF",
                           "content": "₹399 / year",
-                          "fontFamily": "Bricolage Grotesque",
+                          "fontFamily": "Fraunces",
                           "fontSize": 20,
                           "fontWeight": "700"
                         },
@@ -2212,7 +2212,7 @@
                           "type": "frame",
                           "id": "a9yKM",
                           "name": "up_annual_badge",
-                          "fill": "#0C0C0C",
+                          "fill": "#0F0D0B",
                           "cornerRadius": 12,
                           "padding": [
                             4,
@@ -2223,7 +2223,7 @@
                               "type": "text",
                               "id": "J0O4X",
                               "name": "up_annual_badge_t",
-                              "fill": "#FF3B30",
+                              "fill": "#E6A830",
                               "content": "Recommended",
                               "fontFamily": "DM Sans",
                               "fontSize": 11,
@@ -2250,7 +2250,7 @@
                   "id": "xnI9k",
                   "name": "up_monthly",
                   "width": "fill_container",
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 16,
                   "padding": 20,
                   "children": [
@@ -2258,7 +2258,7 @@
                       "type": "text",
                       "id": "wgLLD",
                       "name": "up_monthly_t",
-                      "fill": "#6B7280",
+                      "fill": "#B89F87",
                       "content": "₹49 / month",
                       "fontFamily": "DM Sans",
                       "fontSize": 16,
@@ -2270,7 +2270,7 @@
                       "name": "up_monthly_radio",
                       "width": 20,
                       "height": 20,
-                      "fill": "#0C0C0C",
+                      "fill": "#0F0D0B",
                       "cornerRadius": 10
                     }
                   ]
@@ -2283,7 +2283,7 @@
               "name": "up_btn",
               "width": "fill_container",
               "height": 56,
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "cornerRadius": 28,
               "children": [
                 {
@@ -2292,7 +2292,7 @@
                   "name": "up_btn_t",
                   "fill": "#FFFFFF",
                   "content": "SUBSCRIBE NOW",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 16,
                   "fontWeight": "700"
                 }
@@ -2310,7 +2310,7 @@
       "name": "7 · Add Restaurant",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -2319,7 +2319,7 @@
           "name": "status-bar",
           "width": 390,
           "height": 44,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "padding": 16,
           "children": [
             {
@@ -2328,7 +2328,7 @@
               "name": "ar_time",
               "fill": "#FFFFFF",
               "content": "9:41",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 15,
               "fontWeight": "600"
             },
@@ -2345,7 +2345,7 @@
               "name": "ar_icons",
               "fill": "#FFFFFF",
               "content": "●●●",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 12,
               "fontWeight": "normal"
             }
@@ -2357,16 +2357,16 @@
           "name": "nav",
           "width": 390,
           "height": 56,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "gap": 12,
           "children": [
             {
               "type": "text",
               "id": "MovbK",
               "name": "ar_back",
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "content": "←",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 22,
               "fontWeight": "normal"
             },
@@ -2376,7 +2376,7 @@
               "name": "ar_title",
               "fill": "#FFFFFF",
               "content": "Add Restaurant",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 18,
               "fontWeight": "700"
             }
@@ -2388,7 +2388,7 @@
           "name": "body",
           "width": 390,
           "height": "fill_container",
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "layout": "vertical",
           "gap": 20,
           "children": [
@@ -2404,9 +2404,9 @@
                   "type": "text",
                   "id": "4LCi2",
                   "name": "l1",
-                  "fill": "#8A8A8A",
+                  "fill": "#B89F87",
                   "content": "Restaurant Name",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 13,
                   "fontWeight": "600"
                 },
@@ -2416,16 +2416,16 @@
                   "name": "i1",
                   "width": "fill_container",
                   "height": 52,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 12,
                   "children": [
                     {
                       "type": "text",
                       "id": "JnZGf",
                       "name": "i1t",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "e.g. Barbeque Nation",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "normal"
                     }
@@ -2445,9 +2445,9 @@
                   "type": "text",
                   "id": "EmZRw",
                   "name": "l2",
-                  "fill": "#8A8A8A",
+                  "fill": "#B89F87",
                   "content": "Location",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 13,
                   "fontWeight": "600"
                 },
@@ -2457,7 +2457,7 @@
                   "name": "i2",
                   "width": "fill_container",
                   "height": 52,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 12,
                   "gap": 8,
                   "children": [
@@ -2467,7 +2467,7 @@
                       "name": "i2t",
                       "fill": "#FFFFFF",
                       "content": "📍 Auto Detect",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "500"
                     },
@@ -2475,9 +2475,9 @@
                       "type": "text",
                       "id": "Tc3Z4",
                       "name": "i2e",
-                      "fill": "#FF3B30",
+                      "fill": "#E6A830",
                       "content": "Edit",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 14,
                       "fontWeight": "600"
                     }
@@ -2497,9 +2497,9 @@
                   "type": "text",
                   "id": "ORQk5",
                   "name": "l3",
-                  "fill": "#8A8A8A",
+                  "fill": "#B89F87",
                   "content": "Cuisine Type",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 13,
                   "fontWeight": "600"
                 },
@@ -2509,16 +2509,16 @@
                   "name": "i3",
                   "width": "fill_container",
                   "height": 52,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 12,
                   "children": [
                     {
                       "type": "text",
                       "id": "RHUSu",
                       "name": "i3t",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "Optional",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "normal"
                     },
@@ -2526,9 +2526,9 @@
                       "type": "text",
                       "id": "x26IP",
                       "name": "i3arr",
-                      "fill": "#8A8A8A",
+                      "fill": "#B89F87",
                       "content": "▾",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 16,
                       "fontWeight": "normal"
                     }
@@ -2552,7 +2552,7 @@
                   "name": "dup_title",
                   "fill": "#FFB800",
                   "content": "Similar restaurant found nearby",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 14,
                   "fontWeight": "600"
                 },
@@ -2569,7 +2569,7 @@
                       "name": "dup_view",
                       "width": "fill_container",
                       "height": 40,
-                      "fill": "#0C0C0C",
+                      "fill": "#0F0D0B",
                       "cornerRadius": 10,
                       "children": [
                         {
@@ -2578,7 +2578,7 @@
                           "name": "dup_view_t",
                           "fill": "#FFB800",
                           "content": "View Existing",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 14,
                           "fontWeight": "600"
                         }
@@ -2590,7 +2590,7 @@
                       "name": "dup_create",
                       "width": "fill_container",
                       "height": 40,
-                      "fill": "#FF3B30",
+                      "fill": "#E6A830",
                       "cornerRadius": 10,
                       "children": [
                         {
@@ -2599,7 +2599,7 @@
                           "name": "dup_create_t",
                           "fill": "#FFFFFF",
                           "content": "Create Anyway",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 14,
                           "fontWeight": "600"
                         }
@@ -2622,7 +2622,7 @@
               "name": "save-btn",
               "width": "fill_container",
               "height": 56,
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "cornerRadius": 16,
               "children": [
                 {
@@ -2631,7 +2631,7 @@
                   "name": "save_t",
                   "fill": "#FFFFFF",
                   "content": "Save Restaurant",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 16,
                   "fontWeight": "700"
                 }
@@ -2649,7 +2649,7 @@
       "name": "8 · Menu Scan",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -2667,7 +2667,7 @@
               "name": "ocr_close",
               "fill": "#FFFFFF",
               "content": "✕",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 20,
               "fontWeight": "normal"
             },
@@ -2677,7 +2677,7 @@
               "name": "ocr_nav_t",
               "fill": "#FFFFFF",
               "content": "Scan Menu",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 18,
               "fontWeight": "700"
             }
@@ -2714,7 +2714,7 @@
               "opacity": 0.7,
               "fill": "#FFFFFF",
               "content": "Position menu within frame",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 14,
               "fontWeight": "normal"
             },
@@ -2724,7 +2724,7 @@
               "name": "vf_tap",
               "fill": "#FFFFFF",
               "content": "Tap to Capture",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 16,
               "fontWeight": "600"
             }
@@ -2736,7 +2736,7 @@
           "name": "cap_btn_area",
           "width": 390,
           "height": 100,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "children": [
             {
               "type": "frame",
@@ -2744,7 +2744,7 @@
               "name": "cap_btn",
               "width": 70,
               "height": 70,
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "cornerRadius": 35
             }
           ]
@@ -2759,7 +2759,7 @@
       "name": "8b · OCR Results",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -2768,7 +2768,7 @@
           "name": "ocr_r_status",
           "width": 390,
           "height": 44,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "children": [
             {
               "type": "text",
@@ -2776,7 +2776,7 @@
               "name": "ocr_r_time",
               "fill": "#FFFFFF",
               "content": "9:41",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 15,
               "fontWeight": "600"
             },
@@ -2793,7 +2793,7 @@
               "name": "ocr_r_icons2",
               "fill": "#FFFFFF",
               "content": "●●●",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 12,
               "fontWeight": "normal"
             }
@@ -2805,16 +2805,16 @@
           "name": "ocr_r_nav",
           "width": 390,
           "height": 56,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "gap": 12,
           "children": [
             {
               "type": "text",
               "id": "BhuBT",
               "name": "ocr_r_back",
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "content": "←",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 22,
               "fontWeight": "normal"
             },
@@ -2824,7 +2824,7 @@
               "name": "ocr_r_title",
               "fill": "#FFFFFF",
               "content": "Extracted Dishes",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 18,
               "fontWeight": "700"
             }
@@ -2836,7 +2836,7 @@
           "name": "ocr_r_body",
           "width": 390,
           "height": "fill_container",
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "layout": "vertical",
           "gap": 12,
           "children": [
@@ -2844,9 +2844,9 @@
               "type": "text",
               "id": "9uLhH",
               "name": "ocr_r_note",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "Review and edit before saving",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 13,
               "fontWeight": "normal"
             },
@@ -2856,7 +2856,7 @@
               "name": "dish_row1",
               "width": "fill_container",
               "height": 52,
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 12,
               "gap": 12,
               "children": [
@@ -2866,7 +2866,7 @@
                   "name": "dish_chk1",
                   "width": 22,
                   "height": 22,
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 6,
                   "children": [
                     {
@@ -2875,7 +2875,7 @@
                       "name": "dish_chk1t",
                       "fill": "#FFFFFF",
                       "content": "✓",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 13,
                       "fontWeight": "700"
                     }
@@ -2887,7 +2887,7 @@
                   "name": "dish_name1",
                   "fill": "#FFFFFF",
                   "content": "Butter Chicken",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 15,
                   "fontWeight": "500"
                 }
@@ -2899,7 +2899,7 @@
               "name": "dish_row2",
               "width": "fill_container",
               "height": 52,
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 12,
               "gap": 12,
               "children": [
@@ -2909,7 +2909,7 @@
                   "name": "dish_chk2",
                   "width": 22,
                   "height": 22,
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 6,
                   "children": [
                     {
@@ -2918,7 +2918,7 @@
                       "name": "dish_chk2t",
                       "fill": "#FFFFFF",
                       "content": "✓",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 13,
                       "fontWeight": "700"
                     }
@@ -2930,7 +2930,7 @@
                   "name": "dish_name2",
                   "fill": "#FFFFFF",
                   "content": "Paneer Lababdar",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 15,
                   "fontWeight": "500"
                 }
@@ -2942,7 +2942,7 @@
               "name": "dish_row3",
               "width": "fill_container",
               "height": 52,
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 12,
               "gap": 12,
               "children": [
@@ -2952,7 +2952,7 @@
                   "name": "dish_chk3",
                   "width": 22,
                   "height": 22,
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 6,
                   "children": [
                     {
@@ -2961,7 +2961,7 @@
                       "name": "dish_chk3t",
                       "fill": "#FFFFFF",
                       "content": "✓",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 13,
                       "fontWeight": "700"
                     }
@@ -2973,7 +2973,7 @@
                   "name": "dish_name3",
                   "fill": "#FFFFFF",
                   "content": "Dal Makhani",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 15,
                   "fontWeight": "500"
                 }
@@ -2992,7 +2992,7 @@
                   "name": "edit_btn",
                   "width": "fill_container",
                   "height": 40,
-                  "fill": "#1E1E1E",
+                  "fill": "#241E18",
                   "cornerRadius": 10,
                   "children": [
                     {
@@ -3001,7 +3001,7 @@
                       "name": "edit_btn_t",
                       "fill": "#A0A0A0",
                       "content": "Edit Text",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 14,
                       "fontWeight": "600"
                     }
@@ -3015,7 +3015,7 @@
               "name": "save-dishes-btn",
               "width": "fill_container",
               "height": 56,
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "cornerRadius": 16,
               "children": [
                 {
@@ -3024,7 +3024,7 @@
                   "name": "save_dishes_t",
                   "fill": "#FFFFFF",
                   "content": "Save Dishes",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 16,
                   "fontWeight": "700"
                 }
@@ -3042,7 +3042,7 @@
       "name": "9 · Favorites",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -3051,7 +3051,7 @@
           "name": "fav_status",
           "width": 390,
           "height": 44,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "children": [
             {
               "type": "text",
@@ -3059,7 +3059,7 @@
               "name": "fav_time",
               "fill": "#FFFFFF",
               "content": "9:41",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 15,
               "fontWeight": "600"
             },
@@ -3076,7 +3076,7 @@
               "name": "fav_icons",
               "fill": "#FFFFFF",
               "content": "●●●",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 12,
               "fontWeight": "normal"
             }
@@ -3088,16 +3088,16 @@
           "name": "fav_nav",
           "width": 390,
           "height": 56,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "gap": 12,
           "children": [
             {
               "type": "text",
               "id": "5Ginf",
               "name": "fav_back",
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "content": "←",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 22,
               "fontWeight": "normal"
             },
@@ -3107,7 +3107,7 @@
               "name": "fav_title",
               "fill": "#FFFFFF",
               "content": "Favorites",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 18,
               "fontWeight": "700"
             }
@@ -3119,7 +3119,7 @@
           "name": "fav_body",
           "width": 390,
           "height": "fill_container",
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "layout": "vertical",
           "gap": 12,
           "children": [
@@ -3135,7 +3135,7 @@
                   "id": "PFKet",
                   "name": "fav_f1",
                   "height": 36,
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "cornerRadius": 18,
                   "children": [
                     {
@@ -3144,7 +3144,7 @@
                       "name": "fav_f1t",
                       "fill": "#FFFFFF",
                       "content": "By Reaction",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 13,
                       "fontWeight": "600"
                     }
@@ -3155,7 +3155,7 @@
                   "id": "SDSss",
                   "name": "fav_f2",
                   "height": 36,
-                  "fill": "#1E1E1E",
+                  "fill": "#241E18",
                   "cornerRadius": 18,
                   "children": [
                     {
@@ -3164,7 +3164,7 @@
                       "name": "fav_f2t",
                       "fill": "#A0A0A0",
                       "content": "By Restaurant",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 13,
                       "fontWeight": "600"
                     }
@@ -3183,9 +3183,9 @@
                   "type": "text",
                   "id": "o7nYE",
                   "name": "fav_s1",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "content": "Sort: Most Recent ▾",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 13,
                   "fontWeight": "600"
                 }
@@ -3197,7 +3197,7 @@
               "name": "fd1",
               "width": "fill_container",
               "height": 72,
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "gap": 12,
               "children": [
@@ -3215,7 +3215,7 @@
                       "name": "fd1_name",
                       "fill": "#FFFFFF",
                       "content": "🔥  Butter Chicken",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "700"
                     },
@@ -3223,9 +3223,9 @@
                       "type": "text",
                       "id": "M41WX",
                       "name": "fd1_rest",
-                      "fill": "#8A8A8A",
+                      "fill": "#B89F87",
                       "content": "Barbeque Nation · Jan 2026",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 12,
                       "fontWeight": "normal"
                     }
@@ -3239,7 +3239,7 @@
               "name": "fd2",
               "width": "fill_container",
               "height": 72,
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "gap": 12,
               "children": [
@@ -3257,7 +3257,7 @@
                       "name": "fd2_name",
                       "fill": "#FFFFFF",
                       "content": "🔥  Tiramisu",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "700"
                     },
@@ -3265,9 +3265,9 @@
                       "type": "text",
                       "id": "MitVt",
                       "name": "fd2_rest",
-                      "fill": "#8A8A8A",
+                      "fill": "#B89F87",
                       "content": "Cafe Delhi Heights · Dec 2025",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 12,
                       "fontWeight": "normal"
                     }
@@ -3281,7 +3281,7 @@
               "name": "fd3",
               "width": "fill_container",
               "height": 72,
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "gap": 12,
               "children": [
@@ -3299,7 +3299,7 @@
                       "name": "fd3_name",
                       "fill": "#FFFFFF",
                       "content": "😋  Dal Makhani",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "700"
                     },
@@ -3307,9 +3307,9 @@
                       "type": "text",
                       "id": "Hmwd3",
                       "name": "fd3_rest",
-                      "fill": "#8A8A8A",
+                      "fill": "#B89F87",
                       "content": "Punjab Grill · Nov 2025",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 12,
                       "fontWeight": "normal"
                     }
@@ -3325,7 +3325,7 @@
           "name": "fav_tabbar",
           "width": 390,
           "height": 80,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "children": [
             {
               "type": "frame",
@@ -3340,9 +3340,9 @@
                   "type": "text",
                   "id": "8nrkM",
                   "name": "tab_home_icon_fav",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "⌂",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 20,
                   "fontWeight": "normal"
                 },
@@ -3350,9 +3350,9 @@
                   "type": "text",
                   "id": "Pj4rc",
                   "name": "tab_home_lbl_fav",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "Home",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 10,
                   "fontWeight": "normal"
                 }
@@ -3371,9 +3371,9 @@
                   "type": "text",
                   "id": "OmWsy",
                   "name": "tab_map_icon_fav",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "◎",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 20,
                   "fontWeight": "normal"
                 },
@@ -3381,9 +3381,9 @@
                   "type": "text",
                   "id": "cuP6s",
                   "name": "tab_map_lbl_fav",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "Map",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 10,
                   "fontWeight": "normal"
                 }
@@ -3402,9 +3402,9 @@
                   "type": "text",
                   "id": "J18qx",
                   "name": "tab_fav_icon_fav",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "content": "♥",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 20,
                   "fontWeight": "normal"
                 },
@@ -3412,9 +3412,9 @@
                   "type": "text",
                   "id": "B13cn",
                   "name": "tab_fav_lbl_fav",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "content": "Favorites",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 10,
                   "fontWeight": "600"
                 }
@@ -3433,9 +3433,9 @@
                   "type": "text",
                   "id": "EcmN6",
                   "name": "tab_prof_icon_fav",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "◉",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 20,
                   "fontWeight": "normal"
                 },
@@ -3443,9 +3443,9 @@
                   "type": "text",
                   "id": "rmB7Q",
                   "name": "tab_prof_lbl_fav",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "Profile",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 10,
                   "fontWeight": "normal"
                 }
@@ -3463,7 +3463,7 @@
       "name": "10 · Visit Timeline",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -3472,7 +3472,7 @@
           "name": "tl_status",
           "width": 390,
           "height": 44,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "children": [
             {
               "type": "text",
@@ -3480,7 +3480,7 @@
               "name": "tl_time",
               "fill": "#FFFFFF",
               "content": "9:41",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 15,
               "fontWeight": "600"
             },
@@ -3497,7 +3497,7 @@
               "name": "tl_icons",
               "fill": "#FFFFFF",
               "content": "●●●",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 12,
               "fontWeight": "normal"
             }
@@ -3509,16 +3509,16 @@
           "name": "tl_nav",
           "width": 390,
           "height": 56,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "gap": 12,
           "children": [
             {
               "type": "text",
               "id": "Kz2i2",
               "name": "tl_back",
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "content": "←",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 22,
               "fontWeight": "normal"
             },
@@ -3528,7 +3528,7 @@
               "name": "tl_navtitle",
               "fill": "#FFFFFF",
               "content": "Visit Timeline",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 18,
               "fontWeight": "700"
             }
@@ -3540,7 +3540,7 @@
           "name": "tl_body",
           "width": 390,
           "height": "fill_container",
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "layout": "vertical",
           "gap": 20,
           "children": [
@@ -3548,9 +3548,9 @@
               "type": "text",
               "id": "r55At",
               "name": "tl_month1",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "January 2026",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 13,
               "fontWeight": "700"
             },
@@ -3559,7 +3559,7 @@
               "id": "eBjgx",
               "name": "tl_card1",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "layout": "vertical",
               "gap": 10,
@@ -3570,7 +3570,7 @@
                   "name": "tl_c1_rest",
                   "fill": "#FFFFFF",
                   "content": "Cafe Delhi Heights",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 15,
                   "fontWeight": "700"
                 },
@@ -3587,7 +3587,7 @@
                       "name": "tl_c1_dish_name",
                       "fill": "#A0A0A0",
                       "content": "🔥  Tiramisu",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 14,
                       "fontWeight": "normal"
                     }
@@ -3599,9 +3599,9 @@
               "type": "text",
               "id": "a1Ep6",
               "name": "tl_month2",
-              "fill": "#8A8A8A",
+              "fill": "#B89F87",
               "content": "December 2025",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 13,
               "fontWeight": "700"
             },
@@ -3610,7 +3610,7 @@
               "id": "7c0ik",
               "name": "tl_card2",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "layout": "vertical",
               "gap": 10,
@@ -3621,7 +3621,7 @@
                   "name": "tl_c2_rest",
                   "fill": "#FFFFFF",
                   "content": "Barbeque Nation",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 15,
                   "fontWeight": "700"
                 },
@@ -3638,7 +3638,7 @@
                       "name": "tl_c2_dish_name",
                       "fill": "#A0A0A0",
                       "content": "🔥  Butter Chicken",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 14,
                       "fontWeight": "normal"
                     }
@@ -3651,7 +3651,7 @@
               "id": "lXXRu",
               "name": "tl_card3",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "layout": "vertical",
               "gap": 10,
@@ -3662,7 +3662,7 @@
                   "name": "tl_c3_rest",
                   "fill": "#FFFFFF",
                   "content": "Punjab Grill",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 15,
                   "fontWeight": "700"
                 },
@@ -3679,7 +3679,7 @@
                       "name": "tl_c3_name",
                       "fill": "#A0A0A0",
                       "content": "😋  Dal Makhani",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 14,
                       "fontWeight": "normal"
                     }
@@ -3699,7 +3699,7 @@
       "name": "11 · Search Results",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -3708,7 +3708,7 @@
           "name": "sr_status",
           "width": 390,
           "height": 44,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "children": [
             {
               "type": "text",
@@ -3716,7 +3716,7 @@
               "name": "sr_time",
               "fill": "#FFFFFF",
               "content": "9:41",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 15,
               "fontWeight": "600"
             },
@@ -3733,7 +3733,7 @@
               "name": "sr_icons",
               "fill": "#FFFFFF",
               "content": "●●●",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 12,
               "fontWeight": "normal"
             }
@@ -3745,7 +3745,7 @@
           "name": "sr_searchbar",
           "width": 390,
           "height": 64,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "children": [
             {
               "type": "frame",
@@ -3753,7 +3753,7 @@
               "name": "sr_input",
               "width": "fill_container",
               "height": 48,
-              "fill": "#242424",
+              "fill": "#241E18",
               "cornerRadius": 14,
               "gap": 10,
               "children": [
@@ -3762,7 +3762,7 @@
                   "id": "NiyTO",
                   "name": "sr_search_icon",
                   "content": "🔍",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 16,
                   "fontWeight": "normal"
                 },
@@ -3772,7 +3772,7 @@
                   "name": "sr_query",
                   "fill": "#FFFFFF",
                   "content": "butter chicken",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 15,
                   "fontWeight": "500"
                 }
@@ -3786,7 +3786,7 @@
           "name": "sr_body",
           "width": 390,
           "height": "fill_container",
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "layout": "vertical",
           "gap": 20,
           "children": [
@@ -3802,9 +3802,9 @@
                   "type": "text",
                   "id": "zU3zS",
                   "name": "sr_rest_header",
-                  "fill": "#8A8A8A",
+                  "fill": "#B89F87",
                   "content": "RESTAURANTS",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 11,
                   "fontWeight": "700"
                 },
@@ -3814,7 +3814,7 @@
                   "name": "sr_rest_row",
                   "width": "fill_container",
                   "height": 60,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 14,
                   "gap": 12,
                   "children": [
@@ -3832,7 +3832,7 @@
                           "name": "sr_rest_name",
                           "fill": "#FFFFFF",
                           "content": "🍽  Barbeque Nation",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 14,
                           "fontWeight": "700"
                         },
@@ -3840,9 +3840,9 @@
                           "type": "text",
                           "id": "hhbwF",
                           "name": "sr_rest_rating",
-                          "fill": "#8A8A8A",
+                          "fill": "#B89F87",
                           "content": "⭐ 4.3 · Indian",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 12,
                           "fontWeight": "normal"
                         }
@@ -3864,9 +3864,9 @@
                   "type": "text",
                   "id": "RbSGL",
                   "name": "sr_dish_header",
-                  "fill": "#8A8A8A",
+                  "fill": "#B89F87",
                   "content": "DISHES",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 11,
                   "fontWeight": "700"
                 },
@@ -3876,7 +3876,7 @@
                   "name": "sr_dish_row1",
                   "width": "fill_container",
                   "height": 60,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 14,
                   "gap": 12,
                   "children": [
@@ -3894,7 +3894,7 @@
                           "name": "sr_dish_name1",
                           "fill": "#FFFFFF",
                           "content": "🔥  Butter Chicken",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 14,
                           "fontWeight": "700"
                         },
@@ -3902,9 +3902,9 @@
                           "type": "text",
                           "id": "59S9f",
                           "name": "sr_dish_sub1",
-                          "fill": "#8A8A8A",
+                          "fill": "#B89F87",
                           "content": "3 restaurants",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 12,
                           "fontWeight": "normal"
                         }
@@ -3918,7 +3918,7 @@
                   "name": "sr_dish_row2",
                   "width": "fill_container",
                   "height": 60,
-                  "fill": "#1A1A1A",
+                  "fill": "#1A1612",
                   "cornerRadius": 14,
                   "gap": 12,
                   "children": [
@@ -3936,7 +3936,7 @@
                           "name": "sr_dish_name2",
                           "fill": "#FFFFFF",
                           "content": "😋  Butter Chicken Masala",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 14,
                           "fontWeight": "700"
                         },
@@ -3944,9 +3944,9 @@
                           "type": "text",
                           "id": "uWIwu",
                           "name": "sr_dish_sub2",
-                          "fill": "#8A8A8A",
+                          "fill": "#B89F87",
                           "content": "1 restaurant",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 12,
                           "fontWeight": "normal"
                         }
@@ -3968,7 +3968,7 @@
       "name": "12 · Settings",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -3977,7 +3977,7 @@
           "name": "st_status",
           "width": 390,
           "height": 44,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "children": [
             {
               "type": "text",
@@ -3985,7 +3985,7 @@
               "name": "st_time",
               "fill": "#FFFFFF",
               "content": "9:41",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 15,
               "fontWeight": "600"
             },
@@ -4002,7 +4002,7 @@
               "name": "st_icons",
               "fill": "#FFFFFF",
               "content": "●●●",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 12,
               "fontWeight": "normal"
             }
@@ -4014,16 +4014,16 @@
           "name": "st_nav",
           "width": 390,
           "height": 56,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "gap": 12,
           "children": [
             {
               "type": "text",
               "id": "1hwWe",
               "name": "st_back",
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "content": "←",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 22,
               "fontWeight": "normal"
             },
@@ -4033,7 +4033,7 @@
               "name": "st_title",
               "fill": "#FFFFFF",
               "content": "Settings",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 18,
               "fontWeight": "700"
             }
@@ -4045,7 +4045,7 @@
           "name": "st_body",
           "width": 390,
           "height": "fill_container",
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "layout": "vertical",
           "gap": 8,
           "children": [
@@ -4055,7 +4055,7 @@
               "name": "st_sec1",
               "fill": "#AAAAAA",
               "content": "ACCOUNT",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -4064,7 +4064,7 @@
               "id": "VafYN",
               "name": "st_grp1",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "layout": "vertical",
               "children": [
@@ -4082,7 +4082,7 @@
                       "id": "BELJi",
                       "name": "st_row1_icon",
                       "content": "👤",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -4092,7 +4092,7 @@
                       "name": "st_row1_label",
                       "fill": "#FFFFFF",
                       "content": "Account",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "normal"
                     },
@@ -4100,9 +4100,9 @@
                       "type": "text",
                       "id": "mybzE",
                       "name": "st_row1_arrow",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "›",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 20,
                       "fontWeight": "normal"
                     }
@@ -4123,7 +4123,7 @@
                       "name": "st_row2_icon",
                       "fill": "#A0A0A0",
                       "content": "☁",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -4133,7 +4133,7 @@
                       "name": "st_row2_label",
                       "fill": "#FFFFFF",
                       "content": "Cloud Sync",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "normal"
                     },
@@ -4142,7 +4142,7 @@
                       "id": "uHCJL",
                       "name": "st_row2_badge",
                       "height": 22,
-                      "fill": "#FF3B30",
+                      "fill": "#E6A830",
                       "cornerRadius": 11,
                       "children": [
                         {
@@ -4151,7 +4151,7 @@
                           "name": "st_row2_badge_t",
                           "fill": "#FFFFFF",
                           "content": "Pro",
-                          "fontFamily": "Sora",
+                          "fontFamily": "DM Sans",
                           "fontSize": 11,
                           "fontWeight": "700"
                         }
@@ -4161,9 +4161,9 @@
                       "type": "text",
                       "id": "KnNru",
                       "name": "st_row2_arrow",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "›",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 20,
                       "fontWeight": "normal"
                     }
@@ -4177,7 +4177,7 @@
               "name": "st_sec2",
               "fill": "#AAAAAA",
               "content": "DATA",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -4186,7 +4186,7 @@
               "id": "09faT",
               "name": "st_grp2",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "layout": "vertical",
               "children": [
@@ -4205,7 +4205,7 @@
                       "name": "st_row3_icon",
                       "fill": "#A0A0A0",
                       "content": "⬇",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -4215,7 +4215,7 @@
                       "name": "st_row3_label",
                       "fill": "#FFFFFF",
                       "content": "Export Data",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "normal"
                     },
@@ -4223,9 +4223,9 @@
                       "type": "text",
                       "id": "2wbTW",
                       "name": "st_row3_arrow",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "›",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 20,
                       "fontWeight": "normal"
                     }
@@ -4245,7 +4245,7 @@
                       "id": "NPwhD",
                       "name": "st_row4_icon",
                       "content": "💳",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -4255,7 +4255,7 @@
                       "name": "st_row4_label",
                       "fill": "#FFFFFF",
                       "content": "Subscription",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "normal"
                     },
@@ -4263,9 +4263,9 @@
                       "type": "text",
                       "id": "XYzXU",
                       "name": "st_row4_arrow",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "›",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 20,
                       "fontWeight": "normal"
                     }
@@ -4279,7 +4279,7 @@
               "name": "st_sec3",
               "fill": "#AAAAAA",
               "content": "PRIVACY & SUPPORT",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 11,
               "fontWeight": "700"
             },
@@ -4288,7 +4288,7 @@
               "id": "mzVBW",
               "name": "st_grp3",
               "width": "fill_container",
-              "fill": "#1A1A1A",
+              "fill": "#1A1612",
               "cornerRadius": 16,
               "layout": "vertical",
               "children": [
@@ -4306,7 +4306,7 @@
                       "id": "IK7cV",
                       "name": "st_row5_icon",
                       "content": "🔒",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -4316,7 +4316,7 @@
                       "name": "st_row5_label",
                       "fill": "#FFFFFF",
                       "content": "Privacy Controls",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "normal"
                     },
@@ -4324,9 +4324,9 @@
                       "type": "text",
                       "id": "kUDhT",
                       "name": "st_row5_arrow",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "›",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 20,
                       "fontWeight": "normal"
                     }
@@ -4346,7 +4346,7 @@
                       "id": "cwYB7",
                       "name": "st_row6_icon",
                       "content": "❓",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 18,
                       "fontWeight": "normal"
                     },
@@ -4356,7 +4356,7 @@
                       "name": "st_row6_label",
                       "fill": "#FFFFFF",
                       "content": "Help & Support",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 15,
                       "fontWeight": "normal"
                     },
@@ -4364,9 +4364,9 @@
                       "type": "text",
                       "id": "XE7ng",
                       "name": "st_row6_arrow",
-                      "fill": "#525252",
+                      "fill": "#6B5B4E",
                       "content": "›",
-                      "fontFamily": "Sora",
+                      "fontFamily": "DM Sans",
                       "fontSize": 20,
                       "fontWeight": "normal"
                     }
@@ -4378,9 +4378,9 @@
               "type": "text",
               "id": "JAcKk",
               "name": "st_version",
-              "fill": "#525252",
+              "fill": "#6B5B4E",
               "content": "Remembite v0.1.0",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 12,
               "fontWeight": "normal"
             }
@@ -4396,7 +4396,7 @@
       "name": "13 · Map View",
       "width": 390,
       "height": 844,
-      "fill": "#0C0C0C",
+      "fill": "#0F0D0B",
       "layout": "vertical",
       "children": [
         {
@@ -4413,7 +4413,7 @@
               "name": "map_time",
               "fill": "#FFFFFF",
               "content": "9:41",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 15,
               "fontWeight": "600"
             },
@@ -4430,7 +4430,7 @@
               "name": "map_icons",
               "fill": "#FFFFFF",
               "content": "●●●",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 12,
               "fontWeight": "normal"
             }
@@ -4442,7 +4442,7 @@
           "name": "map-canvas",
           "width": 390,
           "height": "fill_container",
-          "fill": "#1A1A1A",
+          "fill": "#1A1612",
           "layout": "vertical",
           "children": [
             {
@@ -4451,7 +4451,7 @@
               "name": "map_pin1",
               "width": 120,
               "height": 40,
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "cornerRadius": 20,
               "gap": 6,
               "children": [
@@ -4461,7 +4461,7 @@
                   "name": "map_pin1_dot",
                   "width": 10,
                   "height": 10,
-                  "fill": "#0C0C0C",
+                  "fill": "#0F0D0B",
                   "cornerRadius": 5
                 },
                 {
@@ -4470,7 +4470,7 @@
                   "name": "map_pin1_t",
                   "fill": "#FFFFFF",
                   "content": "Barbeque Nation",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 11,
                   "fontWeight": "600"
                 }
@@ -4482,7 +4482,7 @@
               "name": "map_pin2",
               "width": 130,
               "height": 40,
-              "fill": "#0C0C0C",
+              "fill": "#0F0D0B",
               "cornerRadius": 20,
               "gap": 6,
               "children": [
@@ -4501,7 +4501,7 @@
                   "name": "map_pin2_t",
                   "fill": "#A0A0A0",
                   "content": "Cafe Delhi Heights",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 11,
                   "fontWeight": "600"
                 }
@@ -4524,7 +4524,7 @@
               "name": "map_toggle_text",
               "fill": "#FFFFFF",
               "content": "Show Nearby Restaurants",
-              "fontFamily": "Sora",
+              "fontFamily": "DM Sans",
               "fontSize": 14,
               "fontWeight": "normal"
             },
@@ -4534,7 +4534,7 @@
               "name": "map_toggle_sw",
               "width": 44,
               "height": 26,
-              "fill": "#FF3B30",
+              "fill": "#E6A830",
               "cornerRadius": 13,
               "children": [
                 {
@@ -4543,7 +4543,7 @@
                   "name": "map_toggle_sw_knob",
                   "width": 20,
                   "height": 20,
-                  "fill": "#0C0C0C",
+                  "fill": "#0F0D0B",
                   "cornerRadius": 10
                 }
               ]
@@ -4556,7 +4556,7 @@
           "name": "map_tabbar",
           "width": 390,
           "height": 80,
-          "fill": "#0C0C0C",
+          "fill": "#0F0D0B",
           "children": [
             {
               "type": "frame",
@@ -4571,9 +4571,9 @@
                   "type": "text",
                   "id": "0zLs2",
                   "name": "tab_home_icon_map",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "⌂",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 20,
                   "fontWeight": "normal"
                 },
@@ -4581,9 +4581,9 @@
                   "type": "text",
                   "id": "zAI85",
                   "name": "tab_home_lbl_map",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "Home",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 10,
                   "fontWeight": "normal"
                 }
@@ -4602,9 +4602,9 @@
                   "type": "text",
                   "id": "FcxoC",
                   "name": "tab_map_active_icon",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "content": "◎",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 20,
                   "fontWeight": "normal"
                 },
@@ -4612,9 +4612,9 @@
                   "type": "text",
                   "id": "7Nc2B",
                   "name": "tab_map_active_lbl",
-                  "fill": "#FF3B30",
+                  "fill": "#E6A830",
                   "content": "Map",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 10,
                   "fontWeight": "600"
                 }
@@ -4633,9 +4633,9 @@
                   "type": "text",
                   "id": "GUsE8",
                   "name": "tab_fav_icon_map",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "♥",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 20,
                   "fontWeight": "normal"
                 },
@@ -4643,9 +4643,9 @@
                   "type": "text",
                   "id": "BiXy3",
                   "name": "tab_fav_lbl_map",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "Favorites",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 10,
                   "fontWeight": "normal"
                 }
@@ -4664,9 +4664,9 @@
                   "type": "text",
                   "id": "HbJ1Y",
                   "name": "tab_prof_icon_map",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "◉",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 20,
                   "fontWeight": "normal"
                 },
@@ -4674,9 +4674,9 @@
                   "type": "text",
                   "id": "z5Ded",
                   "name": "tab_prof_lbl_map",
-                  "fill": "#525252",
+                  "fill": "#6B5B4E",
                   "content": "Profile",
-                  "fontFamily": "Sora",
+                  "fontFamily": "DM Sans",
                   "fontSize": 10,
                   "fontWeight": "normal"
                 }

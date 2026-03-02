@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Remembite — Mobile App Runner
-# Loads env vars and runs Flutter on an emulator or connected device.
+# Loads env vars, boots emulator if needed, and runs Flutter.
 #
 # Usage:
-#   ./run-app.sh                             # default: .env.android, auto-pick device
+#   ./run-app.sh                             # default: .env.android, auto Android emulator
 #   ./run-app.sh .env.android                # Android emulator (10.0.2.2)
 #   ./run-app.sh .env.ios                    # iOS simulator (localhost)
 #   ./run-app.sh .env.android emulator-5554  # explicit device ID
@@ -29,7 +29,7 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
-# Load env vars (compatible with bash and zsh)
+# Load env vars
 set -o allexport
 # shellcheck disable=SC1090
 . "$ENV_FILE"
@@ -37,7 +37,7 @@ set +o allexport
 
 API_URL="${API_URL:-http://10.0.2.2:8080}"
 
-# Health check (non-blocking)
+# ── Health check (non-blocking) ──────────────────────────────────────────
 HEALTH_URL="${API_URL}/health"
 printf "${BLUE}🔗 Pinging backend: %s${NC}\n" "$HEALTH_URL"
 if curl -sf --max-time 3 "$HEALTH_URL" > /dev/null 2>&1; then
@@ -51,20 +51,61 @@ printf "${BLUE}📦 flutter pub get...${NC}\n"
 cd "$(dirname "$0")/app"
 flutter pub get
 
-# Device selection
-if [ -z "$DEVICE_ARG" ]; then
-  DEVICE_COUNT=$(flutter devices 2>/dev/null | grep -c 'mobile\|desktop\|emulator' || true)
-  if [ "$DEVICE_COUNT" -gt 1 ]; then
-    printf "\n${YELLOW}Multiple devices found:${NC}\n"
-    flutter devices 2>/dev/null | grep '•' | awk -F'•' '{print NR". "$1"•"$2}' | head -10
-    printf "\n${YELLOW}Pass a device ID as the second arg, e.g.:${NC}\n"
-    printf "  %s %s emulator-5554\n\n" "$0" "$ENV_FILE"
+# ── Device / emulator selection ──────────────────────────────────────────
+ANDROID_EMULATOR_ID="Pixel_3a_API_34_GooglePlay"
+
+ensure_android_emulator() {
+  # Check if an Android emulator is already running
+  RUNNING=$(flutter devices 2>/dev/null | grep -i "android.*emulator\|emulator.*android" || true)
+  if [ -n "$RUNNING" ]; then
+    BOOT_DEVICE=$(flutter devices 2>/dev/null | grep -i "emulator-[0-9]" | awk -F'•' '{print $2}' | tr -d ' ' | head -1)
+    printf "${GREEN}✅ Emulator already running: %s${NC}\n" "$BOOT_DEVICE" >&2
+    echo "$BOOT_DEVICE"
+    return
   fi
-  DEVICE_FLAG=""
-else
+
+  printf "${BLUE}🚀 Starting Android emulator '%s'...${NC}\n" "$ANDROID_EMULATOR_ID" >&2
+  flutter emulators --launch "$ANDROID_EMULATOR_ID" 2>/dev/null &
+
+  printf "${YELLOW}⏳ Waiting for emulator to boot${NC}" >&2
+  WAIT=0
+  DEVICE_ID=""
+  while [ $WAIT -lt 120 ]; do
+    DEVICE_ID=$(adb devices 2>/dev/null | grep "emulator-" | grep -v "offline" | awk '{print $1}' | head -1 || true)
+    if [ -n "$DEVICE_ID" ]; then
+      BOOT_STATUS=$(adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+      if [ "$BOOT_STATUS" = "1" ]; then
+        printf "\n${GREEN}✅ Emulator booted: %s${NC}\n" "$DEVICE_ID" >&2
+        echo "$DEVICE_ID"
+        return
+      fi
+    fi
+    printf "." >&2
+    sleep 3
+    WAIT=$((WAIT + 3))
+  done
+  printf "\n${RED}❌ Emulator did not boot within 120s${NC}\n" >&2
+  exit 1
+}
+
+if [ -n "$DEVICE_ARG" ]; then
   DEVICE_FLAG="-d $DEVICE_ARG"
+else
+  # Determine platform from env file name
+  case "$ENV_FILE" in
+    *ios*)
+      # iOS simulator — just let Flutter pick it (it auto-boots)
+      DEVICE_FLAG=""
+      ;;
+    *)
+      # Android — ensure emulator is running
+      EMULATOR_ID=$(ensure_android_emulator)
+      DEVICE_FLAG="-d $EMULATOR_ID"
+      ;;
+  esac
 fi
 
+# ── Run ──────────────────────────────────────────────────────────────────
 printf "\n${GREEN}🚀 Launching Remembite...${NC}\n"
 printf "   API_URL → %s\n\n" "$API_URL"
 printf "  r  hot reload    R  hot restart    q  quit\n\n"
