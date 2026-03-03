@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working Rules
+
+- **Update docs before code**: Any change that deviates from the existing design or plan must be documented first (PRD.md, Wireframes.md, RoadMap.md, Dev Prompts.md as appropriate) before any code is written.
+- **Don't jump the gun**: Answer questions and wait for explicit instructions before making changes.
+
 ## Project Overview
 
 Remembite is a dish-level intelligence platform for dining. It captures structured behavioral data from restaurant visits (dish reactions, flavor preferences, repeat behavior) and builds personalized taste models. Not a review app — a self-correcting, community-powered, AI-augmented dish intelligence system.

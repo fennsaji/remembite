@@ -193,6 +193,7 @@ Payment ships before AI predictions. This ensures the upgrade moment exists when
 * PostgreSQL mirror of local SQLite data
 * Full local history syncs retroactively on Pro upgrade
 * Conflict resolution: last-write-wins for reactions
+* Cloud Sync `/sync/full` endpoint and backend logic built here; Settings toggle UI activated in Phase 4.6
 
 ## 6.4 Upgrade Flow UX
 
@@ -303,8 +304,64 @@ No extra dimensions in v1.
 * Numeric storage
 * Aggregation: community averages + vote counts
 
+## 9.4 FCM Push Notifications
+
+* When classification job completes, send FCM push to dish creator's device
+* Payload: `{ type: "classification_complete", dish_id, dish_name }`
+* Flutter: handle FCM message, refresh Dish Detail screen if open
+* FCM token stored on login via `PATCH /users/me/fcm-token`
+
 Deliverable:
-Dish attribute priors stored reliably. Hybrid data signals available.
+Dish attribute priors stored reliably. Hybrid data signals available. Users notified when dish classification completes.
+
+---
+
+# 9.5. Phase 4.5 – OCR Scan Flow Fix (Post Phase 4 Patch)
+
+## 9.5.1 Problem
+
+Home screen Scan Menu FAB navigated directly to `/scan` without a restaurant context. `OcrResultsScreen` requires a `restaurantId` to save dishes — without one it showed an error ("Scan from a restaurant"). This violated the design principle that scan is a menu capture tool for a specific restaurant, not a standalone entry point.
+
+## 9.5.2 Fix (No New UI Patterns)
+
+* Keep "Scan Menu" label on home FAB; change icon to `search`
+* FAB navigates to `/search` — user finds or creates a restaurant there
+* From the restaurant screen, user taps the Scan button (`/restaurant/:id/scan`)
+* Scan is now always initiated within a restaurant's context — enforces the correct mental model
+
+## 9.5.3 Rule Going Forward
+
+Scan Menu is a restaurant-contextual action. It must only be accessible from within a specific restaurant's screen (`/restaurant/:id/scan`). No route should navigate to `/scan` without a `restaurantId` attached.
+
+Deliverable:
+Home FAB updated. Scan flow always has restaurant context. No user-visible regression.
+
+---
+
+# 9.6. Phase 4.6 – Core UI Screens (Favorites + Settings)
+
+## 9.6.1 Favorites Screen
+
+* List all favorited dishes (from local Drift `favorites` table)
+* Filter by reaction level (🔥 / 😋 / 🙂 / 😐 / 🤢)
+* Filter by restaurant
+* Sort by most recent
+* Sort by highest reaction weight
+* Empty state: "Tap ♡ on any dish to save it here"
+
+## 9.6.2 Settings Screen
+
+* **Account**: display name, email, sign out
+* **Subscription**: show current plan (Free / Pro); link to Play Store subscription management for Pro users
+* **Cloud Sync**: toggle visible, enabled only for Pro — shows upgrade prompt for free users
+* **Export Data**: visible for Pro only — triggers data export (implementation deferred to Phase 7; show "Coming soon" for now)
+* **Privacy Controls**: link to privacy policy URL
+* **Help & Support**: mailto link to support email
+
+Note: Settings screen is a shell in this phase. Cloud Sync toggle and Data Export are placeholders until Phase 2 (cloud sync backend) and Phase 7 (export implementation) respectively.
+
+Deliverable:
+Favorites screen fully functional. Settings screen shell live with all rows visible; Pro-gated rows show upgrade prompt for free users.
 
 ---
 
@@ -361,8 +418,36 @@ Below threshold → no prediction shown.
 * If below threshold → no prediction shown, no placeholder
 * Never display uncertain AI guess
 
+## 10.6 Taste Insights on Profile Screen
+
+* After taste vectors are computed, surface human-readable insights on the Profile screen (Pro only)
+* Examples: "You prefer spicy food", "You tend to dislike very sweet dishes", "You love North Indian cuisine"
+* Derived from `user_taste_vectors` — top 2–3 signals only
+* Shown below Taste Profile completion indicator
+* Free users see blurred/locked version with "Unlock Pro" CTA
+
 Deliverable:
-Personalized predictions live (Pro only). Self-correcting attribute scores.
+Personalized predictions live (Pro only). Self-correcting attribute scores. Taste insights visible on Profile for Pro users.
+
+---
+
+# 10.5. Phase 5.5 – Map View
+
+## 10.5.1 Map Screen
+
+* Use `flutter_map` package (OpenStreetMap tiles — free, no API key)
+* Default view: pins for user's visited restaurants only (from local Drift DB)
+* Toggle: "Show Nearby" — adds nearby restaurants as secondary pins (different color)
+* Tap any pin → navigate to `/restaurant/:id`
+* Center map on user's current GPS location on load
+* No backend changes required — restaurant lat/lng already stored
+
+## 10.5.2 Router
+
+* `/map` route (already defined as placeholder) — replace `_MapPlaceholder` with real `MapScreen`
+
+Deliverable:
+Map View live. Visited restaurants pinned. Nearby toggle functional.
 
 ---
 
@@ -391,7 +476,7 @@ Note: Image upload UI on Dish Detail screen is visible from Phase 1 but non-func
 
 # 12. Phase 7 – Search & Ranking Optimization (Week 13–14)
 
-Basic search ships in Phase 1. This phase optimizes performance and ranking quality.
+Basic search ships in Phase 1. This phase optimizes performance, ranking quality, and adds Pro data export.
 
 * Fuzzy search performance tuning
 * Dish ranking query optimization
@@ -403,8 +488,14 @@ Basic search ships in Phase 1. This phase optimizes performance and ranking qual
   * Per-user sorted dishes
   * Global weighted dish ranking
 
+## Data Export (Pro Feature)
+
+* `GET /users/me/export` — returns full user data as JSON (reactions, ratings, notes, favorites)
+* Flutter: download + share via OS share sheet
+* Activate the "Export Data" row in Settings (was placeholder in Phase 4.6)
+
 Deliverable:
-High-quality, performant discoverability.
+High-quality, performant discoverability. Pro data export live.
 
 ---
 
@@ -429,9 +520,14 @@ Production-ready stable system. Ready for user growth.
 ✔ Pro upgrade flow creates natural conversion moments
 ✔ Governance stable (admin-mediated)
 ✔ AI classification async and safe
+✔ FCM push notifications working (classification complete events)
 ✔ Bayesian blending tested
 ✔ Taste vector producing reasonable predictions
 ✔ Confidence thresholds enforced
+✔ Favorites screen functional (filter + sort)
+✔ Settings screen complete (all rows active, Pro-gating correct)
+✔ Map View live (visited + nearby pins)
+✔ Taste insights visible on Profile for Pro users
 ✔ No blocking flows
 ✔ Crash-free test runs
 

@@ -13,14 +13,16 @@ Components:
 * Search bar (fuzzy match across restaurants & dishes)
 * Nearby Restaurants list (with star rating)
 * Recently Visited list
-* Floating Action Button: Scan Menu (secondary flow — not primary onboarding path)
+* Floating Action Button: Search Restaurant (search icon) — navigates to `/search`; scan is only accessible from within a restaurant's context
 * Bottom Navigation: Home | Map | Favorites | Profile
 
 Behavior:
 
 * Auto-detect nearby restaurants via GPS
-* Manual "Add New" option inside search
+* Manual "Add New Restaurant" button always visible at the bottom of the Search screen — navigates to `/restaurant/add`
 * Default entry point for returning users is the Recently Visited list, not OCR
+* Scan Menu FAB takes user to Search → select restaurant → restaurant screen → scan from there
+* Scan is a restaurant-contextual action — never invoked directly from home without a restaurantId
 
 ---
 

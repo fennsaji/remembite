@@ -152,9 +152,10 @@ Phase 1 deliverables — build backend API + Flutter UI for:
    - Skip always visible, never blocked
    Backend: bootstrapping uses same POST /dishes/:id/reactions endpoint
 
-Dish detail screen: show reaction, notes input (private), attribute voting UI (spice/sweetness with Skip).
+Dish detail screen: show reaction, notes input (private), attribute voting UI (spice/sweetness with Skip), image upload placeholder button (non-functional until Phase 6 — show disabled "Add Photo" button with "Coming soon" tooltip).
 Notes saved to local Drift DB + synced for Pro users only.
 Restaurant Super Screen: Your Top Bites (sorted by reaction weight, tie-break by recency) + Community Favorites (min 5 votes, weighted score) + Full Menu (collapsed, first 5 visible).
+Taste Profile Completion bar on Profile screen: use local Drift reaction count (accurate for free users, no backend call needed). Text: "React to X more dishes to unlock predictions". Navigates to /upgrade on tap. Note: backend endpoint GET /users/me/taste-profile-status is added in Phase 5 — in Phase 1 use local count only.
 ```
 
 ---
@@ -248,8 +249,8 @@ Phase 2 deliverables:
 6. UPGRADE FLOW UX
    Upgrade Screen: AI Taste Compatibility Predictions → Advanced Taste Insights → Cloud Sync → Data Export.
    Annual plan (₹399/year) displayed first and highlighted as recommended. Monthly (₹49) below it.
-   Taste Profile Completion bar on Profile screen: "React to X more dishes to unlock your taste profile" → tapping navigates to Upgrade Screen.
-   Locked AI signal on Dish Detail (Pro gate): blurred placeholder "🔥 You'll probably love this — unlock predictions" when dish would have a prediction but user is not Pro.
+   Taste Profile Completion bar on Profile screen: already built in Phase 1 using local count. In Phase 2 just ensure it navigates to /upgrade on tap — no backend change needed until Phase 5.
+   Locked AI signal on Dish Detail (Pro gate): blurred placeholder "🔥 You'll probably love this — unlock predictions" when dish would have a prediction but user is not Pro. Note: actual predictions don't exist until Phase 5 — show the locked placeholder UI only.
    Subscription management in Settings: show current plan, expiry date, cancel option (links to Play Store subscription management).
 
 Platform fee: Google Play takes 15% of all revenue. No action needed in code — Play Store handles it.
@@ -277,7 +278,7 @@ Phase 3 deliverables:
    - POST /edit-suggestions — submit suggestion (entity_type, entity_id, field, proposed_value)
    - GET /edit-suggestions?entity_id=&entity_type= — list pending suggestions for an entity
    - POST /edit-suggestions/:id/vote — vote up or down (unique per user per suggestion)
-   - Auto-apply logic: if net_votes (upvotes - downvotes) >= 3 within 7 days → apply edit, mark suggestion approved
+   - Auto-apply logic: build the logic (if net_votes >= 3 within 7 days → apply), but keep it DISABLED by default (config flag auto_apply_edits=false). In early stage admin manually approves via the admin endpoint. Auto-apply activates when user density per city justifies it — controlled by config, not a code change.
    - Expiry job: cron/background task — expire suggestions with no consensus after 7 days (status=expired)
    - Admin endpoints: POST /admin/edit-suggestions/:id/approve and /reject (admin role check)
    Flutter:
@@ -397,6 +398,117 @@ Phase 4 deliverables:
 
 ---
 
+## Phase 4.5 – OCR Scan Flow Fix
+
+```
+We are building Remembite. Phases 0–4 are complete.
+
+Context: The home screen FAB previously navigated to /scan without a restaurant context, causing "scan from a restaurant" error in OcrResultsScreen (which requires restaurantId to save dishes).
+
+Fix (no new UI patterns):
+
+1. HOME SCREEN FAB
+   In app/lib/features/home/presentation/home_screen.dart:
+   - Keep label 'Scan Menu', change icon to Icons.search
+   - onPressed: () => context.push('/search')  — user finds/selects restaurant there
+   - Remove _showRestaurantPicker() method
+   - Remove _RestaurantPickerSheet widget class
+   - Remove import for search_repository.dart if only used by the picker sheet
+
+   Flow: Scan Menu FAB → Search screen → tap restaurant → Restaurant screen → tap Scan (which uses /restaurant/:id/scan)
+
+2. SEARCH SCREEN — ADD RESTAURANT FOOTER
+   In app/lib/features/search/presentation/search_screen.dart:
+   Add a persistent bottomNavigationBar with an "Add New Restaurant" OutlinedButton.
+   onPressed: () => context.push('/restaurant/add')
+   Always visible regardless of search state — user may arrive on Search to add a new restaurant.
+
+3. VERIFY SCAN ROUTES
+   Confirm that no route navigates to /scan without a restaurantId.
+   The restaurant screen already has: context.push('/restaurant/$id/scan')
+   That is the ONLY valid scan entry point.
+
+3. NO OTHER CHANGES
+   Do not add new screens, patterns, or bottom sheets.
+   Do not modify the restaurant screen or OCR screens.
+
+Rule going forward: Scan Menu is always restaurant-contextual. Never navigate to /scan from home without restaurantId.
+```
+
+---
+
+## Phase 4.6 – Core UI Screens (Favorites + Settings)
+
+```
+We are building Remembite. Phases 0–4.5 are complete.
+
+Read CLAUDE.md (design system, AppColors, typography) before starting. Reference design/remembite.pen screens 10 (Favorites) and 13 (Settings).
+
+Phase 4.6 deliverables:
+
+1. FAVORITES SCREEN
+   app/lib/features/favorites/presentation/favorites_screen.dart
+   - List all favorited dishes from local Drift `favorites` table joined with `dishes` and `restaurants`
+   - Filter chips: All | 🔥 | 😋 | 🙂 | 😐 | 🤢 (filter by reaction)
+   - Filter by restaurant: dropdown or chip row
+   - Sort: Most Recent | Highest Reaction Weight
+   - Tap dish → /dish/:id
+   - Empty state: "Tap ♡ on any dish to save it here"
+
+2. SETTINGS SCREEN
+   app/lib/features/settings/presentation/settings_screen.dart
+   Route: /settings (add to ShellRoute in app_router.dart)
+   Rows (grouped):
+   - Account: display name + email (read-only), Sign Out button
+   - Subscription: "Free" or "Pro — Manage" (links to Play Store for Pro users)
+   - Cloud Sync: toggle — disabled with "Pro feature" label for free users; functional in Phase 2
+   - Export Data: "Pro feature" for free users; "Coming soon" for Pro users (functional in Phase 7)
+   - Cloud Sync: toggle — Pro users: on tap triggers POST /sync/full (Phase 2 endpoint); off disables background sync worker. Free users: disabled, tap → /upgrade.
+   - Privacy Policy: opens URL in browser
+   - Help & Support: opens mailto:support@remembite.com
+   All Pro-gated rows show upgrade prompt (navigate to /upgrade) for free users.
+   Add Settings link to Profile screen (gear icon in top-right or row at bottom).
+```
+
+---
+
+## Phase 5.5 – Map View
+
+```
+We are building Remembite. Phases 0–5 are complete.
+
+Read CLAUDE.md (design system, AppColors). Reference design/remembite.pen screen 14 (Map View).
+
+Phase 5.5 deliverables:
+
+1. MAP SCREEN
+   app/lib/features/map/presentation/map_screen.dart
+   Package: flutter_map (OpenStreetMap tiles — free, no API key required)
+   Add to pubspec.yaml: flutter_map: ^6.0.0, latlong2: ^0.9.0
+
+   Default view:
+   - Center on user's current GPS location
+   - Show pins for all restaurants the user has reacted to (from local Drift DB)
+   - Pin color: AppColors.accent (#E6A830)
+
+   Toggle "Show Nearby":
+   - Adds nearby restaurants (from getNearbyRestaurants API) as secondary pins
+   - Secondary pin color: AppColors.secondaryText
+
+   Interaction:
+   - Tap any pin → context.push('/restaurant/:id')
+   - Show restaurant name in a small tooltip/marker label
+
+2. ROUTER
+   Replace `_MapPlaceholder` in app_router.dart with real MapScreen()
+   Route /map is already defined inside ShellRoute — no route changes needed
+
+3. NO BACKEND CHANGES
+   Restaurant lat/lng already stored. Use existing nearbyRestaurantsProvider for nearby pins.
+```
+
+---
+
 ## Phase 5 – Bayesian Blending + Taste Vectors
 
 ```
@@ -420,6 +532,7 @@ Phase 5 deliverables:
    Maintain user_taste_vectors with: spice_preference, sweetness_preference, cuisine_distribution (JSONB), dish_type_distribution (JSONB), reaction_count.
    Update incrementally on each dish reaction:
      new_pref = old_pref + 0.1 * (dish_final_score - old_pref)   [learning rate = 0.1]
+     dish_final_score = Bayesian blended score from Phase 5 (NOT the raw LLM prior from Phase 4)
      Update cuisine_distribution[cuisine] += reaction_weight / total_weight (normalize to sum=1)
      reaction_weight: so_yummy=5, tasty=4, pretty_good=3, meh=2, never_again=1
    Update runs synchronously in the reaction upsert transaction (fast — pure arithmetic).
@@ -533,6 +646,14 @@ Phase 7 deliverables — optimize search performance and ranking quality:
    Dish search: if same dish name exists at multiple restaurants, group under one result with "Available at 3 restaurants".
    Backend: GROUP BY normalised dish name, return restaurant_ids array.
    Flutter: show grouped dish result with restaurant count, tap expands to list of restaurants.
+
+7. DATA EXPORT (Pro feature)
+   Backend: GET /users/me/export — returns full user data as JSON:
+   { reactions: [...], ratings: [...], notes: [...], favorites: [...], restaurants: [...] }
+   Pro-gated: return 403 for free users.
+   Flutter: "Export Data" row in Settings (activated from Phase 4.6 placeholder).
+   On tap: call API, receive JSON, share via OS share sheet using share_plus package.
+   Show loading indicator while export is generating.
 ```
 
 ---
