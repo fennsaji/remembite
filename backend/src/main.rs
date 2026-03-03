@@ -116,10 +116,11 @@ async fn main() -> anyhow::Result<()> {
         .nest("/ocr", routes::ocr::router())
         // Edit suggestions
         .nest("/edit-suggestions", routes::edit_suggestions::router())
-        // Admin routes (approve/reject suggestions, list reports, merge restaurants, report actions)
+        // Admin routes (approve/reject suggestions, list reports, merge restaurants, report actions, recompute)
         .nest("/admin", routes::edit_suggestions::admin_router()
             .merge(routes::restaurants::admin_router())
-            .merge(routes::reports::admin_router()))
+            .merge(routes::reports::admin_router())
+            .merge(routes::dishes::admin_router()))
         // Reports
         .nest("/reports", routes::reports::router())
         .layer(TraceLayer::new_for_http())

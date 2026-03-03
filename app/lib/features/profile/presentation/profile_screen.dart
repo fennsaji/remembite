@@ -9,6 +9,7 @@ import '../../../core/billing/pro_status_provider.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
+import '../data/profile_repository.dart';
 
 part 'profile_screen.g.dart';
 
@@ -52,6 +53,8 @@ class ProfileScreen extends ConsumerWidget {
     final auth = ref.watch(authStateProvider).value;
     final isPro = ref.watch(proStatusProvider);
     final statsAsync = ref.watch(profileStatsProvider);
+    final statusAsync = ref.watch(tasteProfileStatusProvider);
+    final insightsAsync = ref.watch(tasteInsightsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -176,13 +179,24 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             SliverToBoxAdapter(
-              child: statsAsync.maybeWhen(
-                data: (stats) => _TasteProfileCard(
-                  reactionCount: stats.reactionCount,
-                  isPro: isPro,
+              child: statusAsync.when(
+                loading: () => const SizedBox(height: 80),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (status) => _TasteProfileCard(
+                  status: status,
                   onUpgrade: () => context.push('/upgrade'),
                 ),
-                orElse: SizedBox.shrink,
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: insightsAsync.when(
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (insights) {
+                  if (insights == null) return const SizedBox.shrink();
+                  if (!insights.ready) return const SizedBox.shrink();
+                  return _TasteInsightsCard(insights: insights);
+                },
               ),
             ),
             if (isPro)
@@ -254,17 +268,17 @@ class _StatBox extends StatelessWidget {
 }
 
 class _TasteProfileCard extends StatelessWidget {
-  final int reactionCount;
-  final bool isPro;
+  final TasteProfileStatus status;
   final VoidCallback onUpgrade;
-  const _TasteProfileCard(
-      {required this.reactionCount, required this.isPro, required this.onUpgrade});
+  const _TasteProfileCard({required this.status, required this.onUpgrade});
 
   @override
   Widget build(BuildContext context) {
-    final progress = (reactionCount / 10).clamp(0.0, 1.0);
-    final remaining = (10 - reactionCount).clamp(0, 10);
-    final isComplete = reactionCount >= 10;
+    final progress = status.progress;
+    final remaining =
+        (status.threshold - status.reactionCount).clamp(0, status.threshold);
+    final isComplete = status.complete;
+    final isPro = !status.insightsLocked;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -272,7 +286,7 @@ class _TasteProfileCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [AppColors.surface, Color(0xFF2A2115)],
+            colors: [AppColors.surface, AppColors.proSurface],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -302,7 +316,8 @@ class _TasteProfileCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: AppColors.border,
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(AppColors.accent),
                 minHeight: 6,
               ),
             ),
@@ -332,6 +347,87 @@ class _TasteProfileCard extends StatelessWidget {
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TasteInsightsCard extends StatelessWidget {
+  final TasteInsights insights;
+  const _TasteInsightsCard({required this.insights});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.proSurface, AppColors.surface],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          border:
+              Border.all(color: AppColors.proAccent.withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(width: 24, height: 2, color: AppColors.proAccent),
+                const SizedBox(width: 8),
+                Text(
+                  'TASTE INSIGHTS',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppColors.secondaryText,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.8,
+                      ),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.proAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'PRO',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: AppColors.proAccent,
+                          fontSize: 9,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...insights.insights.map(
+              (insight) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_awesome,
+                        size: 14, color: AppColors.proAccent),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        insight,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.primaryText,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

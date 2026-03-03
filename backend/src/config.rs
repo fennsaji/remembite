@@ -21,6 +21,7 @@ pub struct Config {
     pub google_play_package_name: String,
     pub google_play_service_account_json: String,
     pub google_pubsub_webhook_token: String,
+    pub bayesian_prior_weight: f64,  // k constant (default 5.0)
 }
 
 impl Config {
@@ -48,6 +49,7 @@ impl Config {
             google_play_service_account_json: env_or("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "{}"),
             // Dev default — MUST be overridden via GOOGLE_PUBSUB_WEBHOOK_TOKEN in production
             google_pubsub_webhook_token: env_or("GOOGLE_PUBSUB_WEBHOOK_TOKEN", "dev-webhook-token"),
+            bayesian_prior_weight: parse_env("BAYESIAN_PRIOR_WEIGHT", 5.0f64)?,
         })
     }
 }

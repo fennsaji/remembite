@@ -10,13 +10,20 @@ use crate::{
     AppState,
     auth::middleware::AuthUser,
     dto::{
-        AttributeVoteRequest, DishAttributesResponse, DishBatchCreateRequest, DishDetailResponse,
-        DishResponse, ReactionSummaryResponse, ReactionUpsertRequest,
+        AttributeVoteRequest, CompatibilityResponse, DishAttributesResponse,
+        DishBatchCreateRequest, DishDetailResponse, DishResponse, ReactionSummaryResponse,
+        ReactionUpsertRequest,
     },
     error::{AppError, AppResult},
     jobs::queue::Job,
     middleware::rate_limit::check_user_limit,
 };
+
+/// Admin-only routes mounted at /admin
+pub fn admin_router() -> Router<AppState> {
+    Router::new()
+        .route("/recompute-taste-vectors", post(admin_recompute_taste_vectors))
+}
 
 /// Routes mounted at /restaurants/:id/dishes
 pub fn restaurant_dishes_router() -> Router<AppState> {
@@ -32,6 +39,7 @@ pub fn dishes_router() -> Router<AppState> {
         .route("/:id/attribute_votes", post(upsert_attribute_vote))
         .route("/:id/favorites", post(toggle_favorite))
         .route("/:id/attributes", get(get_dish_attributes))
+        .route("/:id/compatibility", get(get_compatibility))
 }
 
 async fn list_dishes(
@@ -54,18 +62,20 @@ async fn list_dishes(
     use sqlx::Row;
     let dishes: Vec<DishResponse> = rows
         .into_iter()
-        .map(|r| DishResponse {
-            id: r.try_get("id").unwrap(),
-            restaurant_id: r.try_get("restaurant_id").unwrap(),
-            name: r.try_get("name").unwrap(),
-            category: r.try_get("category").unwrap(),
-            price: r.try_get("price").unwrap(),
-            attribute_state: r.try_get("attribute_state").unwrap(),
-            community_score: r.try_get("community_score").unwrap(),
-            vote_count: r.try_get("vote_count").unwrap(),
-            created_at: r.try_get("created_at").unwrap(),
+        .map(|r| -> Result<DishResponse, sqlx::Error> {
+            Ok(DishResponse {
+                id: r.try_get("id")?,
+                restaurant_id: r.try_get("restaurant_id")?,
+                name: r.try_get("name")?,
+                category: r.try_get("category")?,
+                price: r.try_get("price")?,
+                attribute_state: r.try_get("attribute_state")?,
+                community_score: r.try_get("community_score")?,
+                vote_count: r.try_get("vote_count")?,
+                created_at: r.try_get("created_at")?,
+            })
         })
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
 
     Ok(Json(dishes))
 }
@@ -157,7 +167,7 @@ async fn get_dish(
         let prior_row = sqlx::query(
             r#"
             SELECT spice_score, sweetness_score, dish_type, cuisine,
-                   final_spice_score, final_sweetness_score, community_vote_count
+                   final_spice_score, final_sweetness_score, community_vote_count, confidence_score
             FROM dish_attribute_priors WHERE dish_id = $1
             "#,
         )
@@ -165,15 +175,21 @@ async fn get_dish(
         .fetch_optional(&state.db)
         .await?;
 
-        prior_row.map(|p| crate::dto::AttributePriorResponse {
-            spice_score: p.try_get("spice_score").unwrap(),
-            sweetness_score: p.try_get("sweetness_score").unwrap(),
-            dish_type: p.try_get("dish_type").unwrap(),
-            cuisine: p.try_get("cuisine").unwrap(),
-            final_spice_score: p.try_get("final_spice_score").unwrap(),
-            final_sweetness_score: p.try_get("final_sweetness_score").unwrap(),
-            community_vote_count: p.try_get("community_vote_count").unwrap(),
-        })
+        use sqlx::Row;
+        prior_row
+            .map(|p| -> Result<crate::dto::AttributePriorResponse, sqlx::Error> {
+                Ok(crate::dto::AttributePriorResponse {
+                    spice_score: p.try_get("spice_score")?,
+                    sweetness_score: p.try_get("sweetness_score")?,
+                    dish_type: p.try_get("dish_type")?,
+                    cuisine: p.try_get("cuisine")?,
+                    final_spice_score: p.try_get("final_spice_score")?,
+                    final_sweetness_score: p.try_get("final_sweetness_score")?,
+                    community_vote_count: p.try_get("community_vote_count")?,
+                    confidence_score: p.try_get("confidence_score")?,
+                })
+            })
+            .transpose()?
     } else {
         None
     };
@@ -207,6 +223,16 @@ async fn upsert_reaction(
             valid_reactions.join(", ")
         )));
     }
+
+    // Check if this is a new reaction (for reaction_count tracking)
+    let is_new_reaction = sqlx::query(
+        "SELECT 1 FROM dish_reactions WHERE user_id = $1 AND dish_id = $2",
+    )
+    .bind(user.id)
+    .bind(dish_id)
+    .fetch_optional(&state.db)
+    .await?
+    .is_none();
 
     // Upsert reaction + recalculate aggregate inside a single transaction
     let mut tx = state.db.begin().await?;
@@ -292,7 +318,9 @@ async fn upsert_reaction(
 
     // Update taste vector incrementally if dish is classified
     let prior_row = sqlx::query(
-        "SELECT spice_score, sweetness_score FROM dish_attribute_priors WHERE dish_id = $1",
+        r#"SELECT spice_score, sweetness_score, final_spice_score, final_sweetness_score,
+                  dish_type, cuisine
+           FROM dish_attribute_priors WHERE dish_id = $1"#,
     )
     .bind(dish_id)
     .fetch_optional(&state.db)
@@ -300,8 +328,27 @@ async fn upsert_reaction(
 
     if let Some(prior) = prior_row {
         use sqlx::Row;
-        let spice: f64 = prior.try_get("spice_score")?;
-        let sweetness: f64 = prior.try_get("sweetness_score")?;
+        let raw_spice: f64 = prior.try_get("spice_score")?;
+        let raw_sweetness: f64 = prior.try_get("sweetness_score")?;
+        let final_spice_score: Option<f64> = prior.try_get("final_spice_score")?;
+        let final_sweetness_score: Option<f64> = prior.try_get("final_sweetness_score")?;
+        // dish_type and cuisine are NOT NULL in schema
+        let dish_type: String = prior.try_get("dish_type")?;
+        let cuisine: String = prior.try_get("cuisine")?;
+
+        // Use Bayesian-blended scores when available, fall back to raw LLM priors
+        let spice = final_spice_score.unwrap_or(raw_spice);
+        let sweetness = final_sweetness_score.unwrap_or(raw_sweetness);
+
+        // Normalize reaction to 0–1 signal for distribution updates
+        let reaction_signal: f64 = match req.reaction.as_str() {
+            "so_yummy"    => 1.0,
+            "tasty"       => 0.75,
+            "pretty_good" => 0.5,
+            "meh"         => 0.25,
+            "never_again" => 0.0,
+            _             => 0.5,
+        };
 
         // Get or create taste vector
         sqlx::query(
@@ -316,18 +363,41 @@ async fn upsert_reaction(
         .await?;
 
         // Incremental update: new_pref = old_pref + 0.1 * (dish_attr - old_pref)
+        // cuisine and dish_type are NOT NULL, so always update distributions.
+        // Only increment reaction_count for new reactions (not re-reactions).
         sqlx::query(
             r#"
             UPDATE user_taste_vectors SET
                 spice_preference = spice_preference + 0.1 * ($1 - spice_preference),
                 sweetness_preference = sweetness_preference + 0.1 * ($2 - sweetness_preference),
-                reaction_count = reaction_count + 1,
+                cuisine_distribution = jsonb_set(
+                    cuisine_distribution,
+                    ARRAY[$5::text],
+                    to_jsonb(
+                        COALESCE((cuisine_distribution ->> $5::text)::float, 0.0)
+                        + 0.1 * ($3 - COALESCE((cuisine_distribution ->> $5::text)::float, 0.0))
+                    )
+                ),
+                dish_type_distribution = jsonb_set(
+                    dish_type_distribution,
+                    ARRAY[$6::text],
+                    to_jsonb(
+                        COALESCE((dish_type_distribution ->> $6::text)::float, 0.0)
+                        + 0.1 * ($4 - COALESCE((dish_type_distribution ->> $6::text)::float, 0.0))
+                    )
+                ),
+                reaction_count = reaction_count + $7,
                 updated_at = NOW()
-            WHERE user_id = $3
+            WHERE user_id = $8
             "#,
         )
         .bind(spice)
         .bind(sweetness)
+        .bind(reaction_signal)  // $3 cuisine signal
+        .bind(reaction_signal)  // $4 dish_type signal
+        .bind(&cuisine)
+        .bind(&dish_type)
+        .bind(if is_new_reaction { 1i32 } else { 0i32 })
         .bind(user.id)
         .execute(&state.db)
         .await?;
@@ -407,9 +477,9 @@ async fn upsert_attribute_vote(
     .execute(&mut *tx)
     .await?;
 
-    // Recompute Bayesian blended scores (k=5)
+    // Recompute Bayesian blended scores
     // final_score = (k * llm_prior + n * community_avg) / (k + n)
-    let k = 5.0f64;
+    let k = state.config.bayesian_prior_weight;
     let prior_row = sqlx::query(
         "SELECT spice_score, sweetness_score FROM dish_attribute_priors WHERE dish_id = $1",
     )
@@ -426,8 +496,9 @@ async fn upsert_attribute_vote(
             r#"
             SELECT
                 AVG(CASE WHEN attribute = 'spice' THEN value END) as avg_spice,
+                COUNT(CASE WHEN attribute = 'spice' THEN 1 END) as n_spice,
                 AVG(CASE WHEN attribute = 'sweetness' THEN value END) as avg_sweetness,
-                COUNT(*) as total_votes
+                COUNT(CASE WHEN attribute = 'sweetness' THEN 1 END) as n_sweetness
             FROM dish_attribute_votes WHERE dish_id = $1
             "#,
         )
@@ -437,13 +508,17 @@ async fn upsert_attribute_vote(
 
         let avg_spice: Option<f64> = vote_avgs.try_get("avg_spice")?;
         let avg_sweetness: Option<f64> = vote_avgs.try_get("avg_sweetness")?;
-        let n: i64 = vote_avgs.try_get("total_votes")?;
-        let n = n as f64;
+        let n_spice: i64 = vote_avgs.try_get("n_spice")?;
+        let n_sweetness: i64 = vote_avgs.try_get("n_sweetness")?;
 
         let final_spice = avg_spice
-            .map(|s| (k * llm_spice + n * s) / (k + n));
+            .map(|s| (k * llm_spice + n_spice as f64 * s) / (k + n_spice as f64));
         let final_sweetness = avg_sweetness
-            .map(|s| (k * llm_sweetness + n * s) / (k + n));
+            .map(|s| (k * llm_sweetness + n_sweetness as f64 * s) / (k + n_sweetness as f64));
+
+        // confidence_score = min(n / (n + k), 1.0) — per-attribute for the voted attribute
+        let n_for_confidence = if req.attribute == "spice" { n_spice } else { n_sweetness } as f64;
+        let confidence_score = (n_for_confidence / (n_for_confidence + k)).min(1.0);
 
         sqlx::query(
             r#"
@@ -451,13 +526,15 @@ async fn upsert_attribute_vote(
                 final_spice_score = $1,
                 final_sweetness_score = $2,
                 community_vote_count = $3,
+                confidence_score = $4,
                 updated_at = NOW()
-            WHERE dish_id = $4
+            WHERE dish_id = $5
             "#,
         )
         .bind(final_spice)
         .bind(final_sweetness)
-        .bind(n as i32)
+        .bind((n_spice + n_sweetness) as i32)
+        .bind(confidence_score)
         .bind(dish_id)
         .execute(&mut *tx)
         .await?;
@@ -524,7 +601,7 @@ async fn get_dish_attributes(
     // Get LLM priors if available
     let prior = sqlx::query(
         r#"SELECT spice_score, sweetness_score, dish_type, cuisine,
-                  final_spice_score, final_sweetness_score, community_vote_count
+                  final_spice_score, final_sweetness_score, community_vote_count, confidence_score
            FROM dish_attribute_priors WHERE dish_id = $1"#
     )
     .bind(dish_id)
@@ -557,6 +634,7 @@ async fn get_dish_attributes(
             community_vote_count: p.try_get("community_vote_count")?,
             final_spice_score: p.try_get("final_spice_score")?,
             final_sweetness_score: p.try_get("final_sweetness_score")?,
+            confidence_score: p.try_get("confidence_score")?,
         },
         None => DishAttributesResponse {
             attribute_state,
@@ -569,6 +647,147 @@ async fn get_dish_attributes(
             community_vote_count: 0,
             final_spice_score: None,
             final_sweetness_score: None,
+            confidence_score: None,
         },
     }))
+}
+
+async fn get_compatibility(
+    State(state): State<AppState>,
+    Path(dish_id): Path<Uuid>,
+    user: AuthUser,
+) -> AppResult<Json<CompatibilityResponse>> {
+    user.require_pro()?;
+
+    use sqlx::Row;
+
+    // Verify dish exists before any threshold checks
+    sqlx::query("SELECT 1 FROM dishes WHERE id = $1")
+        .bind(dish_id)
+        .fetch_optional(&state.db)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("Dish {dish_id} not found")))?;
+
+    // Fetch user taste vector — reaction_count here counts only reactions to classified dishes,
+    // matching the spec requirement of ≥10 reactions to dishes with overlapping attributes.
+    let vector_row = sqlx::query(
+        r#"SELECT spice_preference, sweetness_preference, reaction_count
+           FROM user_taste_vectors WHERE user_id = $1"#,
+    )
+    .bind(user.id)
+    .fetch_optional(&state.db)
+    .await?;
+
+    let (spice_pref, sweet_pref, user_reactions) = match vector_row {
+        Some(ref r) => {
+            let spice: f64 = r.try_get("spice_preference")?;
+            let sweet: f64 = r.try_get("sweetness_preference")?;
+            let count: i32 = r.try_get("reaction_count")?;
+            (spice, sweet, count)
+        }
+        None => {
+            return Ok(Json(CompatibilityResponse {
+                signal: None,
+                score: None,
+                reason: Some("no_taste_vector".to_string()),
+            }));
+        }
+    };
+
+    if user_reactions < 10 {
+        return Ok(Json(CompatibilityResponse {
+            signal: None,
+            score: None,
+            reason: Some("user_threshold_not_met".to_string()),
+        }));
+    }
+
+    // Fetch dish attribute priors
+    let prior_row = sqlx::query(
+        r#"SELECT final_spice_score, final_sweetness_score, community_vote_count
+           FROM dish_attribute_priors WHERE dish_id = $1"#,
+    )
+    .bind(dish_id)
+    .fetch_optional(&state.db)
+    .await?;
+
+    let (final_spice, final_sweet, community_votes) = match prior_row {
+        Some(ref r) => {
+            let spice: Option<f64> = r.try_get("final_spice_score")?;
+            let sweet: Option<f64> = r.try_get("final_sweetness_score")?;
+            let votes: i32 = r.try_get("community_vote_count")?;
+            (spice, sweet, votes)
+        }
+        None => (None, None, 0i32),
+    };
+
+    // community_votes < 10 covers the None prior case (votes defaults to 0)
+    if community_votes < 10 {
+        return Ok(Json(CompatibilityResponse {
+            signal: None,
+            score: None,
+            reason: Some("dish_threshold_not_met".to_string()),
+        }));
+    }
+
+    let final_spice = match final_spice {
+        Some(v) => v,
+        None => {
+            return Ok(Json(CompatibilityResponse {
+                signal: None,
+                score: None,
+                reason: Some("dish_threshold_not_met".to_string()),
+            }));
+        }
+    };
+    let final_sweet = match final_sweet {
+        Some(v) => v,
+        None => {
+            return Ok(Json(CompatibilityResponse {
+                signal: None,
+                score: None,
+                reason: Some("dish_threshold_not_met".to_string()),
+            }));
+        }
+    };
+
+    // Euclidean similarity over spice + sweetness dimensions, normalised to [0, 1]
+    let d_spice = (spice_pref - final_spice).abs();
+    let d_sweet = (sweet_pref - final_sweet).abs();
+    let distance = ((d_spice * d_spice + d_sweet * d_sweet) / 2.0).sqrt();
+    let score = (1.0 - distance).clamp(0.0, 1.0);
+
+    let signal = if score >= 0.75 {
+        "You'll probably love this"
+    } else if score >= 0.55 {
+        "This fits your taste"
+    } else if score >= 0.40 {
+        "Could go either way"
+    } else {
+        "Might not be your style"
+    };
+
+    Ok(Json(CompatibilityResponse {
+        signal: Some(signal.to_string()),
+        score: Some(score),
+        reason: None,
+    }))
+}
+
+// ─────────────────────────────────────────────
+// Admin handlers
+// ─────────────────────────────────────────────
+
+async fn admin_recompute_taste_vectors(
+    State(state): State<AppState>,
+    user: AuthUser,
+) -> AppResult<Json<serde_json::Value>> {
+    user.require_admin()?;
+
+    state.job_queue.enqueue(Job::RecomputeTasteVectors).await?;
+
+    Ok(Json(serde_json::json!({
+        "ok": true,
+        "message": "Recompute job enqueued"
+    })))
 }

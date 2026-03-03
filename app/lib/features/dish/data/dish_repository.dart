@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/billing/pro_status_provider.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_client.dart';
 
@@ -60,6 +61,7 @@ class AttributePriors {
   final double? finalSpiceScore;
   final double? finalSweetnessScore;
   final int communityVoteCount;
+  final double? confidenceScore;
 
   const AttributePriors({
     required this.spiceScore,
@@ -69,6 +71,7 @@ class AttributePriors {
     this.finalSpiceScore,
     this.finalSweetnessScore,
     required this.communityVoteCount,
+    this.confidenceScore,
   });
 
   factory AttributePriors.fromJson(Map<String, dynamic> json) =>
@@ -81,6 +84,22 @@ class AttributePriors {
         finalSweetnessScore:
             (json['final_sweetness_score'] as num?)?.toDouble(),
         communityVoteCount: json['community_vote_count'] as int,
+        confidenceScore: (json['confidence_score'] as num?)?.toDouble(),
+      );
+}
+
+class CompatibilitySignal {
+  final String? signal;
+  final double? score;
+  final String? reason;
+
+  const CompatibilitySignal({this.signal, this.score, this.reason});
+
+  factory CompatibilitySignal.fromJson(Map<String, dynamic> json) =>
+      CompatibilitySignal(
+        signal: json['signal'] as String?,
+        score: (json['score'] as num?)?.toDouble(),
+        reason: json['reason'] as String?,
       );
 }
 
@@ -242,8 +261,12 @@ class DishRepository {
   }
 
   Future<List<DishRow>> getFavorites(String userId) async {
-    // Favorites are queried from local DB via custom join
-    return _db.dishDao.getByRestaurant(''); // placeholder — favorites query below
+    throw UnimplementedError('Favorites screen is not yet implemented');
+  }
+
+  Future<CompatibilitySignal> getCompatibility(String dishId) async {
+    final response = await _dio.get('/dishes/$dishId/compatibility');
+    return CompatibilitySignal.fromJson(response.data as Map<String, dynamic>);
   }
 }
 
@@ -253,4 +276,16 @@ DishRepository dishRepository(Ref ref) {
     ref.watch(apiClientProvider),
     ref.watch(appDatabaseProvider),
   );
+}
+
+@riverpod
+Future<CompatibilitySignal?> compatibilitySignal(
+    Ref ref, String dishId) async {
+  final isPro = ref.watch(proStatusProvider);
+  if (!isPro) return null;
+  try {
+    return await ref.read(dishRepositoryProvider).getCompatibility(dishId);
+  } catch (_) {
+    return null;
+  }
 }

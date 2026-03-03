@@ -123,6 +123,7 @@ pub struct AttributePriorResponse {
     pub final_spice_score: Option<f64>,
     pub final_sweetness_score: Option<f64>,
     pub community_vote_count: i32,
+    pub confidence_score: Option<f64>,
 }
 
 // ─────────────────────────────────────────────
@@ -317,6 +318,7 @@ pub struct DishAttributesResponse {
     pub community_vote_count: i32,
     pub final_spice_score: Option<f64>,
     pub final_sweetness_score: Option<f64>,
+    pub confidence_score: Option<f64>,
 }
 
 // ─────────────────────────────────────────────
@@ -348,4 +350,31 @@ pub struct ParsedDishDto {
 #[derive(Debug, Deserialize)]
 pub struct FcmTokenRequest {
     pub token: String,
+}
+
+// ─────────────────────────────────────────────
+// Compatibility / Taste Intelligence DTOs
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Serialize)]
+pub struct CompatibilityResponse {
+    pub signal: Option<String>,
+    pub score: Option<f64>,
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct TasteInsightsResponse {
+    pub ready: bool,
+    pub reaction_count: i32,
+    pub insights: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct TasteProfileStatusResponse {
+    pub reaction_count: i32,
+    pub threshold: i32,
+    pub progress: f64,
+    pub complete: bool,
+    pub insights_locked: bool,
 }

@@ -132,6 +132,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
     final dishAsync = ref.watch(dishDetailProvider(widget.dishId));
     final auth = ref.watch(authStateProvider).value;
     final isPro = ref.watch(proStatusProvider);
+    final compatAsync = ref.watch(compatibilitySignalProvider(widget.dishId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -265,7 +266,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
             const SizedBox(height: 24),
 
             // AI signal card
-            _buildAiSignalCard(context, dish, isPro),
+            _buildAiSignalCard(context, dish, isPro, compatAsync.valueOrNull),
 
             // Private notes
             _SectionLabel(label: 'PRIVATE NOTES'),
@@ -319,7 +320,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
     );
   }
 
-  Widget _buildAiSignalCard(BuildContext context, DishDetail dish, bool isPro) {
+  Widget _buildAiSignalCard(BuildContext context, DishDetail dish, bool isPro, CompatibilitySignal? compat) {
     if (dish.attributeState == 'classifying') {
       return Padding(
         padding: const EdgeInsets.only(bottom: 24),
@@ -392,6 +393,16 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
                 ],
               ),
               const SizedBox(height: 10),
+              if (compat?.signal != null) ...[
+                Text(
+                  compat!.signal!,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppColors.proAccent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 10),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -726,7 +737,7 @@ class _LockedAiSignalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,

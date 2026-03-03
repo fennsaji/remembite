@@ -50,6 +50,10 @@ async fn process_job(job: Job, state: Arc<AppState>) -> anyhow::Result<()> {
                 }
             }
         }
+        Job::RecomputeTasteVectors => {
+            tracing::info!("Recompute taste vectors job: full recompute not yet implemented — placeholder");
+            Ok(())
+        }
     }
 }
 
