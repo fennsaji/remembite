@@ -50,11 +50,8 @@ GoRouter appRouter(Ref ref, {String? initialLocation}) {
         builder: (context, state) => const OnboardingScreen(),
       ),
 
-      // Scan routes (outside shell — full screen camera)
-      GoRoute(
-        path: '/scan',
-        builder: (context, state) => const MenuScanScreen(),
-      ),
+      // Scan route (outside shell — full screen camera)
+      // Always requires restaurantId — use /restaurant/:id/scan
       GoRoute(
         path: '/restaurant/:restaurantId/scan',
         builder: (context, state) => MenuScanScreen(

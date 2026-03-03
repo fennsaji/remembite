@@ -133,11 +133,11 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/scan'),
+        onPressed: () => context.push('/search'),
         backgroundColor: AppColors.accent,
         foregroundColor: AppColors.background,
-        icon: const Icon(Icons.document_scanner_outlined),
-        label: const Text('Scan Menu'),
+        icon: const Icon(Icons.search),
+        label: const Text('Search Restaurant'),
       ),
     );
   }
@@ -152,6 +152,7 @@ class HomeScreen extends ConsumerWidget {
     final first = name?.split(' ').first ?? '';
     return 'Good $timeOfDay${first.isNotEmpty ? ', $first' : ''} 👋';
   }
+
 }
 
 class _SectionLabel extends StatelessWidget {
@@ -346,3 +347,4 @@ class _RestaurantTile extends StatelessWidget {
     );
   }
 }
+

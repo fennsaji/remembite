@@ -93,6 +93,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ),
       ),
       body: _buildBody(),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: OutlinedButton.icon(
+            onPressed: () => context.push('/restaurant/add'),
+            icon: const Icon(Icons.add, color: AppColors.accent, size: 18),
+            label: const Text('Add New Restaurant',
+                style: TextStyle(color: AppColors.accent)),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppColors.border),
+              backgroundColor: AppColors.surface,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

@@ -279,6 +279,29 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
                 hintStyle: TextStyle(color: AppColors.mutedText),
               ),
             ),
+            const SizedBox(height: 24),
+
+            // Add Photo placeholder (non-functional until Phase 6)
+            _SectionLabel(label: 'PHOTO'),
+            const SizedBox(height: 12),
+            Tooltip(
+              message: 'Coming soon',
+              child: OutlinedButton.icon(
+                onPressed: null,
+                icon: const Icon(Icons.add_a_photo_outlined,
+                    size: 18, color: AppColors.mutedText),
+                label: const Text(
+                  'Add Photo',
+                  style: TextStyle(color: AppColors.mutedText),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.border),
+                  backgroundColor: AppColors.elevated,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  minimumSize: const Size(double.infinity, 0),
+                ),
+              ),
+            ),
             const SizedBox(height: 32),
 
             // Save button
