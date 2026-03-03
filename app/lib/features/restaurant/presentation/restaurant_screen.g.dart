@@ -391,7 +391,7 @@ class _YourTopBitesProviderElement
 }
 
 String _$dishReactionSummaryHash() =>
-    r'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0';
+    r'4ed4d4d5f7510b707e6a13072ba73c4b0a655d5a';
 
 /// See also [dishReactionSummary].
 @ProviderFor(dishReactionSummary)
@@ -498,8 +498,7 @@ class DishReactionSummaryProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin DishReactionSummaryRef
-    on AutoDisposeFutureProviderRef<ReactionSummary> {
+mixin DishReactionSummaryRef on AutoDisposeFutureProviderRef<ReactionSummary> {
   /// The parameter `dishId` of this provider.
   String get dishId;
 }

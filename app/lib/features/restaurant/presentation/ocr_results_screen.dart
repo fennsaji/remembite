@@ -4,15 +4,18 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../dish/data/dish_repository.dart';
+import '../data/restaurant_repository.dart';
 
 class OcrResultsScreen extends ConsumerStatefulWidget {
   final String rawText;
   final String? restaurantId;
+  final List<ParsedDishItem>? parsedDishes;
 
   const OcrResultsScreen({
     super.key,
     required this.rawText,
     this.restaurantId,
+    this.parsedDishes,
   });
 
   @override
@@ -26,7 +29,13 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
   @override
   void initState() {
     super.initState();
-    _dishes = _parseText(widget.rawText);
+    if (widget.parsedDishes != null && widget.parsedDishes!.isNotEmpty) {
+      _dishes = widget.parsedDishes!
+          .map((d) => _DishEntry(name: d.name, selected: true))
+          .toList();
+    } else {
+      _dishes = _parseText(widget.rawText);
+    }
   }
 
   // Simple heuristic: split by lines, filter noise

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -65,16 +66,26 @@ class ProfileScreen extends ConsumerWidget {
                     CircleAvatar(
                       radius: 28,
                       backgroundColor: AppColors.elevated,
-                      backgroundImage: auth?.avatarUrl != null
-                          ? NetworkImage(auth!.avatarUrl!)
-                          : null,
-                      child: auth?.avatarUrl == null
-                          ? Text(
+                      child: auth?.avatarUrl != null
+                          ? ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: auth!.avatarUrl!,
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) => Text(
+                                  auth.displayName[0].toUpperCase(),
+                                  style: const TextStyle(
+                                      color: AppColors.primaryText,
+                                      fontSize: 20),
+                                ),
+                              ),
+                            )
+                          : Text(
                               (auth?.displayName ?? 'U')[0].toUpperCase(),
                               style: const TextStyle(
                                   color: AppColors.primaryText, fontSize: 20),
-                            )
-                          : null,
+                            ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(

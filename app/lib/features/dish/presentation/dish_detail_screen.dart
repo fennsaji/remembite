@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -61,9 +63,22 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
   String? _selectedSweetness;
   final _notesController = TextEditingController();
   bool _saving = false;
+  StreamSubscription<RemoteMessage>? _fcmSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _fcmSubscription = FirebaseMessaging.onMessage.listen((message) {
+      if (message.data['type'] == 'classification_complete' &&
+          message.data['dish_id'] == widget.dishId) {
+        ref.invalidate(dishDetailProvider(widget.dishId));
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _fcmSubscription?.cancel();
     _notesController.dispose();
     super.dispose();
   }

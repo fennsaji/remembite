@@ -14,7 +14,8 @@ pub struct Config {
     pub r2_secret_access_key: String,
     pub r2_bucket: String,
     pub r2_public_url: String,
-    pub fcm_server_key: String,
+    pub fcm_service_account_json: String, // Firebase service account JSON (full JSON string)
+    pub fcm_project_id: String,            // Firebase project ID
     pub server_host: String,
     pub server_port: u16,
     pub google_play_package_name: String,
@@ -38,7 +39,8 @@ impl Config {
             r2_secret_access_key: env_or("R2_SECRET_ACCESS_KEY", ""),
             r2_bucket: env_or("R2_BUCKET", "remembite-images"),
             r2_public_url: env_or("R2_PUBLIC_URL", ""),
-            fcm_server_key: env_or("FCM_SERVER_KEY", ""),
+            fcm_service_account_json: env_or("FCM_SERVICE_ACCOUNT_JSON", ""),
+            fcm_project_id: env_or("FCM_PROJECT_ID", ""),
             server_host: env_or("SERVER_HOST", "0.0.0.0"),
             server_port: parse_env("SERVER_PORT", 8080)?,
             google_play_package_name: env_or("GOOGLE_PLAY_PACKAGE_NAME", "com.fennsaji.remembite"),

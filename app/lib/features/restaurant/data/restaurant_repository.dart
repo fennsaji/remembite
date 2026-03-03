@@ -116,6 +116,24 @@ class DuplicateCheckResult {
   });
 }
 
+class ParsedDishItem {
+  final String name;
+  final int? priceRupees;
+  final String? category;
+
+  const ParsedDishItem({
+    required this.name,
+    this.priceRupees,
+    this.category,
+  });
+
+  factory ParsedDishItem.fromJson(Map<String, dynamic> json) => ParsedDishItem(
+    name: json['name'] as String,
+    priceRupees: json['price_rupees'] as int?,
+    category: json['category'] as String?,
+  );
+}
+
 // ─────────────────────────────────────────────
 // Repository
 // ─────────────────────────────────────────────
@@ -224,6 +242,21 @@ class RestaurantRepository {
 
   Future<List<RestaurantRow>> getRecentlyVisited(String userId) =>
       _db.restaurantDao.getRecentlyVisited(userId);
+
+  Future<List<ParsedDishItem>> parseOcr({
+    required String rawText,
+    required String restaurantId,
+  }) async {
+    final response = await _dio.post(
+      '/ocr/parse',
+      data: {'raw_text': rawText, 'restaurant_id': restaurantId},
+    );
+    final raw = response.data as Map<String, dynamic>;
+    final dishes = (raw['dishes'] as List<dynamic>? ?? [])
+        .map((d) => ParsedDishItem.fromJson(d as Map<String, dynamic>))
+        .toList();
+    return dishes;
+  }
 }
 
 @riverpod

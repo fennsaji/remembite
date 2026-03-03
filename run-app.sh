@@ -97,6 +97,18 @@ else
       # iOS simulator — just let Flutter pick it (it auto-boots)
       DEVICE_FLAG=""
       ;;
+    *usb*)
+      # Physical USB device — set up port forwarding and use connected device
+      printf "${BLUE}🔌 Setting up adb reverse for USB device...${NC}\n"
+      USB_DEVICE=$(adb devices 2>/dev/null | grep -v "List of devices" | grep "device$" | grep -v "emulator" | awk '{print $1}' | head -1 || true)
+      if [ -z "$USB_DEVICE" ]; then
+        printf "${RED}❌ No USB device found. Enable USB debugging and reconnect.${NC}\n"
+        exit 1
+      fi
+      adb -s "$USB_DEVICE" reverse tcp:8080 tcp:8080
+      printf "${GREEN}✅ USB device ready: %s (adb reverse active)${NC}\n" "$USB_DEVICE"
+      DEVICE_FLAG="-d $USB_DEVICE"
+      ;;
     *)
       # Android — ensure emulator is running
       EMULATOR_ID=$(ensure_android_emulator)

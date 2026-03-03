@@ -93,6 +93,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/health", get(routes::health_check))
         // Auth
         .route("/auth/google", post(routes::auth::google_auth))
+        .merge(routes::auth::router())
         // Restaurants
         .nest("/restaurants", routes::restaurants::router())
         // Dishes nested under restaurant
@@ -111,6 +112,8 @@ async fn main() -> anyhow::Result<()> {
         .nest("/webhooks", routes::webhooks::router())
         // Sync
         .nest("/sync", routes::sync::router())
+        // OCR
+        .nest("/ocr", routes::ocr::router())
         // Edit suggestions
         .nest("/edit-suggestions", routes::edit_suggestions::router())
         // Admin routes (approve/reject suggestions, list reports, merge restaurants, report actions)

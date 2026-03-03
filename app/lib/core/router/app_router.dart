@@ -8,6 +8,7 @@ import '../../features/dish/presentation/dish_detail_screen.dart';
 import '../../features/favorites/presentation/favorites_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/restaurant/data/restaurant_repository.dart';
 import '../../features/restaurant/presentation/add_restaurant_screen.dart';
 import '../../features/restaurant/presentation/menu_scan_screen.dart';
 import '../../features/restaurant/presentation/ocr_results_screen.dart';
@@ -23,11 +24,11 @@ import '../theme/app_theme.dart';
 part 'app_router.g.dart';
 
 @riverpod
-GoRouter appRouter(Ref ref) {
+GoRouter appRouter(Ref ref, {String? initialLocation}) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
-    initialLocation: '/home',
+    initialLocation: initialLocation ?? '/home',
     redirect: (context, state) {
       final isSignedIn = authState.value != null;
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
@@ -63,10 +64,11 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/scan/results',
         builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final extra = (state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null) ?? {};
           return OcrResultsScreen(
             rawText: extra['rawText'] as String? ?? '',
             restaurantId: extra['restaurantId'] as String?,
+            parsedDishes: extra['parsedDishes'] as List<ParsedDishItem>?,
           );
         },
       ),

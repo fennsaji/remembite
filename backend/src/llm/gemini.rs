@@ -48,8 +48,17 @@ impl GeminiProvider {
         }
 
         #[derive(Deserialize)]
+        struct UsageMetadata {
+            #[serde(default)]
+            prompt_token_count: u32,
+            #[serde(default)]
+            candidates_token_count: u32,
+        }
+        #[derive(Deserialize)]
         struct GeminiResponse {
             candidates: Vec<Candidate>,
+            #[serde(default)]
+            usage_metadata: Option<UsageMetadata>,
         }
         #[derive(Deserialize)]
         struct Candidate {
@@ -68,6 +77,14 @@ impl GeminiProvider {
             .json::<GeminiResponse>()
             .await
             .map_err(|e| AppError::Internal(anyhow::anyhow!("Failed to parse Gemini response: {e}")))?;
+
+        if let Some(usage) = &gemini_resp.usage_metadata {
+            tracing::info!(
+                prompt_tokens = usage.prompt_token_count,
+                candidate_tokens = usage.candidates_token_count,
+                "Gemini token usage"
+            );
+        }
 
         gemini_resp
             .candidates
@@ -99,9 +116,15 @@ Return only the JSON object, no explanation."#
         );
 
         let raw = self.generate(&prompt).await?;
-        serde_json::from_str::<DishAttributes>(&raw).map_err(|e| {
+        if let Ok(attrs) = serde_json::from_str::<DishAttributes>(&raw) {
+            return Ok(attrs);
+        }
+        // Retry once on parse failure
+        tracing::warn!("Gemini response parse failed on first attempt, retrying. Raw: {raw}");
+        let raw2 = self.generate(&prompt).await?;
+        serde_json::from_str::<DishAttributes>(&raw2).map_err(|e| {
             AppError::Internal(anyhow::anyhow!(
-                "Failed to parse dish classification response: {e}. Raw: {raw}"
+                "Failed to parse dish classification response after retry: {e}. Raw: {raw2}"
             ))
         })
     }
@@ -128,9 +151,15 @@ Return only the JSON array, no explanation."#
         );
 
         let raw = self.generate(&prompt).await?;
-        serde_json::from_str::<Vec<ParsedDish>>(&raw).map_err(|e| {
+        if let Ok(dishes) = serde_json::from_str::<Vec<ParsedDish>>(&raw) {
+            return Ok(dishes);
+        }
+        // Retry once on parse failure
+        tracing::warn!("Gemini OCR response parse failed on first attempt, retrying. Raw: {raw}");
+        let raw2 = self.generate(&prompt).await?;
+        serde_json::from_str::<Vec<ParsedDish>>(&raw2).map_err(|e| {
             AppError::Internal(anyhow::anyhow!(
-                "Failed to parse OCR menu response: {e}. Raw: {raw}"
+                "Failed to parse OCR menu response after retry: {e}. Raw: {raw2}"
             ))
         })
     }

@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../data/restaurant_repository.dart';
 
-class MenuScanScreen extends StatefulWidget {
+class MenuScanScreen extends ConsumerStatefulWidget {
   final String? restaurantId;
   const MenuScanScreen({super.key, this.restaurantId});
 
   @override
-  State<MenuScanScreen> createState() => _MenuScanScreenState();
+  ConsumerState<MenuScanScreen> createState() => _MenuScanScreenState();
 }
 
-class _MenuScanScreenState extends State<MenuScanScreen> {
+class _MenuScanScreenState extends ConsumerState<MenuScanScreen> {
   bool _processing = false;
 
   Future<void> _captureAndScan() async {
@@ -28,10 +30,25 @@ class _MenuScanScreenState extends State<MenuScanScreen> {
 
       final inputImage = InputImage.fromFilePath(xfile.path);
       final recognizer = TextRecognizer();
-      final result = await recognizer.processImage(inputImage);
-      recognizer.close();
+      String rawText;
+      try {
+        final result = await recognizer.processImage(inputImage);
+        rawText = result.text;
+      } finally {
+        recognizer.close();
+      }
 
-      final rawText = result.text;
+      List<ParsedDishItem>? parsedDishes;
+      if (widget.restaurantId != null && widget.restaurantId!.isNotEmpty) {
+        try {
+          parsedDishes = await ref.read(restaurantRepositoryProvider).parseOcr(
+            rawText: rawText,
+            restaurantId: widget.restaurantId!,
+          );
+        } catch (e) {
+          debugPrint('OCR parse API failed, using heuristic fallback: $e');
+        }
+      }
 
       if (mounted) {
         context.push(
@@ -39,6 +56,7 @@ class _MenuScanScreenState extends State<MenuScanScreen> {
           extra: {
             'rawText': rawText,
             'restaurantId': widget.restaurantId,
+            'parsedDishes': parsedDishes,
           },
         );
       }

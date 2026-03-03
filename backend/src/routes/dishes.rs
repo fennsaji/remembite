@@ -10,8 +10,8 @@ use crate::{
     AppState,
     auth::middleware::AuthUser,
     dto::{
-        AttributeVoteRequest, DishBatchCreateRequest, DishDetailResponse, DishResponse,
-        ReactionSummaryResponse, ReactionUpsertRequest,
+        AttributeVoteRequest, DishAttributesResponse, DishBatchCreateRequest, DishDetailResponse,
+        DishResponse, ReactionSummaryResponse, ReactionUpsertRequest,
     },
     error::{AppError, AppResult},
     jobs::queue::Job,
@@ -31,6 +31,7 @@ pub fn dishes_router() -> Router<AppState> {
         .route("/:id/reactions", post(upsert_reaction).get(reaction_summary))
         .route("/:id/attribute_votes", post(upsert_attribute_vote))
         .route("/:id/favorites", post(toggle_favorite))
+        .route("/:id/attributes", get(get_dish_attributes))
 }
 
 async fn list_dishes(
@@ -501,4 +502,73 @@ async fn toggle_favorite(
         .await?;
         Ok(Json(serde_json::json!({ "favorited": true })))
     }
+}
+
+async fn get_dish_attributes(
+    State(state): State<AppState>,
+    Path(dish_id): Path<Uuid>,
+) -> AppResult<Json<DishAttributesResponse>> {
+    use sqlx::Row;
+
+    // Get dish attribute_state
+    let dish_row = sqlx::query(
+        "SELECT attribute_state::text FROM dishes WHERE id = $1"
+    )
+    .bind(dish_id)
+    .fetch_optional(&state.db)
+    .await?
+    .ok_or_else(|| AppError::NotFound(format!("Dish {dish_id} not found")))?;
+
+    let attribute_state: String = dish_row.try_get("attribute_state")?;
+
+    // Get LLM priors if available
+    let prior = sqlx::query(
+        r#"SELECT spice_score, sweetness_score, dish_type, cuisine,
+                  final_spice_score, final_sweetness_score, community_vote_count
+           FROM dish_attribute_priors WHERE dish_id = $1"#
+    )
+    .bind(dish_id)
+    .fetch_optional(&state.db)
+    .await?;
+
+    // Get community vote averages (AVG of an empty set returns NULL, so these are always Option<f64>)
+    let vote_row = sqlx::query(
+        r#"SELECT
+               AVG(CASE WHEN attribute = 'spice' THEN value END) as avg_spice,
+               AVG(CASE WHEN attribute = 'sweetness' THEN value END) as avg_sweetness
+           FROM dish_attribute_votes WHERE dish_id = $1"#
+    )
+    .bind(dish_id)
+    .fetch_one(&state.db)
+    .await?;
+
+    let community_spice_avg: Option<f64> = vote_row.try_get("avg_spice")?;
+    let community_sweetness_avg: Option<f64> = vote_row.try_get("avg_sweetness")?;
+
+    Ok(Json(match prior {
+        Some(p) => DishAttributesResponse {
+            attribute_state,
+            llm_spice_score: Some(p.try_get("spice_score")?),
+            llm_sweetness_score: Some(p.try_get("sweetness_score")?),
+            llm_dish_type: Some(p.try_get("dish_type")?),
+            llm_cuisine: Some(p.try_get("cuisine")?),
+            community_spice_avg,
+            community_sweetness_avg,
+            community_vote_count: p.try_get("community_vote_count")?,
+            final_spice_score: p.try_get("final_spice_score")?,
+            final_sweetness_score: p.try_get("final_sweetness_score")?,
+        },
+        None => DishAttributesResponse {
+            attribute_state,
+            llm_spice_score: None,
+            llm_sweetness_score: None,
+            llm_dish_type: None,
+            llm_cuisine: None,
+            community_spice_avg,
+            community_sweetness_avg,
+            community_vote_count: 0,
+            final_spice_score: None,
+            final_sweetness_score: None,
+        },
+    }))
 }

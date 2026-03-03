@@ -4,6 +4,8 @@
 .env.api
 .env.android
 .env.ios
+.env.usb
+
 
 # Firebase — contain OAuth client IDs, managed outside git
 app/android/app/google-services.json

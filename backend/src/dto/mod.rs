@@ -300,3 +300,52 @@ pub struct ReportActionResponse {
     pub ok: bool,
     pub status: String,
 }
+
+// ─────────────────────────────────────────────
+// Dish Attributes DTO
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Serialize)]
+pub struct DishAttributesResponse {
+    pub attribute_state: String,
+    pub llm_spice_score: Option<f64>,
+    pub llm_sweetness_score: Option<f64>,
+    pub llm_dish_type: Option<String>,
+    pub llm_cuisine: Option<String>,
+    pub community_spice_avg: Option<f64>,
+    pub community_sweetness_avg: Option<f64>,
+    pub community_vote_count: i32,
+    pub final_spice_score: Option<f64>,
+    pub final_sweetness_score: Option<f64>,
+}
+
+// ─────────────────────────────────────────────
+// OCR parse DTOs
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct OcrParseRequest {
+    pub raw_text: String,
+    pub restaurant_id: Uuid,
+}
+
+#[derive(Debug, Serialize)]
+pub struct OcrParseResponse {
+    pub dishes: Vec<ParsedDishDto>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ParsedDishDto {
+    pub name: String,
+    pub price_rupees: Option<i32>,
+    pub category: Option<String>,
+}
+
+// ─────────────────────────────────────────────
+// FCM token update
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct FcmTokenRequest {
+    pub token: String,
+}
