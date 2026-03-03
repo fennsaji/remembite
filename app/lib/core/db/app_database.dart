@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'daos/dish_dao.dart';
+import 'daos/favorites_dao.dart';
 import 'daos/reaction_dao.dart';
 import 'daos/restaurant_dao.dart';
 import 'tables/dishes_table.dart';
@@ -30,6 +31,7 @@ part 'app_database.g.dart';
     RestaurantDao,
     DishDao,
     ReactionDao,
+    FavoritesDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {

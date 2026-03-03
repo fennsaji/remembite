@@ -472,43 +472,6 @@ Phase 4.6 deliverables:
 
 ---
 
-## Phase 5.5 – Map View
-
-```
-We are building Remembite. Phases 0–5 are complete.
-
-Read CLAUDE.md (design system, AppColors). Reference design/remembite.pen screen 14 (Map View).
-
-Phase 5.5 deliverables:
-
-1. MAP SCREEN
-   app/lib/features/map/presentation/map_screen.dart
-   Package: flutter_map (OpenStreetMap tiles — free, no API key required)
-   Add to pubspec.yaml: flutter_map: ^6.0.0, latlong2: ^0.9.0
-
-   Default view:
-   - Center on user's current GPS location
-   - Show pins for all restaurants the user has reacted to (from local Drift DB)
-   - Pin color: AppColors.accent (#E6A830)
-
-   Toggle "Show Nearby":
-   - Adds nearby restaurants (from getNearbyRestaurants API) as secondary pins
-   - Secondary pin color: AppColors.secondaryText
-
-   Interaction:
-   - Tap any pin → context.push('/restaurant/:id')
-   - Show restaurant name in a small tooltip/marker label
-
-2. ROUTER
-   Replace `_MapPlaceholder` in app_router.dart with real MapScreen()
-   Route /map is already defined inside ShellRoute — no route changes needed
-
-3. NO BACKEND CHANGES
-   Restaurant lat/lng already stored. Use existing nearbyRestaurantsProvider for nearby pins.
-```
-
----
-
 ## Phase 5 – Bayesian Blending + Taste Vectors
 
 ```
@@ -561,6 +524,43 @@ Phase 5 deliverables:
    completion_percentage = min(reaction_count / 10, 1.0) * 100
    Flutter: progress bar on Profile screen. Text: "React to X more dishes to unlock predictions".
    When ready_for_predictions=true and user is Pro: show first prediction automatically on next dish detail open.
+```
+
+---
+
+## Phase 5.5 – Map View
+
+```
+We are building Remembite. Phases 0–5 are complete.
+
+Read CLAUDE.md (design system, AppColors). Reference design/remembite.pen screen 14 (Map View).
+
+Phase 5.5 deliverables:
+
+1. MAP SCREEN
+   app/lib/features/map/presentation/map_screen.dart
+   Package: flutter_map (OpenStreetMap tiles — free, no API key required)
+   Add to pubspec.yaml: flutter_map: ^6.0.0, latlong2: ^0.9.0
+
+   Default view:
+   - Center on user's current GPS location
+   - Show pins for all restaurants the user has reacted to (from local Drift DB)
+   - Pin color: AppColors.accent (#E6A830)
+
+   Toggle "Show Nearby":
+   - Adds nearby restaurants (from getNearbyRestaurants API) as secondary pins
+   - Secondary pin color: AppColors.secondaryText
+
+   Interaction:
+   - Tap any pin → context.push('/restaurant/:id')
+   - Show restaurant name in a small tooltip/marker label
+
+2. ROUTER
+   Replace `_MapPlaceholder` in app_router.dart with real MapScreen()
+   Route /map is already defined inside ShellRoute — no route changes needed
+
+3. NO BACKEND CHANGES
+   Restaurant lat/lng already stored. Use existing nearbyRestaurantsProvider for nearby pins.
 ```
 
 ---

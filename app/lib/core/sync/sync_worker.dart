@@ -19,6 +19,7 @@ class SyncWorker extends _$SyncWorker {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _isSyncing = false;
   bool _disposed = false;
+  bool _paused = false;
 
   @override
   SyncStatus build() {
@@ -49,10 +50,15 @@ class SyncWorker extends _$SyncWorker {
     });
   }
 
+  void setPaused(bool paused) {
+    _paused = paused;
+  }
+
   /// Force an immediate sync cycle. Called after Pro upgrade.
   Future<void> syncNow() => _syncPending();
 
   Future<void> _syncPending() async {
+    if (_paused) return;
     if (_isSyncing) return;
     _isSyncing = true;
     try {

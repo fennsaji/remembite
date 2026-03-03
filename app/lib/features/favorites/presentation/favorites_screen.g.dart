@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'app_router.dart';
+part of 'favorites_screen.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appRouterHash() => r'ec827d625d64bc9fe8009e610aa4df72a9d4a96e';
+String _$favoritedDishesHash() => r'fdf27048d6d66a325c3bc89b5aa73bf4e16be30a';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,23 +29,25 @@ class _SystemHash {
   }
 }
 
-/// See also [appRouter].
-@ProviderFor(appRouter)
-const appRouterProvider = AppRouterFamily();
+/// See also [favoritedDishes].
+@ProviderFor(favoritedDishes)
+const favoritedDishesProvider = FavoritedDishesFamily();
 
-/// See also [appRouter].
-class AppRouterFamily extends Family<GoRouter> {
-  /// See also [appRouter].
-  const AppRouterFamily();
+/// See also [favoritedDishes].
+class FavoritedDishesFamily extends Family<AsyncValue<List<FavoritedDish>>> {
+  /// See also [favoritedDishes].
+  const FavoritedDishesFamily();
 
-  /// See also [appRouter].
-  AppRouterProvider call({String? initialLocation}) {
-    return AppRouterProvider(initialLocation: initialLocation);
+  /// See also [favoritedDishes].
+  FavoritedDishesProvider call(String userId) {
+    return FavoritedDishesProvider(userId);
   }
 
   @override
-  AppRouterProvider getProviderOverride(covariant AppRouterProvider provider) {
-    return call(initialLocation: provider.initialLocation);
+  FavoritedDishesProvider getProviderOverride(
+    covariant FavoritedDishesProvider provider,
+  ) {
+    return call(provider.userId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -60,69 +62,71 @@ class AppRouterFamily extends Family<GoRouter> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'appRouterProvider';
+  String? get name => r'favoritedDishesProvider';
 }
 
-/// See also [appRouter].
-class AppRouterProvider extends AutoDisposeProvider<GoRouter> {
-  /// See also [appRouter].
-  AppRouterProvider({String? initialLocation})
+/// See also [favoritedDishes].
+class FavoritedDishesProvider
+    extends AutoDisposeStreamProvider<List<FavoritedDish>> {
+  /// See also [favoritedDishes].
+  FavoritedDishesProvider(String userId)
     : this._internal(
-        (ref) =>
-            appRouter(ref as AppRouterRef, initialLocation: initialLocation),
-        from: appRouterProvider,
-        name: r'appRouterProvider',
+        (ref) => favoritedDishes(ref as FavoritedDishesRef, userId),
+        from: favoritedDishesProvider,
+        name: r'favoritedDishesProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$appRouterHash,
-        dependencies: AppRouterFamily._dependencies,
-        allTransitiveDependencies: AppRouterFamily._allTransitiveDependencies,
-        initialLocation: initialLocation,
+            : _$favoritedDishesHash,
+        dependencies: FavoritedDishesFamily._dependencies,
+        allTransitiveDependencies:
+            FavoritedDishesFamily._allTransitiveDependencies,
+        userId: userId,
       );
 
-  AppRouterProvider._internal(
+  FavoritedDishesProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.initialLocation,
+    required this.userId,
   }) : super.internal();
 
-  final String? initialLocation;
+  final String userId;
 
   @override
-  Override overrideWith(GoRouter Function(AppRouterRef provider) create) {
+  Override overrideWith(
+    Stream<List<FavoritedDish>> Function(FavoritedDishesRef provider) create,
+  ) {
     return ProviderOverride(
       origin: this,
-      override: AppRouterProvider._internal(
-        (ref) => create(ref as AppRouterRef),
+      override: FavoritedDishesProvider._internal(
+        (ref) => create(ref as FavoritedDishesRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        initialLocation: initialLocation,
+        userId: userId,
       ),
     );
   }
 
   @override
-  AutoDisposeProviderElement<GoRouter> createElement() {
-    return _AppRouterProviderElement(this);
+  AutoDisposeStreamProviderElement<List<FavoritedDish>> createElement() {
+    return _FavoritedDishesProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AppRouterProvider &&
-        other.initialLocation == initialLocation;
+    return other is FavoritedDishesProvider && other.userId == userId;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, initialLocation.hashCode);
+    hash = _SystemHash.combine(hash, userId.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -130,17 +134,18 @@ class AppRouterProvider extends AutoDisposeProvider<GoRouter> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin AppRouterRef on AutoDisposeProviderRef<GoRouter> {
-  /// The parameter `initialLocation` of this provider.
-  String? get initialLocation;
+mixin FavoritedDishesRef on AutoDisposeStreamProviderRef<List<FavoritedDish>> {
+  /// The parameter `userId` of this provider.
+  String get userId;
 }
 
-class _AppRouterProviderElement extends AutoDisposeProviderElement<GoRouter>
-    with AppRouterRef {
-  _AppRouterProviderElement(super.provider);
+class _FavoritedDishesProviderElement
+    extends AutoDisposeStreamProviderElement<List<FavoritedDish>>
+    with FavoritedDishesRef {
+  _FavoritedDishesProviderElement(super.provider);
 
   @override
-  String? get initialLocation => (origin as AppRouterProvider).initialLocation;
+  String get userId => (origin as FavoritedDishesProvider).userId;
 }
 
 // ignore_for_file: type=lint

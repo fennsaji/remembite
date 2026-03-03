@@ -2278,6 +2278,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final RestaurantDao restaurantDao = RestaurantDao(this as AppDatabase);
   late final DishDao dishDao = DishDao(this as AppDatabase);
   late final ReactionDao reactionDao = ReactionDao(this as AppDatabase);
+  late final FavoritesDao favoritesDao = FavoritesDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();

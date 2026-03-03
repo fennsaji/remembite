@@ -55,8 +55,20 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: CustomScrollView(
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined,
+                color: AppColors.secondaryText),
+            onPressed: () => context.push('/settings'),
+            tooltip: 'Settings',
+          ),
+        ],
+      ),
+      body: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -193,7 +205,6 @@ class ProfileScreen extends ConsumerWidget {
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
-      ),
     );
   }
 

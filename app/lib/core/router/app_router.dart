@@ -17,6 +17,7 @@ import '../../features/restaurant/presentation/restaurant_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/timeline/presentation/timeline_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/upgrade/presentation/upgrade_screen.dart';
 import '../network/auth_state.dart';
 import '../theme/app_theme.dart';
@@ -121,6 +122,10 @@ GoRouter appRouter(Ref ref, {String? initialLocation}) {
           GoRoute(
             path: '/profile',
             builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/settings',
+            builder: (context, state) => const SettingsScreen(),
           ),
           GoRoute(
             path: '/map',
