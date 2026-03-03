@@ -5,8 +5,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/db/daos/reaction_dao.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
+import '../data/pending_edit_count_provider.dart';
 import '../data/restaurant_repository.dart';
 import '../../dish/data/dish_repository.dart';
 import 'session_state.dart';
@@ -30,6 +32,10 @@ Future<List<TopBiteRow>> yourTopBites(Ref ref, String restaurantId) async {
       .reactionDao
       .getTopBitesForRestaurant(auth.id, restaurantId);
 }
+
+@riverpod
+Future<ReactionSummary> dishReactionSummary(Ref ref, String dishId) =>
+    ref.watch(dishRepositoryProvider).getReactionSummary(dishId);
 
 class RestaurantScreen extends ConsumerStatefulWidget {
   final String restaurantId;
@@ -60,6 +66,20 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
       ),
       builder: (_) =>
           _RatingBottomSheet(restaurantId: widget.restaurantId),
+    );
+  }
+
+  void _showSuggestEditSheet(BuildContext context, String restaurantName) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.elevated,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _SuggestEditBottomSheet(
+        restaurantId: widget.restaurantId,
+      ),
     );
   }
 
@@ -111,7 +131,8 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
                 IconButton(
                   icon: const Icon(Icons.edit_outlined,
                       color: AppColors.mutedText),
-                  onPressed: () {}, // TODO: suggest edit
+                  onPressed: () =>
+                      _showSuggestEditSheet(context, restaurant.name),
                   tooltip: 'Suggest Edit',
                 ),
               ],
@@ -198,6 +219,53 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
                     ),
                   ],
                 ),
+              ),
+            ),
+
+            // Community updates pending indicator
+            SliverToBoxAdapter(
+              child: ref
+                  .watch(pendingEditCountProvider(widget.restaurantId))
+                  .when(
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (count) {
+                  if (count == 0) return const SizedBox.shrink();
+                  return GestureDetector(
+                    onTap: () => context.push(
+                        '/restaurant/${widget.restaurantId}/edits'),
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentMuted,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.accent),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.people_outline,
+                              color: AppColors.accent, size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            '$count community update${count == 1 ? '' : 's'} pending',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: AppColors.accent,
+                                  fontFamily: 'DM Sans',
+                                ),
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.chevron_right,
+                              color: AppColors.accent, size: 16),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
 
@@ -420,13 +488,33 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _DishTile extends StatelessWidget {
+// Maps reaction type key to its display emoji
+const _reactionEmojis = {
+  'so_yummy': '🔥',
+  'tasty': '😋',
+  'pretty_good': '🙂',
+  'meh': '😐',
+  'never_again': '🤢',
+};
+
+// Ordered reaction keys for display
+const _reactionOrder = [
+  'so_yummy',
+  'tasty',
+  'pretty_good',
+  'meh',
+  'never_again',
+];
+
+class _DishTile extends ConsumerWidget {
   final DishItem dish;
   final String? badge;
   const _DishTile({required this.dish, this.badge});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(dishReactionSummaryProvider(dish.id));
+
     return ListTile(
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
@@ -438,15 +526,60 @@ class _DishTile extends StatelessWidget {
             .titleSmall
             ?.copyWith(color: AppColors.primaryText),
       ),
-      subtitle: dish.category != null
-          ? Text(
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (dish.category != null)
+            Text(
               dish.category!,
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
                   ?.copyWith(color: AppColors.mutedText),
-            )
-          : null,
+            ),
+          summaryAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (summary) {
+              final pairs = _reactionOrder
+                  .where((key) => (summary.breakdown[key] ?? 0) > 0)
+                  .map((key) => (
+                        _reactionEmojis[key]!,
+                        summary.breakdown[key]!,
+                      ))
+                  .toList();
+
+              if (pairs.isEmpty) return const SizedBox.shrink();
+
+              return Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (int i = 0; i < pairs.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 8),
+                      Text(
+                        pairs[i].$1,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${pairs[i].$2}',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: AppColors.mutedText,
+                          fontFamily: 'DM Sans',
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -566,5 +699,200 @@ class _RatingBottomSheetState
     } catch (_) {
       if (mounted) setState(() => _submitted = false);
     }
+  }
+}
+
+// ─────────────────────────────────────────────
+// Suggest Edit Bottom Sheet
+// ─────────────────────────────────────────────
+
+class _SuggestEditBottomSheet extends ConsumerStatefulWidget {
+  final String restaurantId;
+  const _SuggestEditBottomSheet({required this.restaurantId});
+
+  @override
+  ConsumerState<_SuggestEditBottomSheet> createState() =>
+      _SuggestEditBottomSheetState();
+}
+
+class _SuggestEditBottomSheetState
+    extends ConsumerState<_SuggestEditBottomSheet> {
+  static const _fields = [
+    ('name', 'Name'),
+    ('city', 'City'),
+    ('cuisine_type', 'Cuisine Type'),
+  ];
+
+  String _selectedField = 'name';
+  final _valueController = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _valueController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final value = _valueController.text.trim();
+    if (value.isEmpty) return;
+
+    setState(() => _submitting = true);
+
+    try {
+      final dio = ref.read(apiClientProvider);
+      await dio.post('/edit-suggestions', data: {
+        'entity_type': 'restaurant',
+        'entity_id': widget.restaurantId,
+        'field': _selectedField,
+        'proposed_value': value,
+      });
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Edit submitted — thanks!',
+              style: TextStyle(fontFamily: 'DM Sans'),
+            ),
+            backgroundColor: AppColors.accentPress,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Could not submit. Please try again.',
+              style: const TextStyle(fontFamily: 'DM Sans'),
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title
+          Text(
+            'Suggest an Edit',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: AppColors.primaryText,
+                  fontFamily: 'Fraunces',
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Help keep restaurant info accurate for the community.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.mutedText,
+                  fontFamily: 'DM Sans',
+                ),
+          ),
+          const SizedBox(height: 24),
+
+          // Field dropdown
+          Text(
+            'FIELD',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.secondaryText,
+                  letterSpacing: 0.8,
+                  fontFamily: 'DM Sans',
+                ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedField,
+                dropdownColor: AppColors.elevated,
+                iconEnabledColor: AppColors.mutedText,
+                isExpanded: true,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.primaryText,
+                      fontFamily: 'DM Sans',
+                    ),
+                items: _fields
+                    .map(
+                      (f) => DropdownMenuItem(
+                        value: f.$1,
+                        child: Text(
+                          f.$2,
+                          style: const TextStyle(fontFamily: 'DM Sans'),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) {
+                  if (v != null) setState(() => _selectedField = v);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Proposed value input
+          Text(
+            'PROPOSED VALUE',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.secondaryText,
+                  letterSpacing: 0.8,
+                  fontFamily: 'DM Sans',
+                ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _valueController,
+            style: const TextStyle(
+              color: AppColors.primaryText,
+              fontFamily: 'DM Sans',
+            ),
+            decoration: const InputDecoration(
+              hintText: 'Enter corrected value…',
+            ),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _submitting ? null : _submit(),
+          ),
+          const SizedBox(height: 24),
+
+          // Submit button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _submitting ? null : _submit,
+              child: _submitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.background,
+                      ),
+                    )
+                  : const Text('Submit Edit'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

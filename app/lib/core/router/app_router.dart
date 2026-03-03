@@ -11,6 +11,7 @@ import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/restaurant/presentation/add_restaurant_screen.dart';
 import '../../features/restaurant/presentation/menu_scan_screen.dart';
 import '../../features/restaurant/presentation/ocr_results_screen.dart';
+import '../../features/restaurant/presentation/pending_edits_screen.dart';
 import '../../features/restaurant/presentation/restaurant_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/timeline/presentation/timeline_screen.dart';
@@ -74,6 +75,14 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/upgrade',
         builder: (context, state) => const UpgradeScreen(),
+      ),
+
+      // Pending edits (full-screen, has its own AppBar — outside shell)
+      GoRoute(
+        path: '/restaurant/:id/edits',
+        builder: (context, state) => PendingEditsScreen(
+          restaurantId: state.pathParameters['id']!,
+        ),
       ),
 
       // Main shell with floating bottom nav

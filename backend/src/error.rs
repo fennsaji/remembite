@@ -29,6 +29,9 @@ pub enum AppError {
     #[error("Rate limit exceeded")]
     RateLimited,
 
+    #[error("Rate limit exceeded")]
+    RateLimitedWithRetry(u64), // seconds until the client may retry
+
     #[error("Database error: {0}")]
     Database(#[from] sqlx::Error),
 
@@ -38,6 +41,20 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
+        // Handle RateLimitedWithRetry separately: it needs a Retry-After header.
+        if let AppError::RateLimitedWithRetry(secs) = self {
+            let body = Json(json!({
+                "error": "rate_limited",
+                "message": "Too many requests"
+            }));
+            return (
+                StatusCode::TOO_MANY_REQUESTS,
+                [("Retry-After", secs.to_string())],
+                body,
+            )
+                .into_response();
+        }
+
         let (status, code, message) = match &self {
             AppError::NotFound(msg) => (StatusCode::NOT_FOUND, "not_found", msg.clone()),
             AppError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, "unauthorized", msg.clone()),
@@ -54,6 +71,8 @@ impl IntoResponse for AppError {
                 "rate_limited",
                 "Too many requests".to_string(),
             ),
+            // Already handled above; unreachable here.
+            AppError::RateLimitedWithRetry(_) => unreachable!(),
             AppError::Database(e) => {
                 tracing::error!("Database error: {e}");
                 (

@@ -221,7 +221,7 @@ class DishRepository {
   }
 
   Future<ReactionSummary> getReactionSummary(String dishId) async {
-    final response = await _dio.get('/dishes/$dishId/reactions');
+    final response = await _dio.get('/dishes/$dishId/reactions/summary');
     return ReactionSummary.fromJson(response.data as Map<String, dynamic>);
   }
 

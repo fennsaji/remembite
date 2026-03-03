@@ -168,3 +168,60 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/full", post(upload_full).get(download_full))
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::auth::middleware::AuthUser;
+    use crate::error::AppError;
+    use uuid::Uuid;
+
+    fn make_user(pro: bool) -> AuthUser {
+        AuthUser {
+            id: Uuid::new_v4(),
+            email: "sync_test@test.com".to_string(),
+            pro,
+            admin: false,
+        }
+    }
+
+    /// upload_full begins with `auth.require_pro()?` — verify that a non-Pro
+    /// user would be rejected before any DB work is attempted.
+    #[test]
+    fn upload_full_requires_pro() {
+        let user = make_user(false);
+        assert!(
+            matches!(user.require_pro(), Err(AppError::UpgradeRequired)),
+            "POST /sync/full must return UpgradeRequired for non-Pro users"
+        );
+    }
+
+    /// A Pro user must pass the require_pro gate for upload_full.
+    #[test]
+    fn upload_full_allows_pro_user() {
+        let user = make_user(true);
+        assert!(
+            user.require_pro().is_ok(),
+            "POST /sync/full must not reject Pro users"
+        );
+    }
+
+    /// download_full also begins with `auth.require_pro()?` — same enforcement.
+    #[test]
+    fn download_full_requires_pro() {
+        let user = make_user(false);
+        assert!(
+            matches!(user.require_pro(), Err(AppError::UpgradeRequired)),
+            "GET /sync/full must return UpgradeRequired for non-Pro users"
+        );
+    }
+
+    /// A Pro user must pass the require_pro gate for download_full.
+    #[test]
+    fn download_full_allows_pro_user() {
+        let user = make_user(true);
+        assert!(
+            user.require_pro().is_ok(),
+            "GET /sync/full must not reject Pro users"
+        );
+    }
+}

@@ -10,11 +10,12 @@ use crate::{
     AppState,
     auth::middleware::AuthUser,
     dto::{
-        DishResponse, DuplicateCheckQuery, DuplicateCheckResponse, NearbyQuery,
-        RestaurantCreateRequest, RestaurantDetailResponse, RestaurantPatchRequest,
+        DishResponse, DuplicateCheckQuery, DuplicateCheckResponse, MergeRestaurantRequest,
+        NearbyQuery, RestaurantCreateRequest, RestaurantDetailResponse, RestaurantPatchRequest,
         RestaurantSummary,
     },
     error::{AppError, AppResult},
+    middleware::rate_limit::check_user_limit,
 };
 
 pub fn router() -> Router<AppState> {
@@ -25,11 +26,18 @@ pub fn router() -> Router<AppState> {
         .route("/:id", get(get_restaurant).patch(update_restaurant))
 }
 
+pub fn admin_router() -> Router<AppState> {
+    Router::new()
+        .route("/restaurants/:id/merge", post(merge_restaurant))
+}
+
 async fn create_restaurant(
     State(state): State<AppState>,
     user: AuthUser,
     Json(req): Json<RestaurantCreateRequest>,
 ) -> AppResult<(StatusCode, Json<RestaurantDetailResponse>)> {
+    check_user_limit(&state.rl_restaurant_create, user.id)?;
+
     if req.name.trim().is_empty() {
         return Err(AppError::BadRequest("Restaurant name is required".to_string()));
     }
@@ -265,4 +273,93 @@ async fn duplicate_check(
 
     let has_duplicate = !candidates.is_empty();
     Ok(Json(DuplicateCheckResponse { has_duplicate, candidates }))
+}
+
+async fn merge_restaurant(
+    State(state): State<AppState>,
+    Path(source_id): Path<Uuid>,
+    auth: AuthUser,
+    Json(req): Json<MergeRestaurantRequest>,
+) -> AppResult<Json<serde_json::Value>> {
+    auth.require_admin()?;
+
+    let merge_into_id = req.merge_into_id;
+
+    // Prevent merging into itself
+    if source_id == merge_into_id {
+        return Err(AppError::BadRequest(
+            "Cannot merge a restaurant into itself".to_string(),
+        ));
+    }
+
+    // Verify source restaurant exists
+    sqlx::query("SELECT id FROM restaurants WHERE id = $1")
+        .bind(source_id)
+        .fetch_optional(&state.db)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("Source restaurant {source_id} not found")))?;
+
+    // Verify merge_into restaurant exists
+    sqlx::query("SELECT id FROM restaurants WHERE id = $1")
+        .bind(merge_into_id)
+        .fetch_optional(&state.db)
+        .await?
+        .ok_or_else(|| {
+            AppError::NotFound(format!("Target restaurant {merge_into_id} not found"))
+        })?;
+
+    let mut tx = state.db.begin().await?;
+
+    // Step 4: Move all dishes from source to merge_into
+    sqlx::query("UPDATE dishes SET restaurant_id = $1 WHERE restaurant_id = $2")
+        .bind(merge_into_id)
+        .bind(source_id)
+        .execute(&mut *tx)
+        .await?;
+
+    // Step 5: Copy ratings from source that don't conflict on (user_id, restaurant_id) of target
+    sqlx::query(
+        r#"
+        INSERT INTO restaurant_ratings (id, user_id, restaurant_id, stars, created_at, updated_at)
+        SELECT uuid_generate_v4(), user_id, $1, stars, created_at, updated_at
+        FROM restaurant_ratings
+        WHERE restaurant_id = $2
+        ON CONFLICT (user_id, restaurant_id) DO NOTHING
+        "#,
+    )
+    .bind(merge_into_id)
+    .bind(source_id)
+    .execute(&mut *tx)
+    .await?;
+
+    // Step 6: Delete source ratings
+    sqlx::query("DELETE FROM restaurant_ratings WHERE restaurant_id = $1")
+        .bind(source_id)
+        .execute(&mut *tx)
+        .await?;
+
+    // Step 7: Recalculate avg_rating and rating_count on merge_into restaurant
+    sqlx::query(
+        r#"
+        UPDATE restaurants SET
+            avg_rating = (SELECT AVG(stars::float) FROM restaurant_ratings WHERE restaurant_id = $1),
+            rating_count = (SELECT COUNT(*) FROM restaurant_ratings WHERE restaurant_id = $1),
+            updated_at = NOW()
+        WHERE id = $1
+        "#,
+    )
+    .bind(merge_into_id)
+    .execute(&mut *tx)
+    .await?;
+
+    // Step 8: Delete source restaurant
+    sqlx::query("DELETE FROM restaurants WHERE id = $1")
+        .bind(source_id)
+        .execute(&mut *tx)
+        .await?;
+
+    // Step 9: Commit
+    tx.commit().await?;
+
+    Ok(Json(serde_json::json!({ "ok": true, "merged_into": merge_into_id })))
 }

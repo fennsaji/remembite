@@ -7,6 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/billing/pro_status_provider.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/dish_repository.dart';
@@ -38,6 +39,14 @@ const _sweetnessOptions = [
   ('Sweet', 0.9),
 ];
 
+// Report reason options
+const _reportReasons = [
+  'Incorrect info',
+  'Duplicate dish',
+  'Inappropriate content',
+  'Other',
+];
+
 class DishDetailScreen extends ConsumerStatefulWidget {
   final String dishId;
   const DishDetailScreen({super.key, required this.dishId});
@@ -59,6 +68,50 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
     super.dispose();
   }
 
+  void _showMoreOptions(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.elevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.flag_outlined,
+                  color: AppColors.secondaryText),
+              title: const Text(
+                'Report this dish',
+                style: TextStyle(color: AppColors.primaryText),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                // Use State.mounted (always available), not BuildContext.mounted
+                if (mounted) {
+                  _showReportSheet(context, widget.dishId);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showReportSheet(BuildContext context, String dishId) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.elevated,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _ReportDishSheet(dishId: dishId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final dishAsync = ref.watch(dishDetailProvider(widget.dishId));
@@ -74,6 +127,14 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
               const Icon(Icons.arrow_back, color: AppColors.primaryText),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert,
+                color: AppColors.secondaryText),
+            onPressed: () => _showMoreOptions(context),
+            tooltip: 'More options',
+          ),
+        ],
       ),
       body: dishAsync.when(
         loading: () => const Center(
@@ -361,7 +422,10 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
         );
       }
 
-      if (mounted) context.pop();
+      if (mounted) {
+        setState(() => _saving = false);
+        context.pop();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -479,6 +543,143 @@ class _AttributeBar extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────
+// Report Dish Bottom Sheet
+// ─────────────────────────────────────────────
+
+class _ReportDishSheet extends ConsumerStatefulWidget {
+  final String dishId;
+  const _ReportDishSheet({required this.dishId});
+
+  @override
+  ConsumerState<_ReportDishSheet> createState() => _ReportDishSheetState();
+}
+
+class _ReportDishSheetState extends ConsumerState<_ReportDishSheet> {
+  String _selectedReason = _reportReasons.first;
+  bool _submitting = false;
+
+  Future<void> _submit() async {
+    setState(() => _submitting = true);
+    try {
+      final dio = ref.read(apiClientProvider);
+      await dio.post('/reports', data: {
+        'entity_type': 'dish',
+        'entity_id': widget.dishId,
+        'reason': _selectedReason,
+      });
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Thanks for the report!',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            backgroundColor: AppColors.accentPress,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        final msg = e.toString().contains('SocketException') || e.toString().contains('connection')
+            ? 'No connection. Please try again.'
+            : 'Failed to submit report. Please try again.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        setState(() => _submitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Report Dish',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: AppColors.primaryText,
+                  fontFamily: 'Fraunces',
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Help us keep dish info accurate and appropriate.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.mutedText,
+                ),
+          ),
+          const SizedBox(height: 16),
+          ..._reportReasons.map((reason) => RadioListTile<String>(
+                value: reason,
+                groupValue: _selectedReason,
+                onChanged: (v) {
+                  if (v != null) setState(() => _selectedReason = v);
+                },
+                title: Text(
+                  reason,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.primaryText,
+                      ),
+                ),
+                activeColor: AppColors.accent,
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              )),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed:
+                      _submitting ? null : () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.secondaryText,
+                    side: const BorderSide(color: AppColors.border),
+                    minimumSize: const Size(0, 48),
+                  ),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _submitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(0, 48),
+                  ),
+                  child: _submitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.background,
+                          ),
+                        )
+                      : const Text('Submit'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
 
 class _LockedAiSignalCard extends StatelessWidget {
   final VoidCallback onUpgrade;

@@ -218,3 +218,85 @@ pub struct DishReactionItem {
     pub reaction: String,
     pub reacted_at: DateTime<Utc>,
 }
+
+// ─────────────────────────────────────────────
+// Edit Suggestion DTOs
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct EditSuggestionCreateRequest {
+    pub entity_type: String, // "restaurant" or "dish"
+    pub entity_id: Uuid,
+    pub field: String,
+    pub proposed_value: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct EditSuggestionResponse {
+    pub id: Uuid,
+    pub entity_type: String,
+    pub entity_id: Uuid,
+    pub field: String,
+    pub proposed_value: String,
+    pub suggested_by: Uuid,
+    pub status: String,
+    pub net_votes: i32,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EditVoteRequest {
+    pub vote: String, // "up" or "down"
+}
+
+#[derive(Debug, Serialize)]
+pub struct EditVoteResponse {
+    pub ok: bool,
+    pub applied: bool,
+}
+
+// ─────────────────────────────────────────────
+// Report DTOs
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct ReportCreateRequest {
+    pub entity_type: String,
+    pub entity_id: Uuid,
+    pub reason: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ReportResponse {
+    pub id: Uuid,
+    pub entity_type: String,
+    pub entity_id: Uuid,
+    pub reason: String,
+    pub status: String,
+    pub created_at: DateTime<Utc>,
+}
+
+// ─────────────────────────────────────────────
+// Admin merge
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct MergeRestaurantRequest {
+    pub merge_into_id: Uuid,
+}
+
+// ─────────────────────────────────────────────
+// Admin report action
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct ReportActionRequest {
+    /// "resolved" or "dismissed"
+    pub action: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ReportActionResponse {
+    pub ok: bool,
+    pub status: String,
+}

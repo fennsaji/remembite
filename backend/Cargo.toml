@@ -48,6 +48,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
 # Rate limiting
 governor = "0.6"
+dashmap = "5"
 
 # Base64 encoding/decoding (Pub/Sub webhook payload)
 base64 = "0.22"

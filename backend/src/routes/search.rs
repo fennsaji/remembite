@@ -1,9 +1,16 @@
-use axum::{Json, Router, extract::{Query, State}, routing::get};
+use std::net::SocketAddr;
+
+use axum::{
+    Json, Router,
+    extract::{ConnectInfo, Query, State},
+    routing::get,
+};
 
 use crate::{
     AppState,
     dto::{DishSearchResult, RestaurantSummary, SearchQuery, SearchResultsResponse},
     error::AppResult,
+    middleware::rate_limit::check_ip_limit,
 };
 
 pub fn router() -> Router<AppState> {
@@ -12,8 +19,11 @@ pub fn router() -> Router<AppState> {
 
 async fn search(
     State(state): State<AppState>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Query(params): Query<SearchQuery>,
 ) -> AppResult<Json<SearchResultsResponse>> {
+    check_ip_limit(&state.rl_global_ip, addr.ip())?;
+
     let q = params.q.trim().to_string();
     if q.is_empty() {
         return Ok(Json(SearchResultsResponse {

@@ -15,6 +15,7 @@ use crate::{
     },
     error::{AppError, AppResult},
     jobs::queue::Job,
+    middleware::rate_limit::check_user_limit,
 };
 
 /// Routes mounted at /restaurants/:id/dishes
@@ -196,6 +197,8 @@ async fn upsert_reaction(
     user: AuthUser,
     Json(req): Json<ReactionUpsertRequest>,
 ) -> AppResult<Json<serde_json::Value>> {
+    check_user_limit(&state.rl_reactions, user.id)?;
+
     let valid_reactions = ["so_yummy", "tasty", "pretty_good", "meh", "never_again"];
     if !valid_reactions.contains(&req.reaction.as_str()) {
         return Err(AppError::BadRequest(format!(
@@ -204,7 +207,9 @@ async fn upsert_reaction(
         )));
     }
 
-    // Upsert reaction
+    // Upsert reaction + recalculate aggregate inside a single transaction
+    let mut tx = state.db.begin().await?;
+
     sqlx::query(
         r#"
         INSERT INTO dish_reactions (id, user_id, dish_id, reaction)
@@ -219,7 +224,7 @@ async fn upsert_reaction(
     .bind(user.id)
     .bind(dish_id)
     .bind(&req.reaction)
-    .execute(&state.db)
+    .execute(&mut *tx)
     .await?;
 
     // Recalculate community_score and vote_count for the dish
@@ -245,8 +250,44 @@ async fn upsert_reaction(
         "#,
     )
     .bind(dish_id)
-    .execute(&state.db)
+    .execute(&mut *tx)
     .await?;
+
+    tx.commit().await?;
+
+    // Anomaly detection: flag reaction spam (>20 reactions in 5 min) — non-blocking
+    let spam_db = state.db.clone();
+    let spam_user_id = user.id;
+    tokio::spawn(async move {
+        let result = sqlx::query(
+            r#"
+            SELECT COUNT(*) as cnt
+            FROM dish_reactions
+            WHERE user_id = $1
+              AND updated_at > NOW() - INTERVAL '5 minutes'
+            "#,
+        )
+        .bind(spam_user_id)
+        .fetch_one(&spam_db)
+        .await;
+
+        if let Ok(row) = result {
+            use sqlx::Row;
+            let count: i64 = row.try_get("cnt").unwrap_or(0);
+            if count > 20 {
+                let _ = sqlx::query(
+                    r#"
+                    INSERT INTO admin_flags (user_id, reason, metadata)
+                    VALUES ($1, 'reaction_spam', $2)
+                    "#,
+                )
+                .bind(spam_user_id)
+                .bind(serde_json::json!({ "reaction_count_5min": count }))
+                .execute(&spam_db)
+                .await;
+            }
+        }
+    });
 
     // Update taste vector incrementally if dish is classified
     let prior_row = sqlx::query(
@@ -345,6 +386,9 @@ async fn upsert_attribute_vote(
         return Err(AppError::BadRequest("value must be between 0.0 and 1.0".to_string()));
     }
 
+    // Upsert attribute vote + recompute Bayesian blended scores inside a single transaction
+    let mut tx = state.db.begin().await?;
+
     sqlx::query(
         r#"
         INSERT INTO dish_attribute_votes (id, user_id, dish_id, attribute, value)
@@ -359,7 +403,7 @@ async fn upsert_attribute_vote(
     .bind(dish_id)
     .bind(&req.attribute)
     .bind(req.value)
-    .execute(&state.db)
+    .execute(&mut *tx)
     .await?;
 
     // Recompute Bayesian blended scores (k=5)
@@ -369,7 +413,7 @@ async fn upsert_attribute_vote(
         "SELECT spice_score, sweetness_score FROM dish_attribute_priors WHERE dish_id = $1",
     )
     .bind(dish_id)
-    .fetch_optional(&state.db)
+    .fetch_optional(&mut *tx)
     .await?;
 
     if let Some(prior) = prior_row {
@@ -387,7 +431,7 @@ async fn upsert_attribute_vote(
             "#,
         )
         .bind(dish_id)
-        .fetch_one(&state.db)
+        .fetch_one(&mut *tx)
         .await?;
 
         let avg_spice: Option<f64> = vote_avgs.try_get("avg_spice")?;
@@ -414,9 +458,11 @@ async fn upsert_attribute_vote(
         .bind(final_sweetness)
         .bind(n as i32)
         .bind(dish_id)
-        .execute(&state.db)
+        .execute(&mut *tx)
         .await?;
     }
+
+    tx.commit().await?;
 
     Ok(Json(serde_json::json!({ "ok": true })))
 }

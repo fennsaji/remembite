@@ -1,8 +1,10 @@
 pub mod auth;
 pub mod dishes;
+pub mod edit_suggestions;
 pub mod health;
 pub mod payments;
 pub mod ratings;
+pub mod reports;
 pub mod restaurants;
 pub mod search;
 pub mod sync;
