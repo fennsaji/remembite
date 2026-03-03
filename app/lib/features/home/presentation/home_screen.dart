@@ -22,12 +22,17 @@ Future<List<RestaurantSummary>> nearbyRestaurants(Ref ref) async {
         permission == LocationPermission.deniedForever) {
       return [];
     }
-    final pos = await Geolocator.getCurrentPosition(
+
+    // Try last known position first (instant, works on emulator with mock location)
+    Position? pos = await Geolocator.getLastKnownPosition();
+
+    // Fall back to fresh fix with a hard 10s timeout via Future.timeout()
+    pos ??= await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.medium,
-        timeLimit: Duration(seconds: 10),
       ),
-    );
+    ).timeout(const Duration(seconds: 10));
+
     return repo.getNearbyRestaurants(pos.latitude, pos.longitude);
   } catch (_) {
     return [];

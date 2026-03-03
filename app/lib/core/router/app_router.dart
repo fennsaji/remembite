@@ -14,6 +14,8 @@ import '../../features/restaurant/presentation/ocr_results_screen.dart';
 import '../../features/restaurant/presentation/restaurant_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/timeline/presentation/timeline_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/upgrade/presentation/upgrade_screen.dart';
 import '../network/auth_state.dart';
 import '../theme/app_theme.dart';
 
@@ -68,6 +70,12 @@ GoRouter appRouter(Ref ref) {
         },
       ),
 
+      // Upgrade / Pro paywall (full-screen modal, no bottom nav)
+      GoRoute(
+        path: '/upgrade',
+        builder: (context, state) => const UpgradeScreen(),
+      ),
+
       // Main shell with floating bottom nav
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
@@ -104,7 +112,7 @@ GoRouter appRouter(Ref ref) {
           ),
           GoRoute(
             path: '/profile',
-            builder: (context, state) => const _ProfilePlaceholder(),
+            builder: (context, state) => const ProfileScreen(),
           ),
           GoRoute(
             path: '/map',
@@ -230,18 +238,6 @@ class _FloatingPillNav extends StatelessWidget {
 }
 
 // Placeholder screens for Phase 2+
-class _ProfilePlaceholder extends StatelessWidget {
-  const _ProfilePlaceholder();
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.background,
-    body: Center(
-      child: Text('Profile — Phase 2',
-          style: TextStyle(color: AppColors.mutedText)),
-    ),
-  );
-}
-
 class _MapPlaceholder extends StatelessWidget {
   const _MapPlaceholder();
   @override

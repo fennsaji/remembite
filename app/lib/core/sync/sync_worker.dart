@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
+import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../db/app_database.dart';
@@ -47,6 +49,9 @@ class SyncWorker extends _$SyncWorker {
     });
   }
 
+  /// Force an immediate sync cycle. Called after Pro upgrade.
+  Future<void> syncNow() => _syncPending();
+
   Future<void> _syncPending() async {
     if (_isSyncing) return;
     _isSyncing = true;
@@ -57,6 +62,12 @@ class SyncWorker extends _$SyncWorker {
 
       final db = ref.read(appDatabaseProvider);
       final dio = ref.read(apiClientProvider);
+
+      // Cross-device pull: if no local reactions, fetch from cloud
+      final localCount = await db.reactionDao.getTotalReactionCount(auth.id);
+      if (localCount == 0) {
+        await _pullFromCloud(db, dio, auth);
+      }
 
       final pending = await db.reactionDao.getPendingSync();
       if (pending.isEmpty) {
@@ -81,6 +92,29 @@ class SyncWorker extends _$SyncWorker {
       if (!_disposed) state = SyncStatus.error;
     } finally {
       _isSyncing = false;
+    }
+  }
+
+  Future<void> _pullFromCloud(AppDatabase db, Dio dio, AuthUser auth) async {
+    try {
+      final resp = await dio.get('/sync/full');
+      final reactions =
+          (resp.data['reactions'] as List).cast<Map<String, dynamic>>();
+      for (final r in reactions) {
+        await db.reactionDao.upsert(ReactionsCompanion(
+          id: Value(r['id'] as String),
+          userId: Value(auth.id),
+          dishId: Value(r['dish_id'] as String),
+          reaction: Value(r['reaction'] as String),
+          createdAt: Value(
+              DateTime.tryParse(r['updated_at'] as String? ?? '') ??
+                  DateTime.now()),
+          updatedAt: Value(DateTime.now()),
+          syncedAt: Value(DateTime.now()),
+        ));
+      }
+    } catch (_) {
+      // Cloud pull failed — not fatal, user still has local data
     }
   }
 }

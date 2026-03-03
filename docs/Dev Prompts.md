@@ -99,7 +99,7 @@ We are building Remembite. Phase 0 is complete: DB schema, Rust scaffold, Flutte
 
 Read CLAUDE.md and docs/PRD.md before starting.
 
-UI must match design/remembite.pen exactly — open the design file in Pencil before building any screen. Use the exact colors, typography, spacing, component names, and layout defined there. Do not invent UI — implement what is designed.
+UI must match design/remembite.pen exactly — open the design file in Pencil before building any screen.(Use Frontend Skill for designing UI) Use the exact colors, typography, spacing, component names, and layout defined there. Do not invent UI — implement what is designed.
 
 Phase 1 deliverables — build backend API + Flutter UI for:
 
@@ -164,7 +164,7 @@ Restaurant Super Screen: Your Top Bites (sorted by reaction weight, tie-break by
 ```
 We are building Remembite. Phases 0 and 1 are complete.
 
-Read CLAUDE.md before starting. Reference design/remembite.pen for any UI changes or additions — all interaction states (selected, loading, empty, error) must stay consistent with the design.
+Read CLAUDE.md before starting. Reference design/remembite.pen for any UI changes or additions — all interaction states (selected, loading, empty, error) must stay consistent with the design(Use Frontend Skill for designing UI).
 
 Phase 1.5 deliverables — wire up all interaction and sync logic:
 
@@ -208,7 +208,7 @@ Ensure all API endpoints return consistent shape whether data comes from local o
 ```
 We are building Remembite. Phases 0, 1, 1.5 are complete.
 
-Read CLAUDE.md, docs/Tech Stack.md (Payments section), docs/PRD.md (Section 9) before starting. Reference design/remembite.pen screens 6 (Upgrade) and 5 (Profile) for the Pro upgrade UI — match exactly.
+Read CLAUDE.md, docs/Tech Stack.md (Payments section), docs/PRD.md (Section 9) before starting. Reference design/remembite.pen screens 6 (Upgrade) (Use Frontend Skill for designing UI) and 5 (Profile) for the Pro upgrade UI — match exactly.
 
 Phase 2 deliverables:
 
@@ -402,7 +402,7 @@ Phase 4 deliverables:
 ```
 We are building Remembite. Phases 0–4 are complete. Dish attribute priors exist in DB.
 
-Read CLAUDE.md (Bayesian formula, taste vector update formula, confidence threshold rules) before starting. Reference design/remembite.pen screen 5 (Profile) for taste profile progress UI and screen 4 (Dish Detail) for the AI compatibility signal.
+Read CLAUDE.md (Bayesian formula, taste vector update formula, confidence threshold rules) before starting. Reference design/remembite.pen screen 5 (Profile)(Use Frontend Skill for designing UI) for taste profile progress UI and screen 4 (Dish Detail) for the AI compatibility signal.
 
 Phase 5 deliverables:
 
@@ -457,7 +457,7 @@ Phase 5 deliverables:
 ```
 We are building Remembite. Phases 0–5 are complete.
 
-Read docs/Tech Stack.md (Storage section) before starting. Reference design/remembite.pen screen 4 (Dish Detail) for image upload placement and screen 3 (Restaurant) for restaurant image treatment.
+Read docs/Tech Stack.md (Storage section) before starting. Reference design/remembite.pen screen 4 (Dish Detail)(Use Frontend Skill for designing UI) for image upload placement and screen 3 (Restaurant) for restaurant image treatment.
 
 Phase 6 deliverables:
 

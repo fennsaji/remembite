@@ -1,9 +1,12 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../core/billing/pro_status_provider.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/dish_repository.dart';
@@ -60,6 +63,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
   Widget build(BuildContext context) {
     final dishAsync = ref.watch(dishDetailProvider(widget.dishId));
     final auth = ref.watch(authStateProvider).value;
+    final isPro = ref.watch(proStatusProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -185,7 +189,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
             const SizedBox(height: 24),
 
             // AI signal card
-            _buildAiSignalCard(context, dish),
+            _buildAiSignalCard(context, dish, isPro),
 
             // Private notes
             _SectionLabel(label: 'PRIVATE NOTES'),
@@ -216,7 +220,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
     );
   }
 
-  Widget _buildAiSignalCard(BuildContext context, DishDetail dish) {
+  Widget _buildAiSignalCard(BuildContext context, DishDetail dish, bool isPro) {
     if (dish.attributeState == 'classifying') {
       return Padding(
         padding: const EdgeInsets.only(bottom: 24),
@@ -237,6 +241,12 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
     if (dish.attributeState == 'classified' &&
         dish.attributePriors != null &&
         dish.voteCount >= 10) {
+      if (!isPro) {
+        return _LockedAiSignalCard(
+          onUpgrade: () => context.push('/upgrade'),
+        );
+      }
+
       final priors = dish.attributePriors!;
       final spiceScore =
           priors.finalSpiceScore ?? priors.spiceScore;
@@ -466,6 +476,65 @@ class _AttributeBar extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _LockedAiSignalCard extends StatelessWidget {
+  final VoidCallback onUpgrade;
+  const _LockedAiSignalCard({required this.onUpgrade});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ImageFiltered(
+            imageFilter: ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+            child: Text(
+              '🔥 You\'ll probably love this',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(color: AppColors.primaryText),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.lock_outline,
+                  color: AppColors.mutedText, size: 14),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Unlock predictions — upgrade to Pro',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppColors.mutedText),
+                ),
+              ),
+              TextButton(
+                onPressed: onUpgrade,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  minimumSize: Size.zero,
+                ),
+                child: const Text('Upgrade',
+                    style: TextStyle(color: AppColors.accent)),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

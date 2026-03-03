@@ -100,4 +100,57 @@ class ReactionDao extends DatabaseAccessor<AppDatabase>
           updatedAt: Value(DateTime.now()),
         ));
   }
+
+  /// Total distinct restaurants the user has reacted at.
+  Future<int> getRestaurantCount(String userId) async {
+    final query = customSelect(
+      '''
+      SELECT COUNT(DISTINCT d.restaurant_id) as cnt
+      FROM reactions rx
+      JOIN dishes d ON d.id = rx.dish_id
+      WHERE rx.user_id = ?
+      ''',
+      variables: [Variable.withString(userId)],
+      readsFrom: {reactions, attachedDatabase.dishes},
+    );
+    final rows = await query.get();
+    return rows.first.read<int>('cnt');
+  }
+
+  /// Total distinct dishes the user has reacted to.
+  Future<int> getDishCount(String userId) async {
+    final result = await (selectOnly(reactions)
+          ..addColumns([reactions.dishId.count(distinct: true)])
+          ..where(reactions.userId.equals(userId)))
+        .getSingleOrNull();
+    return result?.read(reactions.dishId.count(distinct: true)) ?? 0;
+  }
+
+  /// Total reactions (for taste profile progress: count / 10).
+  Future<int> getTotalReactionCount(String userId) async {
+    final result = await (selectOnly(reactions)
+          ..addColumns([reactions.id.count()])
+          ..where(reactions.userId.equals(userId)))
+        .getSingleOrNull();
+    return result?.read(reactions.id.count()) ?? 0;
+  }
+
+  /// Most used reaction (e.g. "so_yummy").
+  Future<String?> getMostUsedReaction(String userId) async {
+    final query = customSelect(
+      '''
+      SELECT reaction, COUNT(*) as cnt
+      FROM reactions
+      WHERE user_id = ?
+      GROUP BY reaction
+      ORDER BY cnt DESC
+      LIMIT 1
+      ''',
+      variables: [Variable.withString(userId)],
+      readsFrom: {reactions},
+    );
+    final rows = await query.get();
+    if (rows.isEmpty) return null;
+    return rows.first.read<String>('reaction');
+  }
 }

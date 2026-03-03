@@ -6,7 +6,7 @@ part of 'home_screen.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$nearbyRestaurantsHash() => r'22e0df134885741fd055d1d9442b92a43ba26ccd';
+String _$nearbyRestaurantsHash() => r'06fab59055ddba4dbc83ca68cac1f8f8d8cc422a';
 
 /// See also [nearbyRestaurants].
 @ProviderFor(nearbyRestaurants)

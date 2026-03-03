@@ -17,6 +17,9 @@ pub struct Config {
     pub fcm_server_key: String,
     pub server_host: String,
     pub server_port: u16,
+    pub google_play_package_name: String,
+    pub google_play_service_account_json: String,
+    pub google_pubsub_webhook_token: String,
 }
 
 impl Config {
@@ -38,6 +41,11 @@ impl Config {
             fcm_server_key: env_or("FCM_SERVER_KEY", ""),
             server_host: env_or("SERVER_HOST", "0.0.0.0"),
             server_port: parse_env("SERVER_PORT", 8080)?,
+            google_play_package_name: env_or("GOOGLE_PLAY_PACKAGE_NAME", "com.fennsaji.remembite"),
+            // Dev default ("{}") — MUST be set to real service account JSON via GOOGLE_PLAY_SERVICE_ACCOUNT_JSON in production
+            google_play_service_account_json: env_or("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "{}"),
+            // Dev default — MUST be overridden via GOOGLE_PUBSUB_WEBHOOK_TOKEN in production
+            google_pubsub_webhook_token: env_or("GOOGLE_PUBSUB_WEBHOOK_TOKEN", "dev-webhook-token"),
         })
     }
 }

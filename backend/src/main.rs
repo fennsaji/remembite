@@ -88,6 +88,12 @@ async fn main() -> anyhow::Result<()> {
         .nest("/search", routes::search::router())
         // Timeline (under /users/me)
         .nest("/users/me", routes::timeline::router())
+        // Payments
+        .nest("/payments", routes::payments::router())
+        // Webhooks
+        .nest("/webhooks", routes::webhooks::router())
+        // Sync
+        .nest("/sync", routes::sync::router())
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
         .with_state(state);
