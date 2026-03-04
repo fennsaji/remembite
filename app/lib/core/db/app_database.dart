@@ -38,7 +38,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -49,6 +49,16 @@ class AppDatabase extends _$AppDatabase {
         await m.database.customStatement(
           'UPDATE reactions SET updated_at = created_at WHERE updated_at IS NULL',
         );
+      }
+      if (from < 3) {
+        await m.addColumn(restaurants, restaurants.googlePlaceId);
+        await m.addColumn(restaurants, restaurants.googleRating);
+        await m.addColumn(restaurants, restaurants.googleRatingCount);
+        await m.addColumn(restaurants, restaurants.priceLevel);
+        await m.addColumn(restaurants, restaurants.businessStatus);
+        await m.addColumn(restaurants, restaurants.phoneNumber);
+        await m.addColumn(restaurants, restaurants.websiteUrl);
+        await m.addColumn(restaurants, restaurants.openingHours);
       }
     },
   );

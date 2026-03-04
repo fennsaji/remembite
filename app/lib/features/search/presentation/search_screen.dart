@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -48,8 +49,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (q.isEmpty) return;
     setState(() => _loading = true);
     try {
-      final results =
-          await ref.read(searchRepositoryProvider).search(q);
+      // Use last known position (instant, no permission prompt) for proximity boost.
+      final pos = await Geolocator.getLastKnownPosition();
+      final results = await ref.read(searchRepositoryProvider).search(
+            q,
+            lat: pos?.latitude,
+            lng: pos?.longitude,
+          );
       if (mounted) setState(() => _results = results);
     } catch (_) {
       if (mounted) setState(() => _results = null);
@@ -97,7 +103,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: OutlinedButton.icon(
-            onPressed: () => context.push('/restaurant/add'),
+            onPressed: () {
+              final query = _controller.text.trim();
+              if (query.isNotEmpty) {
+                context.go('/map?query=${Uri.encodeComponent(query)}');
+              } else {
+                context.go('/map');
+              }
+            },
             icon: const Icon(Icons.add, color: AppColors.accent, size: 18),
             label: const Text('Add New Restaurant',
                 style: TextStyle(color: AppColors.accent)),

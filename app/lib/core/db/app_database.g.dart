@@ -69,6 +69,94 @@ class $RestaurantsTable extends Restaurants
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _googlePlaceIdMeta = const VerificationMeta(
+    'googlePlaceId',
+  );
+  @override
+  late final GeneratedColumn<String> googlePlaceId = GeneratedColumn<String>(
+    'google_place_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _googleRatingMeta = const VerificationMeta(
+    'googleRating',
+  );
+  @override
+  late final GeneratedColumn<double> googleRating = GeneratedColumn<double>(
+    'google_rating',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _googleRatingCountMeta = const VerificationMeta(
+    'googleRatingCount',
+  );
+  @override
+  late final GeneratedColumn<int> googleRatingCount = GeneratedColumn<int>(
+    'google_rating_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _priceLevelMeta = const VerificationMeta(
+    'priceLevel',
+  );
+  @override
+  late final GeneratedColumn<int> priceLevel = GeneratedColumn<int>(
+    'price_level',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _businessStatusMeta = const VerificationMeta(
+    'businessStatus',
+  );
+  @override
+  late final GeneratedColumn<String> businessStatus = GeneratedColumn<String>(
+    'business_status',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _phoneNumberMeta = const VerificationMeta(
+    'phoneNumber',
+  );
+  @override
+  late final GeneratedColumn<String> phoneNumber = GeneratedColumn<String>(
+    'phone_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _websiteUrlMeta = const VerificationMeta(
+    'websiteUrl',
+  );
+  @override
+  late final GeneratedColumn<String> websiteUrl = GeneratedColumn<String>(
+    'website_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _openingHoursMeta = const VerificationMeta(
+    'openingHours',
+  );
+  @override
+  late final GeneratedColumn<String> openingHours = GeneratedColumn<String>(
+    'opening_hours',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _avgRatingMeta = const VerificationMeta(
     'avgRating',
   );
@@ -111,6 +199,14 @@ class $RestaurantsTable extends Restaurants
     latitude,
     longitude,
     cuisineType,
+    googlePlaceId,
+    googleRating,
+    googleRatingCount,
+    priceLevel,
+    businessStatus,
+    phoneNumber,
+    websiteUrl,
+    openingHours,
     avgRating,
     ratingCount,
     syncedAt,
@@ -173,6 +269,72 @@ class $RestaurantsTable extends Restaurants
         ),
       );
     }
+    if (data.containsKey('google_place_id')) {
+      context.handle(
+        _googlePlaceIdMeta,
+        googlePlaceId.isAcceptableOrUnknown(
+          data['google_place_id']!,
+          _googlePlaceIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('google_rating')) {
+      context.handle(
+        _googleRatingMeta,
+        googleRating.isAcceptableOrUnknown(
+          data['google_rating']!,
+          _googleRatingMeta,
+        ),
+      );
+    }
+    if (data.containsKey('google_rating_count')) {
+      context.handle(
+        _googleRatingCountMeta,
+        googleRatingCount.isAcceptableOrUnknown(
+          data['google_rating_count']!,
+          _googleRatingCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('price_level')) {
+      context.handle(
+        _priceLevelMeta,
+        priceLevel.isAcceptableOrUnknown(data['price_level']!, _priceLevelMeta),
+      );
+    }
+    if (data.containsKey('business_status')) {
+      context.handle(
+        _businessStatusMeta,
+        businessStatus.isAcceptableOrUnknown(
+          data['business_status']!,
+          _businessStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('phone_number')) {
+      context.handle(
+        _phoneNumberMeta,
+        phoneNumber.isAcceptableOrUnknown(
+          data['phone_number']!,
+          _phoneNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('website_url')) {
+      context.handle(
+        _websiteUrlMeta,
+        websiteUrl.isAcceptableOrUnknown(data['website_url']!, _websiteUrlMeta),
+      );
+    }
+    if (data.containsKey('opening_hours')) {
+      context.handle(
+        _openingHoursMeta,
+        openingHours.isAcceptableOrUnknown(
+          data['opening_hours']!,
+          _openingHoursMeta,
+        ),
+      );
+    }
     if (data.containsKey('avg_rating')) {
       context.handle(
         _avgRatingMeta,
@@ -227,6 +389,38 @@ class $RestaurantsTable extends Restaurants
         DriftSqlType.string,
         data['${effectivePrefix}cuisine_type'],
       ),
+      googlePlaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}google_place_id'],
+      ),
+      googleRating: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}google_rating'],
+      ),
+      googleRatingCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}google_rating_count'],
+      ),
+      priceLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}price_level'],
+      ),
+      businessStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}business_status'],
+      ),
+      phoneNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone_number'],
+      ),
+      websiteUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}website_url'],
+      ),
+      openingHours: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}opening_hours'],
+      ),
       avgRating: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}avg_rating'],
@@ -255,6 +449,14 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
   final double latitude;
   final double longitude;
   final String? cuisineType;
+  final String? googlePlaceId;
+  final double? googleRating;
+  final int? googleRatingCount;
+  final int? priceLevel;
+  final String? businessStatus;
+  final String? phoneNumber;
+  final String? websiteUrl;
+  final String? openingHours;
   final double? avgRating;
   final int ratingCount;
   final DateTime? syncedAt;
@@ -265,6 +467,14 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
     required this.latitude,
     required this.longitude,
     this.cuisineType,
+    this.googlePlaceId,
+    this.googleRating,
+    this.googleRatingCount,
+    this.priceLevel,
+    this.businessStatus,
+    this.phoneNumber,
+    this.websiteUrl,
+    this.openingHours,
     this.avgRating,
     required this.ratingCount,
     this.syncedAt,
@@ -279,6 +489,30 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
     map['longitude'] = Variable<double>(longitude);
     if (!nullToAbsent || cuisineType != null) {
       map['cuisine_type'] = Variable<String>(cuisineType);
+    }
+    if (!nullToAbsent || googlePlaceId != null) {
+      map['google_place_id'] = Variable<String>(googlePlaceId);
+    }
+    if (!nullToAbsent || googleRating != null) {
+      map['google_rating'] = Variable<double>(googleRating);
+    }
+    if (!nullToAbsent || googleRatingCount != null) {
+      map['google_rating_count'] = Variable<int>(googleRatingCount);
+    }
+    if (!nullToAbsent || priceLevel != null) {
+      map['price_level'] = Variable<int>(priceLevel);
+    }
+    if (!nullToAbsent || businessStatus != null) {
+      map['business_status'] = Variable<String>(businessStatus);
+    }
+    if (!nullToAbsent || phoneNumber != null) {
+      map['phone_number'] = Variable<String>(phoneNumber);
+    }
+    if (!nullToAbsent || websiteUrl != null) {
+      map['website_url'] = Variable<String>(websiteUrl);
+    }
+    if (!nullToAbsent || openingHours != null) {
+      map['opening_hours'] = Variable<String>(openingHours);
     }
     if (!nullToAbsent || avgRating != null) {
       map['avg_rating'] = Variable<double>(avgRating);
@@ -300,6 +534,30 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
       cuisineType: cuisineType == null && nullToAbsent
           ? const Value.absent()
           : Value(cuisineType),
+      googlePlaceId: googlePlaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(googlePlaceId),
+      googleRating: googleRating == null && nullToAbsent
+          ? const Value.absent()
+          : Value(googleRating),
+      googleRatingCount: googleRatingCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(googleRatingCount),
+      priceLevel: priceLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(priceLevel),
+      businessStatus: businessStatus == null && nullToAbsent
+          ? const Value.absent()
+          : Value(businessStatus),
+      phoneNumber: phoneNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(phoneNumber),
+      websiteUrl: websiteUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(websiteUrl),
+      openingHours: openingHours == null && nullToAbsent
+          ? const Value.absent()
+          : Value(openingHours),
       avgRating: avgRating == null && nullToAbsent
           ? const Value.absent()
           : Value(avgRating),
@@ -322,6 +580,14 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
       latitude: serializer.fromJson<double>(json['latitude']),
       longitude: serializer.fromJson<double>(json['longitude']),
       cuisineType: serializer.fromJson<String?>(json['cuisineType']),
+      googlePlaceId: serializer.fromJson<String?>(json['googlePlaceId']),
+      googleRating: serializer.fromJson<double?>(json['googleRating']),
+      googleRatingCount: serializer.fromJson<int?>(json['googleRatingCount']),
+      priceLevel: serializer.fromJson<int?>(json['priceLevel']),
+      businessStatus: serializer.fromJson<String?>(json['businessStatus']),
+      phoneNumber: serializer.fromJson<String?>(json['phoneNumber']),
+      websiteUrl: serializer.fromJson<String?>(json['websiteUrl']),
+      openingHours: serializer.fromJson<String?>(json['openingHours']),
       avgRating: serializer.fromJson<double?>(json['avgRating']),
       ratingCount: serializer.fromJson<int>(json['ratingCount']),
       syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
@@ -337,6 +603,14 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
       'latitude': serializer.toJson<double>(latitude),
       'longitude': serializer.toJson<double>(longitude),
       'cuisineType': serializer.toJson<String?>(cuisineType),
+      'googlePlaceId': serializer.toJson<String?>(googlePlaceId),
+      'googleRating': serializer.toJson<double?>(googleRating),
+      'googleRatingCount': serializer.toJson<int?>(googleRatingCount),
+      'priceLevel': serializer.toJson<int?>(priceLevel),
+      'businessStatus': serializer.toJson<String?>(businessStatus),
+      'phoneNumber': serializer.toJson<String?>(phoneNumber),
+      'websiteUrl': serializer.toJson<String?>(websiteUrl),
+      'openingHours': serializer.toJson<String?>(openingHours),
       'avgRating': serializer.toJson<double?>(avgRating),
       'ratingCount': serializer.toJson<int>(ratingCount),
       'syncedAt': serializer.toJson<DateTime?>(syncedAt),
@@ -350,6 +624,14 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
     double? latitude,
     double? longitude,
     Value<String?> cuisineType = const Value.absent(),
+    Value<String?> googlePlaceId = const Value.absent(),
+    Value<double?> googleRating = const Value.absent(),
+    Value<int?> googleRatingCount = const Value.absent(),
+    Value<int?> priceLevel = const Value.absent(),
+    Value<String?> businessStatus = const Value.absent(),
+    Value<String?> phoneNumber = const Value.absent(),
+    Value<String?> websiteUrl = const Value.absent(),
+    Value<String?> openingHours = const Value.absent(),
     Value<double?> avgRating = const Value.absent(),
     int? ratingCount,
     Value<DateTime?> syncedAt = const Value.absent(),
@@ -360,6 +642,20 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
     latitude: latitude ?? this.latitude,
     longitude: longitude ?? this.longitude,
     cuisineType: cuisineType.present ? cuisineType.value : this.cuisineType,
+    googlePlaceId: googlePlaceId.present
+        ? googlePlaceId.value
+        : this.googlePlaceId,
+    googleRating: googleRating.present ? googleRating.value : this.googleRating,
+    googleRatingCount: googleRatingCount.present
+        ? googleRatingCount.value
+        : this.googleRatingCount,
+    priceLevel: priceLevel.present ? priceLevel.value : this.priceLevel,
+    businessStatus: businessStatus.present
+        ? businessStatus.value
+        : this.businessStatus,
+    phoneNumber: phoneNumber.present ? phoneNumber.value : this.phoneNumber,
+    websiteUrl: websiteUrl.present ? websiteUrl.value : this.websiteUrl,
+    openingHours: openingHours.present ? openingHours.value : this.openingHours,
     avgRating: avgRating.present ? avgRating.value : this.avgRating,
     ratingCount: ratingCount ?? this.ratingCount,
     syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
@@ -374,6 +670,30 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
       cuisineType: data.cuisineType.present
           ? data.cuisineType.value
           : this.cuisineType,
+      googlePlaceId: data.googlePlaceId.present
+          ? data.googlePlaceId.value
+          : this.googlePlaceId,
+      googleRating: data.googleRating.present
+          ? data.googleRating.value
+          : this.googleRating,
+      googleRatingCount: data.googleRatingCount.present
+          ? data.googleRatingCount.value
+          : this.googleRatingCount,
+      priceLevel: data.priceLevel.present
+          ? data.priceLevel.value
+          : this.priceLevel,
+      businessStatus: data.businessStatus.present
+          ? data.businessStatus.value
+          : this.businessStatus,
+      phoneNumber: data.phoneNumber.present
+          ? data.phoneNumber.value
+          : this.phoneNumber,
+      websiteUrl: data.websiteUrl.present
+          ? data.websiteUrl.value
+          : this.websiteUrl,
+      openingHours: data.openingHours.present
+          ? data.openingHours.value
+          : this.openingHours,
       avgRating: data.avgRating.present ? data.avgRating.value : this.avgRating,
       ratingCount: data.ratingCount.present
           ? data.ratingCount.value
@@ -391,6 +711,14 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
           ..write('cuisineType: $cuisineType, ')
+          ..write('googlePlaceId: $googlePlaceId, ')
+          ..write('googleRating: $googleRating, ')
+          ..write('googleRatingCount: $googleRatingCount, ')
+          ..write('priceLevel: $priceLevel, ')
+          ..write('businessStatus: $businessStatus, ')
+          ..write('phoneNumber: $phoneNumber, ')
+          ..write('websiteUrl: $websiteUrl, ')
+          ..write('openingHours: $openingHours, ')
           ..write('avgRating: $avgRating, ')
           ..write('ratingCount: $ratingCount, ')
           ..write('syncedAt: $syncedAt')
@@ -406,6 +734,14 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
     latitude,
     longitude,
     cuisineType,
+    googlePlaceId,
+    googleRating,
+    googleRatingCount,
+    priceLevel,
+    businessStatus,
+    phoneNumber,
+    websiteUrl,
+    openingHours,
     avgRating,
     ratingCount,
     syncedAt,
@@ -420,6 +756,14 @@ class RestaurantRow extends DataClass implements Insertable<RestaurantRow> {
           other.latitude == this.latitude &&
           other.longitude == this.longitude &&
           other.cuisineType == this.cuisineType &&
+          other.googlePlaceId == this.googlePlaceId &&
+          other.googleRating == this.googleRating &&
+          other.googleRatingCount == this.googleRatingCount &&
+          other.priceLevel == this.priceLevel &&
+          other.businessStatus == this.businessStatus &&
+          other.phoneNumber == this.phoneNumber &&
+          other.websiteUrl == this.websiteUrl &&
+          other.openingHours == this.openingHours &&
           other.avgRating == this.avgRating &&
           other.ratingCount == this.ratingCount &&
           other.syncedAt == this.syncedAt);
@@ -432,6 +776,14 @@ class RestaurantsCompanion extends UpdateCompanion<RestaurantRow> {
   final Value<double> latitude;
   final Value<double> longitude;
   final Value<String?> cuisineType;
+  final Value<String?> googlePlaceId;
+  final Value<double?> googleRating;
+  final Value<int?> googleRatingCount;
+  final Value<int?> priceLevel;
+  final Value<String?> businessStatus;
+  final Value<String?> phoneNumber;
+  final Value<String?> websiteUrl;
+  final Value<String?> openingHours;
   final Value<double?> avgRating;
   final Value<int> ratingCount;
   final Value<DateTime?> syncedAt;
@@ -443,6 +795,14 @@ class RestaurantsCompanion extends UpdateCompanion<RestaurantRow> {
     this.latitude = const Value.absent(),
     this.longitude = const Value.absent(),
     this.cuisineType = const Value.absent(),
+    this.googlePlaceId = const Value.absent(),
+    this.googleRating = const Value.absent(),
+    this.googleRatingCount = const Value.absent(),
+    this.priceLevel = const Value.absent(),
+    this.businessStatus = const Value.absent(),
+    this.phoneNumber = const Value.absent(),
+    this.websiteUrl = const Value.absent(),
+    this.openingHours = const Value.absent(),
     this.avgRating = const Value.absent(),
     this.ratingCount = const Value.absent(),
     this.syncedAt = const Value.absent(),
@@ -455,6 +815,14 @@ class RestaurantsCompanion extends UpdateCompanion<RestaurantRow> {
     required double latitude,
     required double longitude,
     this.cuisineType = const Value.absent(),
+    this.googlePlaceId = const Value.absent(),
+    this.googleRating = const Value.absent(),
+    this.googleRatingCount = const Value.absent(),
+    this.priceLevel = const Value.absent(),
+    this.businessStatus = const Value.absent(),
+    this.phoneNumber = const Value.absent(),
+    this.websiteUrl = const Value.absent(),
+    this.openingHours = const Value.absent(),
     this.avgRating = const Value.absent(),
     this.ratingCount = const Value.absent(),
     this.syncedAt = const Value.absent(),
@@ -471,6 +839,14 @@ class RestaurantsCompanion extends UpdateCompanion<RestaurantRow> {
     Expression<double>? latitude,
     Expression<double>? longitude,
     Expression<String>? cuisineType,
+    Expression<String>? googlePlaceId,
+    Expression<double>? googleRating,
+    Expression<int>? googleRatingCount,
+    Expression<int>? priceLevel,
+    Expression<String>? businessStatus,
+    Expression<String>? phoneNumber,
+    Expression<String>? websiteUrl,
+    Expression<String>? openingHours,
     Expression<double>? avgRating,
     Expression<int>? ratingCount,
     Expression<DateTime>? syncedAt,
@@ -483,6 +859,14 @@ class RestaurantsCompanion extends UpdateCompanion<RestaurantRow> {
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       if (cuisineType != null) 'cuisine_type': cuisineType,
+      if (googlePlaceId != null) 'google_place_id': googlePlaceId,
+      if (googleRating != null) 'google_rating': googleRating,
+      if (googleRatingCount != null) 'google_rating_count': googleRatingCount,
+      if (priceLevel != null) 'price_level': priceLevel,
+      if (businessStatus != null) 'business_status': businessStatus,
+      if (phoneNumber != null) 'phone_number': phoneNumber,
+      if (websiteUrl != null) 'website_url': websiteUrl,
+      if (openingHours != null) 'opening_hours': openingHours,
       if (avgRating != null) 'avg_rating': avgRating,
       if (ratingCount != null) 'rating_count': ratingCount,
       if (syncedAt != null) 'synced_at': syncedAt,
@@ -497,6 +881,14 @@ class RestaurantsCompanion extends UpdateCompanion<RestaurantRow> {
     Value<double>? latitude,
     Value<double>? longitude,
     Value<String?>? cuisineType,
+    Value<String?>? googlePlaceId,
+    Value<double?>? googleRating,
+    Value<int?>? googleRatingCount,
+    Value<int?>? priceLevel,
+    Value<String?>? businessStatus,
+    Value<String?>? phoneNumber,
+    Value<String?>? websiteUrl,
+    Value<String?>? openingHours,
     Value<double?>? avgRating,
     Value<int>? ratingCount,
     Value<DateTime?>? syncedAt,
@@ -509,6 +901,14 @@ class RestaurantsCompanion extends UpdateCompanion<RestaurantRow> {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       cuisineType: cuisineType ?? this.cuisineType,
+      googlePlaceId: googlePlaceId ?? this.googlePlaceId,
+      googleRating: googleRating ?? this.googleRating,
+      googleRatingCount: googleRatingCount ?? this.googleRatingCount,
+      priceLevel: priceLevel ?? this.priceLevel,
+      businessStatus: businessStatus ?? this.businessStatus,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      websiteUrl: websiteUrl ?? this.websiteUrl,
+      openingHours: openingHours ?? this.openingHours,
       avgRating: avgRating ?? this.avgRating,
       ratingCount: ratingCount ?? this.ratingCount,
       syncedAt: syncedAt ?? this.syncedAt,
@@ -537,6 +937,30 @@ class RestaurantsCompanion extends UpdateCompanion<RestaurantRow> {
     if (cuisineType.present) {
       map['cuisine_type'] = Variable<String>(cuisineType.value);
     }
+    if (googlePlaceId.present) {
+      map['google_place_id'] = Variable<String>(googlePlaceId.value);
+    }
+    if (googleRating.present) {
+      map['google_rating'] = Variable<double>(googleRating.value);
+    }
+    if (googleRatingCount.present) {
+      map['google_rating_count'] = Variable<int>(googleRatingCount.value);
+    }
+    if (priceLevel.present) {
+      map['price_level'] = Variable<int>(priceLevel.value);
+    }
+    if (businessStatus.present) {
+      map['business_status'] = Variable<String>(businessStatus.value);
+    }
+    if (phoneNumber.present) {
+      map['phone_number'] = Variable<String>(phoneNumber.value);
+    }
+    if (websiteUrl.present) {
+      map['website_url'] = Variable<String>(websiteUrl.value);
+    }
+    if (openingHours.present) {
+      map['opening_hours'] = Variable<String>(openingHours.value);
+    }
     if (avgRating.present) {
       map['avg_rating'] = Variable<double>(avgRating.value);
     }
@@ -561,6 +985,14 @@ class RestaurantsCompanion extends UpdateCompanion<RestaurantRow> {
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
           ..write('cuisineType: $cuisineType, ')
+          ..write('googlePlaceId: $googlePlaceId, ')
+          ..write('googleRating: $googleRating, ')
+          ..write('googleRatingCount: $googleRatingCount, ')
+          ..write('priceLevel: $priceLevel, ')
+          ..write('businessStatus: $businessStatus, ')
+          ..write('phoneNumber: $phoneNumber, ')
+          ..write('websiteUrl: $websiteUrl, ')
+          ..write('openingHours: $openingHours, ')
           ..write('avgRating: $avgRating, ')
           ..write('ratingCount: $ratingCount, ')
           ..write('syncedAt: $syncedAt, ')
@@ -2300,6 +2732,14 @@ typedef $$RestaurantsTableCreateCompanionBuilder =
       required double latitude,
       required double longitude,
       Value<String?> cuisineType,
+      Value<String?> googlePlaceId,
+      Value<double?> googleRating,
+      Value<int?> googleRatingCount,
+      Value<int?> priceLevel,
+      Value<String?> businessStatus,
+      Value<String?> phoneNumber,
+      Value<String?> websiteUrl,
+      Value<String?> openingHours,
       Value<double?> avgRating,
       Value<int> ratingCount,
       Value<DateTime?> syncedAt,
@@ -2313,6 +2753,14 @@ typedef $$RestaurantsTableUpdateCompanionBuilder =
       Value<double> latitude,
       Value<double> longitude,
       Value<String?> cuisineType,
+      Value<String?> googlePlaceId,
+      Value<double?> googleRating,
+      Value<int?> googleRatingCount,
+      Value<int?> priceLevel,
+      Value<String?> businessStatus,
+      Value<String?> phoneNumber,
+      Value<String?> websiteUrl,
+      Value<String?> openingHours,
       Value<double?> avgRating,
       Value<int> ratingCount,
       Value<DateTime?> syncedAt,
@@ -2355,6 +2803,46 @@ class $$RestaurantsTableFilterComposer
 
   ColumnFilters<String> get cuisineType => $composableBuilder(
     column: $table.cuisineType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get googlePlaceId => $composableBuilder(
+    column: $table.googlePlaceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get googleRating => $composableBuilder(
+    column: $table.googleRating,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get googleRatingCount => $composableBuilder(
+    column: $table.googleRatingCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priceLevel => $composableBuilder(
+    column: $table.priceLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessStatus => $composableBuilder(
+    column: $table.businessStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phoneNumber => $composableBuilder(
+    column: $table.phoneNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get websiteUrl => $composableBuilder(
+    column: $table.websiteUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get openingHours => $composableBuilder(
+    column: $table.openingHours,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2413,6 +2901,46 @@ class $$RestaurantsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get googlePlaceId => $composableBuilder(
+    column: $table.googlePlaceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get googleRating => $composableBuilder(
+    column: $table.googleRating,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get googleRatingCount => $composableBuilder(
+    column: $table.googleRatingCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priceLevel => $composableBuilder(
+    column: $table.priceLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessStatus => $composableBuilder(
+    column: $table.businessStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phoneNumber => $composableBuilder(
+    column: $table.phoneNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get websiteUrl => $composableBuilder(
+    column: $table.websiteUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get openingHours => $composableBuilder(
+    column: $table.openingHours,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get avgRating => $composableBuilder(
     column: $table.avgRating,
     builder: (column) => ColumnOrderings(column),
@@ -2455,6 +2983,46 @@ class $$RestaurantsTableAnnotationComposer
 
   GeneratedColumn<String> get cuisineType => $composableBuilder(
     column: $table.cuisineType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get googlePlaceId => $composableBuilder(
+    column: $table.googlePlaceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get googleRating => $composableBuilder(
+    column: $table.googleRating,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get googleRatingCount => $composableBuilder(
+    column: $table.googleRatingCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get priceLevel => $composableBuilder(
+    column: $table.priceLevel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get businessStatus => $composableBuilder(
+    column: $table.businessStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phoneNumber => $composableBuilder(
+    column: $table.phoneNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get websiteUrl => $composableBuilder(
+    column: $table.websiteUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get openingHours => $composableBuilder(
+    column: $table.openingHours,
     builder: (column) => column,
   );
 
@@ -2507,6 +3075,14 @@ class $$RestaurantsTableTableManager
                 Value<double> latitude = const Value.absent(),
                 Value<double> longitude = const Value.absent(),
                 Value<String?> cuisineType = const Value.absent(),
+                Value<String?> googlePlaceId = const Value.absent(),
+                Value<double?> googleRating = const Value.absent(),
+                Value<int?> googleRatingCount = const Value.absent(),
+                Value<int?> priceLevel = const Value.absent(),
+                Value<String?> businessStatus = const Value.absent(),
+                Value<String?> phoneNumber = const Value.absent(),
+                Value<String?> websiteUrl = const Value.absent(),
+                Value<String?> openingHours = const Value.absent(),
                 Value<double?> avgRating = const Value.absent(),
                 Value<int> ratingCount = const Value.absent(),
                 Value<DateTime?> syncedAt = const Value.absent(),
@@ -2518,6 +3094,14 @@ class $$RestaurantsTableTableManager
                 latitude: latitude,
                 longitude: longitude,
                 cuisineType: cuisineType,
+                googlePlaceId: googlePlaceId,
+                googleRating: googleRating,
+                googleRatingCount: googleRatingCount,
+                priceLevel: priceLevel,
+                businessStatus: businessStatus,
+                phoneNumber: phoneNumber,
+                websiteUrl: websiteUrl,
+                openingHours: openingHours,
                 avgRating: avgRating,
                 ratingCount: ratingCount,
                 syncedAt: syncedAt,
@@ -2531,6 +3115,14 @@ class $$RestaurantsTableTableManager
                 required double latitude,
                 required double longitude,
                 Value<String?> cuisineType = const Value.absent(),
+                Value<String?> googlePlaceId = const Value.absent(),
+                Value<double?> googleRating = const Value.absent(),
+                Value<int?> googleRatingCount = const Value.absent(),
+                Value<int?> priceLevel = const Value.absent(),
+                Value<String?> businessStatus = const Value.absent(),
+                Value<String?> phoneNumber = const Value.absent(),
+                Value<String?> websiteUrl = const Value.absent(),
+                Value<String?> openingHours = const Value.absent(),
                 Value<double?> avgRating = const Value.absent(),
                 Value<int> ratingCount = const Value.absent(),
                 Value<DateTime?> syncedAt = const Value.absent(),
@@ -2542,6 +3134,14 @@ class $$RestaurantsTableTableManager
                 latitude: latitude,
                 longitude: longitude,
                 cuisineType: cuisineType,
+                googlePlaceId: googlePlaceId,
+                googleRating: googleRating,
+                googleRatingCount: googleRatingCount,
+                priceLevel: priceLevel,
+                businessStatus: businessStatus,
+                phoneNumber: phoneNumber,
+                websiteUrl: websiteUrl,
+                openingHours: openingHours,
                 avgRating: avgRating,
                 ratingCount: ratingCount,
                 syncedAt: syncedAt,

@@ -91,11 +91,19 @@ class SearchRepository {
   SearchRepository(this._dio);
   final Dio _dio;
 
-  Future<SearchResults> search(String query) async {
+  Future<SearchResults> search(
+    String query, {
+    double? lat,
+    double? lng,
+  }) async {
     if (query.trim().isEmpty) {
       return const SearchResults(restaurants: [], dishes: []);
     }
-    final response = await _dio.get('/search', queryParameters: {'q': query});
+    final response = await _dio.get('/search', queryParameters: {
+      'q': query,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
+    });
     return SearchResults.fromJson(response.data as Map<String, dynamic>);
   }
 }

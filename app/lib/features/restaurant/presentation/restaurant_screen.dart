@@ -223,6 +223,14 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
               ),
             ),
 
+            // Opening hours row
+            if (restaurant.isOpenNow != null ||
+                restaurant.isPermanentlyClosed ||
+                restaurant.weekdayText.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _OpeningHoursRow(restaurant: restaurant),
+              ),
+
             // Community updates pending indicator
             SliverToBoxAdapter(
               child: ref
@@ -459,6 +467,172 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
         foregroundColor: AppColors.background,
         icon: const Icon(Icons.document_scanner_outlined),
         label: const Text('Scan Menu'),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Opening Hours Row
+// ─────────────────────────────────────────────
+
+class _OpeningHoursRow extends StatefulWidget {
+  final RestaurantDetail restaurant;
+  const _OpeningHoursRow({required this.restaurant});
+
+  @override
+  State<_OpeningHoursRow> createState() => _OpeningHoursRowState();
+}
+
+class _OpeningHoursRowState extends State<_OpeningHoursRow> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = widget.restaurant;
+    final isOpen = r.isOpenNow;
+    final weekdays = r.weekdayText;
+
+    // Today's hours — weekday_text is Mon-indexed (index 0 = Monday).
+    // DateTime.now().weekday: Monday=1 … Sunday=7 → shift to 0-based Monday index.
+    String? todayHours;
+    if (weekdays.isNotEmpty) {
+      final idx = (DateTime.now().weekday - 1) % 7;
+      if (idx < weekdays.length) todayHours = weekdays[idx];
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: weekdays.isNotEmpty
+                ? () => setState(() => _expanded = !_expanded)
+                : null,
+            child: Row(
+              children: [
+                // Open / Closed / Permanently Closed chip
+                if (r.isPermanentlyClosed)
+                  _StatusChip(label: 'Permanently Closed', color: AppColors.error)
+                else if (isOpen == true)
+                  _StatusChip(label: 'Open Now', color: const Color(0xFF4CAF50))
+                else if (isOpen == false)
+                  _StatusChip(label: 'Closed Now', color: AppColors.error),
+                if (todayHours != null) ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      // Strip the day name prefix from "Monday: 9 AM – 10 PM"
+                      todayHours.contains(': ')
+                          ? todayHours.split(': ').skip(1).join(': ')
+                          : todayHours,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.secondaryText,
+                          ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+                if (weekdays.isNotEmpty) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    _expanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    size: 16,
+                    color: AppColors.mutedText,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (_expanded && weekdays.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: weekdays.map((line) {
+                  final parts = line.split(': ');
+                  final day = parts.first;
+                  final hours = parts.length > 1 ? parts.skip(1).join(': ') : '';
+                  final isToday = line == todayHours;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 90,
+                          child: Text(
+                            day,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: isToday
+                                      ? AppColors.primaryText
+                                      : AppColors.secondaryText,
+                                  fontWeight: isToday
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            hours,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: isToday
+                                      ? AppColors.primaryText
+                                      : AppColors.secondaryText,
+                                  fontWeight: isToday
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _StatusChip({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }

@@ -15,6 +15,14 @@ pub struct RestaurantCreateRequest {
     pub latitude: f64,
     pub longitude: f64,
     pub cuisine_type: Option<String>,
+    pub google_place_id: Option<String>,
+    pub google_rating: Option<f64>,
+    pub google_rating_count: Option<i32>,
+    pub price_level: Option<i16>,
+    pub business_status: Option<String>,
+    pub phone_number: Option<String>,
+    pub website: Option<String>,
+    pub opening_hours: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -37,6 +45,14 @@ pub struct RestaurantDetailResponse {
     pub top_dishes: Vec<DishResponse>,
     pub created_by: Uuid,
     pub created_at: DateTime<Utc>,
+    pub google_place_id: Option<String>,
+    pub google_rating: Option<f64>,
+    pub google_rating_count: Option<i32>,
+    pub price_level: Option<i16>,
+    pub business_status: Option<String>,
+    pub phone_number: Option<String>,
+    pub website: Option<String>,
+    pub opening_hours: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -49,6 +65,9 @@ pub struct RestaurantSummary {
     pub rating_count: i32,
     pub latitude: f64,
     pub longitude: f64,
+    pub google_rating: Option<f64>,
+    pub open_now: Option<bool>,
+    pub price_level: Option<i16>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -177,6 +196,8 @@ pub struct RatingSummaryResponse {
 #[derive(Debug, Deserialize)]
 pub struct SearchQuery {
     pub q: String,
+    pub lat: Option<f64>,
+    pub lng: Option<f64>,
 }
 
 #[derive(Debug, Serialize)]

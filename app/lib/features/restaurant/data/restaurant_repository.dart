@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +24,11 @@ class RestaurantDetail {
   final double? avgRating;
   final int ratingCount;
   final List<DishSummary> topDishes;
+  // Enrichment fields (populated when restaurant was added via Google Places)
+  final String? businessStatus;
+  final String? phoneNumber;
+  final String? websiteUrl;
+  final Map<String, dynamic>? openingHours;
 
   const RestaurantDetail({
     required this.id,
@@ -33,7 +40,28 @@ class RestaurantDetail {
     this.avgRating,
     required this.ratingCount,
     required this.topDishes,
+    this.businessStatus,
+    this.phoneNumber,
+    this.websiteUrl,
+    this.openingHours,
   });
+
+  /// Whether the place is permanently closed.
+  bool get isPermanentlyClosed => businessStatus == 'PERMANENTLY_CLOSED';
+
+  /// Whether the place is open right now (from the stored opening_hours snapshot).
+  bool? get isOpenNow {
+    final oh = openingHours;
+    if (oh == null) return null;
+    return oh['open_now'] as bool?;
+  }
+
+  /// Weekday text lines, e.g. ["Monday: 9:00 AM – 10:00 PM", …]
+  List<String> get weekdayText {
+    final oh = openingHours;
+    if (oh == null) return [];
+    return (oh['weekday_text'] as List<dynamic>? ?? []).cast<String>();
+  }
 
   factory RestaurantDetail.fromJson(Map<String, dynamic> json) =>
       RestaurantDetail(
@@ -48,6 +76,10 @@ class RestaurantDetail {
         topDishes: (json['top_dishes'] as List<dynamic>)
             .map((d) => DishSummary.fromJson(d as Map<String, dynamic>))
             .toList(),
+        businessStatus: json['business_status'] as String?,
+        phoneNumber: json['phone_number'] as String?,
+        websiteUrl: json['website'] as String?,
+        openingHours: json['opening_hours'] as Map<String, dynamic>?,
       );
 }
 
@@ -188,6 +220,14 @@ class RestaurantRepository {
     required double latitude,
     required double longitude,
     String? cuisineType,
+    String? googlePlaceId,
+    double? googleRating,
+    int? googleRatingCount,
+    int? priceLevel,
+    String? businessStatus,
+    String? phoneNumber,
+    String? websiteUrl,
+    String? openingHoursJson,
   }) async {
     final response = await _dio.post(
       '/restaurants',
@@ -197,6 +237,14 @@ class RestaurantRepository {
         'latitude': latitude,
         'longitude': longitude,
         if (cuisineType != null) 'cuisine_type': cuisineType,
+        if (googlePlaceId != null) 'google_place_id': googlePlaceId,
+        if (googleRating != null) 'google_rating': googleRating,
+        if (googleRatingCount != null) 'google_rating_count': googleRatingCount,
+        if (priceLevel != null) 'price_level': priceLevel,
+        if (businessStatus != null) 'business_status': businessStatus,
+        if (phoneNumber != null) 'phone_number': phoneNumber,
+        if (websiteUrl != null) 'website': websiteUrl,
+        if (openingHoursJson != null) 'opening_hours': jsonDecode(openingHoursJson),
       },
     );
     return RestaurantDetail.fromJson(response.data as Map<String, dynamic>);

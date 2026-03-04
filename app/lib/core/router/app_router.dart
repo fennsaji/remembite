@@ -160,6 +160,7 @@ GoRouter appRouter(Ref ref, {String? initialLocation}) {
             path: '/map',
             builder: (context, state) => MapScreen(
               addMode: state.uri.queryParameters['mode'] == 'add',
+              initialQuery: state.uri.queryParameters['query'],
             ),
           ),
         ],

@@ -33,7 +33,7 @@ Future<List<RestaurantSummary>> nearbyRestaurants(Ref ref) async {
       ),
     ).timeout(const Duration(seconds: 10));
 
-    return repo.getNearbyRestaurants(pos.latitude, pos.longitude);
+    return repo.getNearbyRestaurants(pos.latitude, pos.longitude, radius: 5000);
   } catch (_) {
     return [];
   }

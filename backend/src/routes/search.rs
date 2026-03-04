@@ -32,22 +32,38 @@ async fn search(
         }));
     }
 
-    // Search restaurants by name similarity
+    // Search restaurants — text similarity + optional proximity boost
+    // proximity score = 1 / (1 + distance_km), falls off naturally with distance.
+    // When lat/lng absent the proximity term is 0 so pure text order applies.
     let restaurant_rows = sqlx::query(
         r#"
-        SELECT id, name, city, cuisine_type, avg_rating, rating_count, latitude, longitude
+        SELECT id, name, city, cuisine_type, avg_rating, rating_count, latitude, longitude,
+               google_rating, price_level
         FROM restaurants
         WHERE similarity(name, $1) > 0.15 OR name ILIKE $2
-        ORDER BY similarity(name, $1) DESC, rating_count DESC
+        ORDER BY (
+            similarity(name, $1) * 0.7
+            + COALESCE(
+                CASE WHEN $3::double precision IS NOT NULL AND $4::double precision IS NOT NULL
+                THEN 0.3 / (1.0 + SQRT(
+                    POWER((latitude  - $3) * 111.0, 2) +
+                    POWER((longitude - $4) * 111.0 * COS(RADIANS($3)), 2)
+                ))
+                END,
+                0.0
+              )
+        ) DESC, rating_count DESC
         LIMIT 5
         "#,
     )
     .bind(&q)
     .bind(format!("%{q}%"))
+    .bind(params.lat)
+    .bind(params.lng)
     .fetch_all(&state.db)
     .await?;
 
-    // Search dishes by name similarity
+    // Search dishes — text similarity + proximity via restaurant location
     let dish_rows = sqlx::query(
         r#"
         SELECT d.id, d.name, d.restaurant_id, r.name as restaurant_name,
@@ -55,30 +71,46 @@ async fn search(
         FROM dishes d
         JOIN restaurants r ON r.id = d.restaurant_id
         WHERE similarity(d.name, $1) > 0.15 OR d.name ILIKE $2
-        ORDER BY similarity(d.name, $1) DESC, d.vote_count DESC
+        ORDER BY (
+            similarity(d.name, $1) * 0.7
+            + COALESCE(
+                CASE WHEN $3::double precision IS NOT NULL AND $4::double precision IS NOT NULL
+                THEN 0.3 / (1.0 + SQRT(
+                    POWER((r.latitude  - $3) * 111.0, 2) +
+                    POWER((r.longitude - $4) * 111.0 * COS(RADIANS($3)), 2)
+                ))
+                END,
+                0.0
+              )
+        ) DESC, d.vote_count DESC
         LIMIT 10
         "#,
     )
     .bind(&q)
     .bind(format!("%{q}%"))
+    .bind(params.lat)
+    .bind(params.lng)
     .fetch_all(&state.db)
     .await?;
 
     use sqlx::Row;
 
-    let restaurants: Vec<RestaurantSummary> = restaurant_rows
-        .into_iter()
-        .map(|r| RestaurantSummary {
-            id: r.try_get("id").unwrap(),
-            name: r.try_get("name").unwrap(),
-            city: r.try_get("city").unwrap(),
-            cuisine_type: r.try_get("cuisine_type").unwrap(),
-            avg_rating: r.try_get("avg_rating").unwrap(),
-            rating_count: r.try_get("rating_count").unwrap(),
-            latitude: r.try_get("latitude").unwrap(),
-            longitude: r.try_get("longitude").unwrap(),
-        })
-        .collect();
+    let mut restaurants: Vec<RestaurantSummary> = Vec::with_capacity(restaurant_rows.len());
+    for r in restaurant_rows {
+        restaurants.push(RestaurantSummary {
+            id: r.try_get("id")?,
+            name: r.try_get("name")?,
+            city: r.try_get("city")?,
+            cuisine_type: r.try_get("cuisine_type")?,
+            avg_rating: r.try_get("avg_rating")?,
+            rating_count: r.try_get("rating_count")?,
+            latitude: r.try_get("latitude")?,
+            longitude: r.try_get("longitude")?,
+            google_rating: r.try_get("google_rating")?,
+            open_now: None,
+            price_level: r.try_get("price_level")?,
+        });
+    }
 
     let dishes: Vec<DishSearchResult> = dish_rows
         .into_iter()

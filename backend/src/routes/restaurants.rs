@@ -36,18 +36,51 @@ async fn create_restaurant(
     user: AuthUser,
     Json(req): Json<RestaurantCreateRequest>,
 ) -> AppResult<(StatusCode, Json<RestaurantDetailResponse>)> {
+    tracing::info!(user_id = %user.id, name = %req.name, "create_restaurant called");
     check_user_limit(&state.rl_restaurant_create, user.id)?;
 
     if req.name.trim().is_empty() {
         return Err(AppError::BadRequest("Restaurant name is required".to_string()));
     }
 
+    // Duplicate guard: block if a restaurant with the same name exists within ~100 m.
+    // Uses bounding box (≈ 0.001° ≈ 111 m) + case-insensitive name match or high similarity.
+    let lat_delta = 0.001_f64;
+    let lng_delta = 0.001_f64 / (req.latitude.to_radians().cos()).max(0.001);
+
+    let duplicate = sqlx::query(
+        r#"
+        SELECT id FROM restaurants
+        WHERE (LOWER(name) = LOWER($1) OR similarity(name, $1) > 0.7)
+          AND latitude  BETWEEN $2 AND $3
+          AND longitude BETWEEN $4 AND $5
+        LIMIT 1
+        "#,
+    )
+    .bind(&req.name)
+    .bind(req.latitude - lat_delta)
+    .bind(req.latitude + lat_delta)
+    .bind(req.longitude - lng_delta)
+    .bind(req.longitude + lng_delta)
+    .fetch_optional(&state.db)
+    .await?;
+
+    if duplicate.is_some() {
+        return Err(AppError::BadRequest(
+            "A restaurant with this name already exists at this location".to_string(),
+        ));
+    }
+
     let id = Uuid::new_v4();
 
     sqlx::query(
         r#"
-        INSERT INTO restaurants (id, name, city, latitude, longitude, cuisine_type, created_by)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO restaurants (
+            id, name, city, latitude, longitude, cuisine_type, created_by,
+            google_place_id, google_rating, google_rating_count, price_level,
+            business_status, phone_number, website, opening_hours
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         "#,
     )
     .bind(id)
@@ -57,6 +90,14 @@ async fn create_restaurant(
     .bind(req.longitude)
     .bind(&req.cuisine_type)
     .bind(user.id)
+    .bind(&req.google_place_id)
+    .bind(req.google_rating)
+    .bind(req.google_rating_count)
+    .bind(req.price_level)
+    .bind(&req.business_status)
+    .bind(&req.phone_number)
+    .bind(&req.website)
+    .bind(req.opening_hours.as_ref())
     .execute(&state.db)
     .await?;
 
@@ -72,6 +113,14 @@ async fn create_restaurant(
         top_dishes: vec![],
         created_by: user.id,
         created_at: chrono::Utc::now(),
+        google_place_id: req.google_place_id,
+        google_rating: req.google_rating,
+        google_rating_count: req.google_rating_count,
+        price_level: req.price_level,
+        business_status: req.business_status,
+        phone_number: req.phone_number,
+        website: req.website,
+        opening_hours: req.opening_hours,
     };
 
     Ok((StatusCode::CREATED, Json(response)))
@@ -82,7 +131,10 @@ async fn get_restaurant(
     Path(id): Path<Uuid>,
 ) -> AppResult<Json<RestaurantDetailResponse>> {
     let row = sqlx::query(
-        "SELECT id, name, city, latitude, longitude, cuisine_type, created_by, avg_rating, rating_count, created_at FROM restaurants WHERE id = $1",
+        r#"SELECT id, name, city, latitude, longitude, cuisine_type, created_by, avg_rating, rating_count, created_at,
+                  google_place_id, google_rating, google_rating_count, price_level,
+                  business_status, phone_number, website, opening_hours
+           FROM restaurants WHERE id = $1"#,
     )
     .bind(id)
     .fetch_optional(&state.db)
@@ -100,6 +152,14 @@ async fn get_restaurant(
     let avg_rating: Option<f64> = row.try_get("avg_rating")?;
     let rating_count: i32 = row.try_get("rating_count")?;
     let created_at: chrono::DateTime<chrono::Utc> = row.try_get("created_at")?;
+    let google_place_id: Option<String> = row.try_get("google_place_id")?;
+    let google_rating: Option<f64> = row.try_get("google_rating")?;
+    let google_rating_count: Option<i32> = row.try_get("google_rating_count")?;
+    let price_level: Option<i16> = row.try_get("price_level")?;
+    let business_status: Option<String> = row.try_get("business_status")?;
+    let phone_number: Option<String> = row.try_get("phone_number")?;
+    let website: Option<String> = row.try_get("website")?;
+    let opening_hours: Option<serde_json::Value> = row.try_get("opening_hours")?;
 
     // Top 5 dishes by community_score
     let dish_rows = sqlx::query(
@@ -142,6 +202,14 @@ async fn get_restaurant(
         top_dishes,
         created_by,
         created_at,
+        google_place_id,
+        google_rating,
+        google_rating_count,
+        price_level,
+        business_status,
+        phone_number,
+        website,
+        opening_hours,
     }))
 }
 
@@ -189,7 +257,7 @@ async fn nearby_restaurants(
     State(state): State<AppState>,
     Query(params): Query<NearbyQuery>,
 ) -> AppResult<Json<Vec<RestaurantSummary>>> {
-    let radius = params.radius.unwrap_or(2000.0); // default 2km
+    let radius = params.radius.unwrap_or(5000.0); // default 5km
 
     // Bounding box approximation (1 degree lat ≈ 111km)
     let lat_delta = radius / 111_000.0;
@@ -197,12 +265,25 @@ async fn nearby_restaurants(
 
     let rows = sqlx::query(
         r#"
-        SELECT id, name, city, cuisine_type, avg_rating, rating_count, latitude, longitude
+        SELECT id, name, city, cuisine_type, avg_rating, rating_count, latitude, longitude,
+               google_rating, google_rating_count, price_level,
+               (opening_hours->>'open_now')::boolean AS open_now
         FROM restaurants
         WHERE latitude BETWEEN $1 AND $2
           AND longitude BETWEEN $3 AND $4
-        ORDER BY rating_count DESC
-        LIMIT 30
+        ORDER BY (
+            -- Weighted average of app rating and Google rating
+            COALESCE(
+                (
+                    COALESCE(avg_rating, 0.0) * rating_count
+                    + COALESCE(google_rating, 0.0) * COALESCE(google_rating_count, 0)
+                ) / NULLIF(rating_count + COALESCE(google_rating_count, 0), 0),
+                COALESCE(avg_rating, google_rating, 0.0)
+            )
+            -- Popularity bonus on a log scale (prevents huge chains from dominating)
+            + LN(1.0 + rating_count + COALESCE(google_rating_count, 0)) * 0.3
+        ) DESC NULLS LAST
+        LIMIT 20
         "#,
     )
     .bind(params.lat - lat_delta)
@@ -213,22 +294,26 @@ async fn nearby_restaurants(
     .await?;
 
     use sqlx::Row;
-    let restaurants: Vec<RestaurantSummary> = rows
-        .into_iter()
-        .map(|r| RestaurantSummary {
-            id: r.try_get("id").unwrap(),
-            name: r.try_get("name").unwrap(),
-            city: r.try_get("city").unwrap(),
-            cuisine_type: r.try_get("cuisine_type").unwrap(),
-            avg_rating: r.try_get("avg_rating").unwrap(),
-            rating_count: r.try_get("rating_count").unwrap(),
-            latitude: r.try_get("latitude").unwrap(),
-            longitude: r.try_get("longitude").unwrap(),
-        })
-        .collect();
+    let mut restaurants: Vec<RestaurantSummary> = Vec::with_capacity(rows.len());
+    for r in rows {
+        restaurants.push(RestaurantSummary {
+            id: r.try_get("id")?,
+            name: r.try_get("name")?,
+            city: r.try_get("city")?,
+            cuisine_type: r.try_get("cuisine_type")?,
+            avg_rating: r.try_get("avg_rating")?,
+            rating_count: r.try_get("rating_count")?,
+            latitude: r.try_get("latitude")?,
+            longitude: r.try_get("longitude")?,
+            google_rating: r.try_get("google_rating")?,
+            open_now: r.try_get("open_now")?,
+            price_level: r.try_get("price_level")?,
+        });
+    }
 
     Ok(Json(restaurants))
 }
+
 
 async fn duplicate_check(
     State(state): State<AppState>,
@@ -239,7 +324,8 @@ async fn duplicate_check(
 
     let rows = sqlx::query(
         r#"
-        SELECT id, name, city, cuisine_type, avg_rating, rating_count, latitude, longitude
+        SELECT id, name, city, cuisine_type, avg_rating, rating_count, latitude, longitude,
+               google_rating, price_level
         FROM restaurants
         WHERE similarity(name, $1) > 0.4
           AND latitude BETWEEN $2 AND $3
@@ -257,19 +343,22 @@ async fn duplicate_check(
     .await?;
 
     use sqlx::Row;
-    let candidates: Vec<RestaurantSummary> = rows
-        .into_iter()
-        .map(|r| RestaurantSummary {
-            id: r.try_get("id").unwrap(),
-            name: r.try_get("name").unwrap(),
-            city: r.try_get("city").unwrap(),
-            cuisine_type: r.try_get("cuisine_type").unwrap(),
-            avg_rating: r.try_get("avg_rating").unwrap(),
-            rating_count: r.try_get("rating_count").unwrap(),
-            latitude: r.try_get("latitude").unwrap(),
-            longitude: r.try_get("longitude").unwrap(),
-        })
-        .collect();
+    let mut candidates: Vec<RestaurantSummary> = Vec::with_capacity(rows.len());
+    for r in rows {
+        candidates.push(RestaurantSummary {
+            id: r.try_get("id")?,
+            name: r.try_get("name")?,
+            city: r.try_get("city")?,
+            cuisine_type: r.try_get("cuisine_type")?,
+            avg_rating: r.try_get("avg_rating")?,
+            rating_count: r.try_get("rating_count")?,
+            latitude: r.try_get("latitude")?,
+            longitude: r.try_get("longitude")?,
+            google_rating: r.try_get("google_rating")?,
+            open_now: None,
+            price_level: r.try_get("price_level")?,
+        });
+    }
 
     let has_duplicate = !candidates.is_empty();
     Ok(Json(DuplicateCheckResponse { has_duplicate, candidates }))
