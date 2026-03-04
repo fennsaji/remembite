@@ -39,29 +39,29 @@ class SearchRestaurant {
 }
 
 class SearchDish {
-  final String id;
   final String name;
-  final String restaurantId;
-  final String restaurantName;
+  final int restaurantCount;
+  final List<String> restaurantIds;
+  final List<String> restaurantNames;
   final String? category;
-  final double? communityScore;
+  final double? avgCommunityScore;
 
   const SearchDish({
-    required this.id,
     required this.name,
-    required this.restaurantId,
-    required this.restaurantName,
+    required this.restaurantCount,
+    required this.restaurantIds,
+    required this.restaurantNames,
     this.category,
-    this.communityScore,
+    this.avgCommunityScore,
   });
 
   factory SearchDish.fromJson(Map<String, dynamic> json) => SearchDish(
-    id: json['id'] as String,
     name: json['name'] as String,
-    restaurantId: json['restaurant_id'] as String,
-    restaurantName: json['restaurant_name'] as String,
+    restaurantCount: json['restaurant_count'] as int,
+    restaurantIds: (json['restaurant_ids'] as List<dynamic>).cast<String>(),
+    restaurantNames: (json['restaurant_names'] as List<dynamic>).cast<String>(),
     category: json['category'] as String?,
-    communityScore: (json['community_score'] as num?)?.toDouble(),
+    avgCommunityScore: (json['avg_community_score'] as num?)?.toDouble(),
   );
 }
 

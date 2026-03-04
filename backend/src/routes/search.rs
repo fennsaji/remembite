@@ -1,5 +1,7 @@
 use std::net::SocketAddr;
 
+use uuid::Uuid;
+
 use axum::{
     Json, Router,
     extract::{ConnectInfo, Query, State},
@@ -32,9 +34,7 @@ async fn search(
         }));
     }
 
-    // Search restaurants — text similarity + optional proximity boost
-    // proximity score = 1 / (1 + distance_km), falls off naturally with distance.
-    // When lat/lng absent the proximity term is 0 so pure text order applies.
+    // Search restaurants — text similarity (50%) + avg_rating (30%) + popularity via log(rating_count) (20%)
     let restaurant_rows = sqlx::query(
         r#"
         SELECT id, name, city, cuisine_type, avg_rating, rating_count, latitude, longitude,
@@ -42,54 +42,42 @@ async fn search(
         FROM restaurants
         WHERE similarity(name, $1) > 0.15 OR name ILIKE $2
         ORDER BY (
-            similarity(name, $1) * 0.7
-            + COALESCE(
-                CASE WHEN $3::double precision IS NOT NULL AND $4::double precision IS NOT NULL
-                THEN 0.3 / (1.0 + SQRT(
-                    POWER((latitude  - $3) * 111.0, 2) +
-                    POWER((longitude - $4) * 111.0 * COS(RADIANS($3)), 2)
-                ))
-                END,
-                0.0
-              )
+            (similarity(name, $1) * 0.5)
+            + (COALESCE(avg_rating, 0.0) / 5.0 * 0.3)
+            + (LN(1.0 + rating_count) * 0.2)
         ) DESC, rating_count DESC
         LIMIT 5
         "#,
     )
     .bind(&q)
     .bind(format!("%{q}%"))
-    .bind(params.lat)
-    .bind(params.lng)
     .fetch_all(&state.db)
     .await?;
 
-    // Search dishes — text similarity + proximity via restaurant location
+    // Search dishes — grouped by dish name, showing count of restaurants offering it
+    // Ranking: text similarity (50%) + avg community_score (30%) + popularity via log(sum vote_count) (20%)
     let dish_rows = sqlx::query(
         r#"
-        SELECT d.id, d.name, d.restaurant_id, r.name as restaurant_name,
-               d.category, d.community_score
+        SELECT
+            MAX(d.name) AS name,
+            COUNT(DISTINCT r.id)::int AS restaurant_count,
+            array_agg(DISTINCT r.id::text || '|' || r.name) AS restaurant_pairs,
+            MAX(d.category) AS category,
+            AVG(d.community_score) AS avg_community_score
         FROM dishes d
         JOIN restaurants r ON r.id = d.restaurant_id
         WHERE similarity(d.name, $1) > 0.15 OR d.name ILIKE $2
+        GROUP BY LOWER(TRIM(d.name))
         ORDER BY (
-            similarity(d.name, $1) * 0.7
-            + COALESCE(
-                CASE WHEN $3::double precision IS NOT NULL AND $4::double precision IS NOT NULL
-                THEN 0.3 / (1.0 + SQRT(
-                    POWER((r.latitude  - $3) * 111.0, 2) +
-                    POWER((r.longitude - $4) * 111.0 * COS(RADIANS($3)), 2)
-                ))
-                END,
-                0.0
-              )
-        ) DESC, d.vote_count DESC
+            (similarity(MAX(d.name), $1) * 0.5)
+            + (COALESCE(AVG(d.community_score), 0.0) / 5.0 * 0.3)
+            + (LN(1.0 + SUM(d.vote_count)::float) * 0.2)
+        ) DESC
         LIMIT 10
         "#,
     )
     .bind(&q)
     .bind(format!("%{q}%"))
-    .bind(params.lat)
-    .bind(params.lng)
     .fetch_all(&state.db)
     .await?;
 
@@ -114,15 +102,32 @@ async fn search(
 
     let dishes: Vec<DishSearchResult> = dish_rows
         .into_iter()
-        .map(|r| DishSearchResult {
-            id: r.try_get("id").unwrap(),
-            name: r.try_get("name").unwrap(),
-            restaurant_id: r.try_get("restaurant_id").unwrap(),
-            restaurant_name: r.try_get("restaurant_name").unwrap(),
-            category: r.try_get("category").unwrap(),
-            community_score: r.try_get("community_score").unwrap(),
+        .map(|r| -> Result<DishSearchResult, sqlx::Error> {
+            let pairs: Vec<String> = r.try_get::<Option<Vec<String>>, _>("restaurant_pairs")?
+                .unwrap_or_default();
+            let mut restaurant_ids: Vec<Uuid> = Vec::with_capacity(pairs.len());
+            let mut restaurant_names: Vec<String> = Vec::with_capacity(pairs.len());
+            for pair in &pairs {
+                // UUID is always exactly 36 chars; '|' at index 36; name from index 37.
+                // Slicing by fixed offset means restaurant names containing '|' are safe.
+                if pair.len() < 36 {
+                    return Err(sqlx::Error::Decode("restaurant_pairs: pair too short".into()));
+                }
+                let id = pair[..36].parse::<Uuid>().map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+                let name = if pair.len() > 37 { pair[37..].to_string() } else { String::new() };
+                restaurant_ids.push(id);
+                restaurant_names.push(name);
+            }
+            Ok(DishSearchResult {
+                name: r.try_get("name")?,
+                restaurant_count: r.try_get("restaurant_count")?,
+                restaurant_ids,
+                restaurant_names,
+                category: r.try_get("category")?,
+                avg_community_score: r.try_get("avg_community_score")?,
+            })
         })
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
 
     Ok(Json(SearchResultsResponse { restaurants, dishes }))
 }

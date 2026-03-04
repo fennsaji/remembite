@@ -129,6 +129,8 @@ async fn main() -> anyhow::Result<()> {
         .nest("/search", routes::search::router())
         // Timeline (under /users/me)
         .nest("/users/me", routes::timeline::router())
+        // Export (under /users/me)
+        .nest("/users/me", routes::export::router())
         // Payments
         .nest("/payments", routes::payments::router())
         // Webhooks

@@ -1,10 +1,16 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/billing/pro_status_provider.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/sync/sync_worker.dart';
 import '../../../core/theme/app_theme.dart';
@@ -23,6 +29,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // Session-only: preference not persisted across restarts (Phase 7)
   bool _syncEnabled = true;
+  bool _exportLoading = false;
 
   Future<void> _launchUrl(String url) async {
     try {
@@ -39,6 +46,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _handleSignOut() async {
     await ref.read(authStateProvider.notifier).signOut();
     if (mounted) context.go('/auth/sign-in');
+  }
+
+  Future<void> _exportData() async {
+    setState(() => _exportLoading = true);
+    try {
+      final response = await ref.read(apiClientProvider).get<dynamic>('/users/me/export');
+      final jsonString = jsonEncode(response.data);
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/remembite_export.json');
+      await file.writeAsString(jsonString);
+      if (!mounted) return;
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/json')],
+        subject: 'Remembite Data Export',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Export failed. Please try again.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _exportLoading = false);
+    }
   }
 
   @override
@@ -158,8 +189,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _SettingsRow(
               icon: Icons.download_outlined,
               title: 'Export Data',
-              subtitle: 'Coming soon',
-              disabled: true,
+              subtitle: 'Download all your data as JSON',
+              trailing: _exportLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.accent))
+                  : null,
+              onTap: _exportLoading ? null : _exportData,
             ),
           ],
 
@@ -226,7 +264,6 @@ class _SettingsRow extends StatelessWidget {
   final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
-  final bool disabled;
   final Color? titleColor;
   final Color? iconColor;
 
@@ -236,24 +273,18 @@ class _SettingsRow extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onTap,
-    this.disabled = false,
     this.titleColor,
     this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveTitleColor = disabled
-        ? AppColors.mutedText
-        : (titleColor ?? AppColors.primaryText);
-    final effectiveIconColor = disabled
-        ? AppColors.mutedText
-        : (iconColor ?? AppColors.secondaryText);
+    final effectiveTitleColor = titleColor ?? AppColors.primaryText;
+    final effectiveIconColor = iconColor ?? AppColors.secondaryText;
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
-      enabled: !disabled,
-      onTap: disabled ? null : onTap,
+      onTap: onTap,
       leading: Icon(icon, color: effectiveIconColor, size: 22),
       title: Text(
         title,

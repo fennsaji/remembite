@@ -196,7 +196,9 @@ pub struct RatingSummaryResponse {
 #[derive(Debug, Deserialize)]
 pub struct SearchQuery {
     pub q: String,
+    #[allow(dead_code)]
     pub lat: Option<f64>,
+    #[allow(dead_code)]
     pub lng: Option<f64>,
 }
 
@@ -208,12 +210,12 @@ pub struct SearchResultsResponse {
 
 #[derive(Debug, Serialize)]
 pub struct DishSearchResult {
-    pub id: Uuid,
     pub name: String,
-    pub restaurant_id: Uuid,
-    pub restaurant_name: String,
+    pub restaurant_count: i32,
+    pub restaurant_ids: Vec<Uuid>,
+    pub restaurant_names: Vec<String>,
     pub category: Option<String>,
-    pub community_score: Option<f64>,
+    pub avg_community_score: Option<f64>,
 }
 
 // ─────────────────────────────────────────────

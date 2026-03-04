@@ -64,6 +64,44 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
   }
 
+  void _showRestaurantPicker(BuildContext context, SearchDish dish) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.elevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                dish.name,
+                style: const TextStyle(
+                    color: AppColors.primaryText,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
+            ...List.generate(dish.restaurantIds.length, (i) => ListTile(
+              leading: const Icon(Icons.restaurant,
+                  color: AppColors.accent, size: 20),
+              title: Text(dish.restaurantNames[i],
+                  style: const TextStyle(color: AppColors.primaryText)),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                context.push('/restaurant/${dish.restaurantIds[i]}');
+              },
+            )),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -203,18 +241,33 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         if (_results!.dishes.isNotEmpty) ...[
           _SectionHeader(label: 'DISHES'),
           ..._results!.dishes.map(
-            (d) => ListTile(
-              onTap: () => context.push('/dish/${d.id}'),
-              leading: const Icon(Icons.local_dining_outlined,
-                  color: AppColors.secondaryText, size: 20),
-              title: Text(d.name,
-                  style: const TextStyle(color: AppColors.primaryText)),
-              subtitle: Text(
-                d.restaurantName,
-                style:
-                    const TextStyle(color: AppColors.mutedText, fontSize: 12),
-              ),
-            ),
+            (d) {
+              final subtitle = d.restaurantIds.length == 1
+                  ? (d.restaurantNames.isNotEmpty ? d.restaurantNames[0] : d.name)
+                  : 'Available at ${d.restaurantCount} restaurants';
+              return ListTile(
+                onTap: () {
+                  if (d.restaurantIds.length == 1) {
+                    context.push('/restaurant/${d.restaurantIds[0]}');
+                  } else {
+                    _showRestaurantPicker(context, d);
+                  }
+                },
+                leading: const Icon(Icons.local_dining_outlined,
+                    color: AppColors.secondaryText, size: 20),
+                title: Text(d.name,
+                    style: const TextStyle(color: AppColors.primaryText)),
+                subtitle: Text(
+                  subtitle,
+                  style: const TextStyle(
+                      color: AppColors.mutedText, fontSize: 12),
+                ),
+                trailing: d.restaurantIds.length > 1
+                    ? const Icon(Icons.chevron_right,
+                        color: AppColors.mutedText, size: 16)
+                    : null,
+              );
+            },
           ),
         ],
       ],

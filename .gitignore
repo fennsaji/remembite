@@ -17,6 +17,9 @@ app/android/local.properties
 # iOS secrets — API keys injected via xcconfig, never commit
 app/ios/Flutter/Secrets.xcconfig
 
+# Git worktrees
+.worktrees/
+
 # macOS
 .DS_Store
 
