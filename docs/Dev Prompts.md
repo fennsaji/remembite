@@ -528,39 +528,224 @@ Phase 5 deliverables:
 
 ---
 
-## Phase 5.5 – Map View
+## Phase 5.5 – Map View & Location Picker
 
 ```
 We are building Remembite. Phases 0–5 are complete.
 
 Read CLAUDE.md (design system, AppColors). Reference design/remembite.pen screen 14 (Map View).
 
-Phase 5.5 deliverables:
+IMPORTANT: map_screen.dart and location_picker_screen.dart already exist but use flutter_map
+(OpenStreetMap). Both files must be fully replaced as described below.
 
-1. MAP SCREEN
-   app/lib/features/map/presentation/map_screen.dart
-   Package: flutter_map (OpenStreetMap tiles — free, no API key required)
-   Add to pubspec.yaml: flutter_map: ^6.0.0, latlong2: ^0.9.0
+─────────────────────────────────────────────
+SETUP — Google Maps API Key (do this first)
+─────────────────────────────────────────────
 
-   Default view:
-   - Center on user's current GPS location
-   - Show pins for all restaurants the user has reacted to (from local Drift DB)
-   - Pin color: AppColors.accent (#E6A830)
+1. Google Cloud Console → APIs & Services → Credentials → Create API key
+   Enable: Maps SDK for Android, Maps SDK for iOS, Places API (New)
+   Store securely — do NOT commit to git.
 
-   Toggle "Show Nearby":
-   - Adds nearby restaurants (from getNearbyRestaurants API) as secondary pins
-   - Secondary pin color: AppColors.secondaryText
+2. pubspec.yaml:
+   Add:    google_maps_flutter: ^2.9.0
+   Remove: flutter_map, latlong2
 
-   Interaction:
-   - Tap any pin → context.push('/restaurant/:id')
-   - Show restaurant name in a small tooltip/marker label
+3. Android — inject key via gradle:
+   android/local.properties (gitignored, create if missing):
+     MAPS_API_KEY=your_api_key_here
 
-2. ROUTER
-   Replace `_MapPlaceholder` in app_router.dart with real MapScreen()
-   Route /map is already defined inside ShellRoute — no route changes needed
+   android/app/build.gradle.kts — inside android {} block, before buildTypes {}:
+     val localProps = java.util.Properties()
+     val localPropsFile = rootProject.file("local.properties")
+     if (localPropsFile.exists()) localPropsFile.inputStream().use { localProps.load(it) }
+     val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY") ?: ""
 
-3. NO BACKEND CHANGES
-   Restaurant lat/lng already stored. Use existing nearbyRestaurantsProvider for nearby pins.
+   Inside defaultConfig {}:
+     manifestPlaceholders["mapsApiKey"] = mapsApiKey
+
+   android/app/src/main/AndroidManifest.xml — inside <application>:
+     <meta-data
+       android:name="com.google.android.geo.API_KEY"
+       android:value="${mapsApiKey}"/>
+
+4. iOS — AppDelegate.swift:
+   Add at top: import GoogleMaps
+   Inside application(_:didFinishLaunchingWithOptions:) before super.application(...):
+     GMSServices.provideAPIKey("YOUR_API_KEY_HERE")
+
+5. Dart — read key for Places API calls:
+   const String _mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
+   Pass at build time in run-app.sh: add --dart-define=MAPS_API_KEY=$MAPS_API_KEY
+
+───────────────────────────
+DELIVERABLE 1 — MAP SCREEN
+───────────────────────────
+
+File: app/lib/features/map/presentation/map_screen.dart (full rewrite)
+Use GoogleMap widget. Import LatLng from google_maps_flutter (not latlong2).
+
+State:
+  GoogleMapController? _mapController
+  LatLng? _currentPosition      // google_maps_flutter LatLng
+  bool _fetchingLocation = false
+  bool _showNearby = false
+
+initState: call _fetchLocation() — GPS permission → getCurrentPosition
+On position: _mapController?.animateCamera(CameraUpdate.newLatLngZoom(pos, 13))
+
+Map widget:
+  GoogleMap(
+    onMapCreated: (c) => setState(() => _mapController = c),
+    initialCameraPosition: CameraPosition(
+      target: _currentPosition ?? const LatLng(19.0760, 72.8777),
+      zoom: 12,
+    ),
+    mapType: MapType.normal,
+    myLocationEnabled: true,
+    myLocationButtonEnabled: false,
+    zoomControlsEnabled: false,
+    markers: _buildMarkers(),
+  )
+
+_buildMarkers():
+  - Reacted restaurants (from reactedRestaurantsOnMapProvider — Drift DB):
+      BitmapDescriptor.defaultMarkerWithHue(30.0)  // orange ≈ accent
+  - Nearby restaurants when _showNearby (from nearbyRestaurantsProvider):
+      BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow)
+  - Each marker: Marker(markerId, position, infoWindow: InfoWindow(title: name),
+      onTap: () => context.push('/restaurant/$id'))
+
+AppBar (AppColors.background, elevation 0):
+  title: Text('Map') in AppColors.primaryText
+  leading: back arrow (IconButton → context.pop())
+  actions: TextButton.icon to toggle _showNearby + GPS re-center IconButton (Icons.my_location)
+
+────────────────────────────────────────────────
+DELIVERABLE 2 — HOME SCREEN NAVIGATION ENTRY POINT
+────────────────────────────────────────────────
+
+File: app/lib/features/home/presentation/home_screen.dart (small change)
+
+/map is in ShellRoute but has no UI entry point. Add a map icon to the SliverAppBar:
+
+  SliverAppBar(
+    floating: true,
+    backgroundColor: AppColors.background,
+    automaticallyImplyLeading: false,
+    titleSpacing: 16,
+    title: _SearchBar(onTap: () => context.push('/search')),
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.map_outlined, color: AppColors.secondaryText),
+        tooltip: 'Map',
+        onPressed: () => context.push('/map'),
+      ),
+      const SizedBox(width: 8),
+    ],
+  ),
+
+───────────────────────────────────────
+DELIVERABLE 3 — LOCATION PICKER SCREEN
+───────────────────────────────────────
+
+File: app/lib/features/restaurant/presentation/location_picker_screen.dart (full rewrite)
+Replace flutter_map with google_maps_flutter. Replace Nominatim with Google Places Autocomplete REST API.
+
+Constructor: LocationPickerScreen({LatLng? initial})
+LatLng is now google_maps_flutter.LatLng everywhere — remove latlong2 import.
+
+State:
+  GoogleMapController? _mapController
+  LatLng? _currentPosition         // google_maps_flutter LatLng
+  LatLng _cameraCenter             // tracks map center for Confirm button
+  bool _fetchingGps
+  final _searchController = TextEditingController()
+  Timer? _searchDebounce
+  List<_PlaceResult> _searchResults
+  bool _searching
+
+initState:
+  If widget.initial != null → _currentPosition = _cameraCenter = widget.initial (no GPS needed)
+  Else → _fetchGps()
+
+_fetchGps():
+  isLocationServiceEnabled → checkPermission/requestPermission → getCurrentPosition.timeout(10s)
+  On success: setState _currentPosition = _cameraCenter = LatLng(pos.latitude, pos.longitude)
+              _mapController?.animateCamera(CameraUpdate.newLatLngZoom(_currentPosition!, 15))
+  On denial: setState _currentPosition = _cameraCenter = const LatLng(19.0760, 72.8777) (Mumbai fallback)
+             Show SnackBar("Location access denied. Using Mumbai as default.")
+  On error: same fallback + SnackBar
+
+Map widget:
+  GoogleMap(
+    onMapCreated: (c) => setState(() => _mapController = c),
+    initialCameraPosition: CameraPosition(target: _currentPosition!, zoom: 15),
+    onCameraMove: (pos) => _cameraCenter = pos.target,  // track camera center for Confirm
+    mapType: MapType.normal,
+    myLocationEnabled: false,
+    zoomControlsEnabled: false,
+    markers: const {},  // no markers — crosshair is the pin
+  )
+
+Crosshair: unchanged _Crosshair + _CrosshairPainter (CustomPaint, 32×32, AppColors.accent lines + dot)
+
+Confirm button:
+  onPressed: () => context.pop(_cameraCenter)   // returns google_maps_flutter LatLng
+
+Search — Google Places Autocomplete API (via http package):
+  const String _mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
+
+  Autocomplete endpoint:
+    GET https://maps.googleapis.com/maps/api/place/autocomplete/json
+      ?input={query}&key={_mapsApiKey}&language=en&components=country:in&types=geocode
+
+  _PlaceResult class:
+    final String placeId
+    final String mainText        // structured_formatting.main_text
+    final String secondaryText   // structured_formatting.secondary_text
+    factory fromJson(Map<String, dynamic> json) — parse from predictions array item
+
+  On result tap → _selectResult(result):
+    GET https://maps.googleapis.com/maps/api/place/details/json
+      ?place_id={result.placeId}&fields=geometry&key={_mapsApiKey}
+    lat = (json['result']['geometry']['location']['lat'] as num).toDouble()
+    lng = (json['result']['geometry']['location']['lng'] as num).toDouble()
+    _cameraCenter = LatLng(lat, lng)
+    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(_cameraCenter, 16))
+    _searchController.text = result.mainText
+    setState(() => _searchResults = [])
+
+Layout: Column → [search field, dropdown (ConstrainedBox maxHeight:220), Expanded(Stack(map + crosshair + bottom row))]
+
+────────────────────────────────────
+DELIVERABLE 4 — ROUTER UPDATE
+────────────────────────────────────
+
+File: app/lib/core/router/app_router.dart (small change)
+
+Replace: import 'package:latlong2/latlong.dart';
+With:    import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+/location-picker GoRoute — same logic, just uses new LatLng type:
+  GoRoute(
+    path: '/location-picker',
+    builder: (context, state) => LocationPickerScreen(
+      initial: state.extra is LatLng ? state.extra as LatLng : null,
+    ),
+  ),
+
+No change to /map route.
+
+────────────────────────────
+NO BACKEND CHANGES
+────────────────────────────
+
+Restaurant lat/lng already stored. Use existing nearbyRestaurantsProvider for nearby pins.
+
+Verification:
+  cd app && flutter analyze   → no issues
+  Manual: Home → map icon (AppBar top-right) → Map loads with GPS, reacted pins shown
+  Manual: Add Restaurant → Pick on Map → LocationPickerScreen opens, search finds places, Confirm returns LatLng
 ```
 
 ---
@@ -605,6 +790,150 @@ Phase 6 deliverables:
    Flutter: long-press on image shows "Report Image" option.
 
 Note: Image upload UI on Dish Detail was visible since Phase 1 but non-functional. This phase makes it functional. No code changes needed in Flutter UI — just wire up the upload API call.
+```
+
+---
+
+## Phase 6.5 – Restaurant Data Enrichment & Smart Map Density
+
+```
+We are building Remembite. Phases 0–6 are complete.
+
+Read CLAUDE.md (design system, AppColors) before starting. Reference docs/RoadMap.md Phase 6.5 for the full spec.
+
+Phase 6.5 has two independent deliverables. Complete them in order.
+
+─────────────────────────────────────────
+DELIVERABLE 1 — RESTAURANT DATA ENRICHMENT
+─────────────────────────────────────────
+
+1. POSTGRESQL MIGRATION
+   Create new migration file: backend/migrations/XXXX_restaurant_enrichment.sql
+   Add columns to restaurants table:
+   - google_place_id    TEXT
+   - google_rating      FLOAT
+   - google_rating_count INT
+   - price_level        SMALLINT    -- 0 = free, 1–4 = ₹ to ₹₹₹₹
+   - business_status    TEXT        -- OPERATIONAL | CLOSED_TEMPORARILY | CLOSED_PERMANENTLY
+   - phone_number       TEXT
+   - website            TEXT
+   - opening_hours      JSONB       -- { "weekday_text": [...7 strings], "open_now": bool }
+
+   All columns are nullable. Existing rows unaffected.
+
+2. BACKEND API UPDATE (backend/src/routes/restaurants.rs)
+   POST /restaurants — extend CreateRestaurantRequest with all 8 new fields (all Option<T>).
+   INSERT statement must include all new columns.
+   GET /restaurants/:id — include all new fields in RestaurantDetail response.
+   GET /restaurants/nearby — include google_rating, open_now (from opening_hours JSONB), price_level in NearbyRestaurant response — useful for future map ranking.
+
+3. FLUTTER — _NearbyPlace MODEL (map_screen.dart)
+   Extend _NearbyPlace to capture fields already returned by Nearby Search:
+   - double? rating           (from 'rating')
+   - int? ratingCount         (from 'user_ratings_total')
+   - int? priceLevel          (from 'price_level')
+   - bool? isOpen             (from 'opening_hours'.'open_now')
+   - String businessStatus    (from 'business_status', default 'OPERATIONAL')
+
+   Update _NearbyPlace.fromJson() to parse all new fields.
+   These are FREE — already returned by the existing Nearby Search API call. No extra API call needed.
+
+4. FLUTTER — PLACE DETAILS API CALL (map_screen.dart)
+   In _showAddPlaceSheet(), before calling createRestaurant, fetch extra detail:
+
+   GET https://maps.googleapis.com/maps/api/place/details/json
+     ?place_id={place.placeId}
+     &fields=formatted_phone_number,website,opening_hours
+     &key={_mapsApiKey}
+
+   Parse: formatted_phone_number → phoneNumber, website, opening_hours.weekday_text → weekdayText list
+   Store in local _PlaceDetail model (private, map_screen only). Fetch in parallel with button loading state.
+
+5. FLUTTER — ENRICHED BOTTOM SHEET (map_screen.dart)
+   Update _showAddPlaceSheet() to display enriched data after fetch:
+   - Rating row: ⭐ 4.2  (1,847 ratings)  — GoogleFonts.dmSans, secondaryText color
+   - Open badge: green "Open now" or red "Closed" chip — from isOpen field
+   - Price level: ₹ symbols matching priceLevel (0 = no badge, 1 = ₹, 2 = ₹₹, 3 = ₹₹₹, 4 = ₹₹₹₹) — accent color
+   - Cuisine badge already exists — keep it
+   Show a loading shimmer row while Place Details API is in flight.
+   If business_status != OPERATIONAL: show "Permanently closed" warning in red; disable "Add to Remembite" button.
+
+6. FLUTTER — DRIFT MIGRATION (app/lib/core/db/app_database.dart)
+   Bump schemaVersion to next number.
+   Add migration callback (MigrationStrategy.onUpgrade) to add new columns to restaurants table.
+   New Drift columns (all nullable): googlePlaceId, googleRating, googleRatingCount, priceLevel,
+   businessStatus, phoneNumber, website, openingHours (TEXT, store as JSON string).
+   Update RestaurantTableData and RestaurantTableCompanion accordingly.
+   Update RestaurantDao.insert() and RestaurantDao.getById() to include new fields.
+
+7. FLUTTER — createRestaurant CALL (restaurant_repository.dart)
+   Extend createRestaurant() method to accept and forward all enriched fields to the backend.
+   Store enriched fields in local Drift DB on successful creation.
+
+──────────────────────────────────────────
+DELIVERABLE 2 — SMART MAP PIN DENSITY
+──────────────────────────────────────────
+
+File: app/lib/features/map/presentation/map_screen.dart
+
+1. ZOOM TRACKING (no setState — same pattern as _cameraCenter)
+   Add state field:
+     double _currentZoom = 14.0;
+   In onCameraMove callback (already exists):
+     _cameraCenter = position.target;
+     _currentZoom  = position.zoom;   // add this line
+
+2. SCORE FUNCTION
+   Add private method to _MapScreenState:
+
+   double _placeScore(_NearbyPlace p) {
+     final rating     = ((p.rating ?? 3.0) / 5.0) * 40;
+     final popularity = (math.log(math.max(1.0, (p.ratingCount ?? 0).toDouble() + 1))
+                         / math.log(1000)) * 30;
+     final openBonus  = (p.isOpen == true) ? 20.0 : 0.0;
+     final opStatus   = (p.businessStatus == 'OPERATIONAL') ? 10.0 : 0.0;
+     return rating + popularity + openBonus + opStatus;
+   }
+
+3. PIN CAP BY ZOOM
+   Add private method:
+
+   int _maxPlacePins(double zoom) {
+     if (zoom < 12) return 8;
+     if (zoom < 13) return 15;
+     if (zoom < 14) return 30;
+     if (zoom < 15) return 60;
+     return _nearbyPlaces.length;   // ≥15: show all
+   }
+
+4. APPLY FILTERING IN _buildMarkers()
+   In the Google Places pins block (places_ markers), before adding to markers:
+
+   final sorted = [..._nearbyPlaces]
+     ..sort((a, b) => _placeScore(b).compareTo(_placeScore(a)));
+   final visible = sorted.take(_maxPlacePins(_currentZoom));
+   for (final place in visible) { ... }   // same marker build logic as before
+
+   Visited pins (reacted_) and nearby Remembite pins (nearby_) are NOT filtered — add them unconditionally.
+
+5. TRIGGER REBUILD ON ZOOM CHANGE
+   In onCameraMove, after updating _currentZoom, call setState only if zoom changed enough to cross a threshold:
+
+   final newZoom = position.zoom;
+   if ((_currentZoom - newZoom).abs() >= 0.5) {
+     setState(() { _currentZoom = newZoom; });
+   } else {
+     _currentZoom = newZoom;
+   }
+
+   This avoids rebuilding at 60fps during a pan but does rebuild when zoom crosses a density threshold.
+
+6. VERIFICATION
+   - flutter analyze → 0 issues
+   - Run on device: at zoom 11 (city view), only 8 highest-scored pins visible
+   - Zoom to 15 (street view): all pins visible
+   - Visited restaurant pins always visible at all zoom levels
+   - Tapping a pin at any zoom level opens the correct sheet or restaurant screen
 ```
 
 ---

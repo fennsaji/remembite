@@ -28,6 +28,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${mapsApiKey}"/>
         <!-- Default FCM notification icon (logo_bw) -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

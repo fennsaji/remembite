@@ -24,7 +24,7 @@ final dishRepositoryProvider = AutoDisposeProvider<DishRepository>.internal(
 // ignore: unused_element
 typedef DishRepositoryRef = AutoDisposeProviderRef<DishRepository>;
 String _$compatibilitySignalHash() =>
-    r'cc57c325fadf19572558ffa8b4f5b5b2b90e0343';
+    r'afbee76e5a8dac3c1916d39185131fe5f773a4b3';
 
 /// Copied from Dart SDK
 class _SystemHash {

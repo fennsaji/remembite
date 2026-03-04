@@ -25,6 +25,7 @@ dependencies:
 
   # Networking
   dio: ^5.7.0
+  http: ^1.2.0
 
   # Auth
   google_sign_in: ^6.2.2
@@ -45,6 +46,13 @@ dependencies:
 
   # Location
   geolocator: ^13.0.2
+
+  # Map
+  google_maps_flutter: ^2.9.0
+  # Needed to switch Android to Virtual Display mode in main.dart
+  # (useAndroidViewSurface = false), which routes all touches through Flutter.
+  google_maps_flutter_android: any
+  google_maps_flutter_platform_interface: any
 
   # Auth persistence
   flutter_secure_storage: ^9.2.2

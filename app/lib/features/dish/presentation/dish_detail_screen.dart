@@ -10,6 +10,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../core/billing/pro_status_provider.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/network/api_error.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/dish_repository.dart';
@@ -157,8 +158,8 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
           child: CircularProgressIndicator(color: AppColors.accent),
         ),
         error: (e, _) => Center(
-          child: Text('Error: $e',
-              style: const TextStyle(color: AppColors.error)),
+          child: Text(apiErrorMessage(e),
+              style: const TextStyle(color: AppColors.secondaryText)),
         ),
         data: (dish) => ListView(
           padding: const EdgeInsets.all(20),
@@ -478,7 +479,11 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+            content: Text(apiErrorMessage(e),
+                style: const TextStyle(color: AppColors.primaryText)),
+            backgroundColor: AppColors.elevated,
+          ),
         );
         setState(() => _saving = false);
       }
@@ -632,13 +637,11 @@ class _ReportDishSheetState extends ConsumerState<_ReportDishSheet> {
       }
     } catch (e) {
       if (mounted) {
-        final msg = e.toString().contains('SocketException') || e.toString().contains('connection')
-            ? 'No connection. Please try again.'
-            : 'Failed to submit report. Please try again.';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(msg),
-            backgroundColor: AppColors.error,
+            content: Text(apiErrorMessage(e),
+                style: const TextStyle(color: AppColors.primaryText)),
+            backgroundColor: AppColors.elevated,
           ),
         );
         setState(() => _submitting = false);

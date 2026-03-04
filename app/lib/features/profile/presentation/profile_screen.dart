@@ -71,7 +71,23 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        color: AppColors.accent,
+        backgroundColor: AppColors.elevated,
+        onRefresh: () async {
+          ref.invalidate(profileStatsProvider);
+          ref.invalidate(tasteProfileStatusProvider);
+          ref.invalidate(tasteInsightsProvider);
+          try {
+            await Future.wait([
+              ref.read(profileStatsProvider.future),
+              ref.read(tasteProfileStatusProvider.future),
+              ref.read(tasteInsightsProvider.future),
+            ]);
+          } catch (_) {}
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -219,6 +235,7 @@ class ProfileScreen extends ConsumerWidget {
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
+      ),
     );
   }
 

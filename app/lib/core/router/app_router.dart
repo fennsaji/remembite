@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/presentation/sign_in_screen.dart';
@@ -9,12 +10,13 @@ import '../../features/favorites/presentation/favorites_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/restaurant/data/restaurant_repository.dart';
-import '../../features/restaurant/presentation/add_restaurant_screen.dart';
+import '../../features/restaurant/presentation/location_picker_screen.dart';
 import '../../features/restaurant/presentation/menu_scan_screen.dart';
 import '../../features/restaurant/presentation/ocr_results_screen.dart';
 import '../../features/restaurant/presentation/pending_edits_screen.dart';
 import '../../features/restaurant/presentation/restaurant_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
+import '../../features/map/presentation/map_screen.dart';
 import '../../features/timeline/presentation/timeline_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
@@ -85,6 +87,14 @@ GoRouter appRouter(Ref ref, {String? initialLocation}) {
         ),
       ),
 
+      // Location picker (full-screen map, no bottom nav)
+      GoRoute(
+        path: '/location-picker',
+        builder: (context, state) => LocationPickerScreen(
+          initial: state.extra is LatLng ? state.extra as LatLng : null,
+        ),
+      ),
+
       // Main shell with floating bottom nav
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
@@ -95,7 +105,7 @@ GoRouter appRouter(Ref ref, {String? initialLocation}) {
           ),
           GoRoute(
             path: '/restaurant/add',
-            builder: (context, state) => const AddRestaurantScreen(),
+            redirect: (context, state) => '/map?mode=add',
           ),
           GoRoute(
             path: '/restaurant/:id',
@@ -129,7 +139,9 @@ GoRouter appRouter(Ref ref, {String? initialLocation}) {
           ),
           GoRoute(
             path: '/map',
-            builder: (context, state) => const _MapPlaceholder(),
+            builder: (context, state) => MapScreen(
+              addMode: state.uri.queryParameters['mode'] == 'add',
+            ),
           ),
         ],
       ),
@@ -149,7 +161,7 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     int index = 0;
-    if (location.startsWith('/favorites')) index = 1;
+    if (location.startsWith('/map')) index = 1;
     if (location.startsWith('/timeline')) index = 2;
     if (location.startsWith('/profile')) index = 3;
 
@@ -161,7 +173,7 @@ class MainShell extends StatelessWidget {
         onTap: (i) {
           switch (i) {
             case 0: GoRouter.of(context).go('/home');
-            case 1: GoRouter.of(context).go('/favorites');
+            case 1: GoRouter.of(context).go('/map');
             case 2: GoRouter.of(context).go('/timeline');
             case 3: GoRouter.of(context).go('/profile');
           }
@@ -182,7 +194,7 @@ class _FloatingPillNav extends StatelessWidget {
 
   static const _items = [
     (Icons.home_outlined, Icons.home, 'Home'),
-    (Icons.favorite_outline, Icons.favorite, 'Favorites'),
+    (Icons.map_outlined, Icons.map, 'Map'),
     (Icons.access_time_outlined, Icons.access_time, 'Timeline'),
     (Icons.person_outline, Icons.person, 'Profile'),
   ];
@@ -250,15 +262,3 @@ class _FloatingPillNav extends StatelessWidget {
   }
 }
 
-// Placeholder screens for Phase 2+
-class _MapPlaceholder extends StatelessWidget {
-  const _MapPlaceholder();
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.background,
-    body: Center(
-      child: Text('Map View — Phase 2',
-          style: TextStyle(color: AppColors.mutedText)),
-    ),
-  );
-}

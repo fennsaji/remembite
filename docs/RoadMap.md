@@ -431,23 +431,35 @@ Personalized predictions live (Pro only). Self-correcting attribute scores. Tast
 
 ---
 
-# 10.5. Phase 5.5 – Map View
+# 10.5. Phase 5.5 – Map View & Location Picker
 
 ## 10.5.1 Map Screen
 
-* Use `flutter_map` package (OpenStreetMap tiles — free, no API key)
+* Use `google_maps_flutter` package (Google Maps — requires API key)
+* API key setup: Google Cloud Console → Maps SDK for Android + iOS + Places API (New); inject via `android/local.properties` + gradle `manifestPlaceholders` (Android) and `AppDelegate.swift` (iOS)
 * Default view: pins for user's visited restaurants only (from local Drift DB)
 * Toggle: "Show Nearby" — adds nearby restaurants as secondary pins (different color)
 * Tap any pin → navigate to `/restaurant/:id`
 * Center map on user's current GPS location on load
 * No backend changes required — restaurant lat/lng already stored
 
-## 10.5.2 Router
+## 10.5.2 Home Screen Navigation Entry Point
 
-* `/map` route (already defined as placeholder) — replace `_MapPlaceholder` with real `MapScreen`
+* `/map` route is inside `ShellRoute` — add `Icons.map_outlined` `IconButton` in Home screen `SliverAppBar` actions to provide the sole UI entry point
+* Map is NOT in the floating pill bottom nav (Home | Favorites | Timeline | Profile stays as-is)
+
+## 10.5.3 Location Picker Screen
+
+* New full-screen route `/location-picker` (outside `ShellRoute`)
+* Accessible from Add Restaurant screen — replaces static GPS auto-detect with "Pick on Map →" button
+* Uses `google_maps_flutter` with fixed crosshair (map pans, crosshair stays centered)
+* `onCameraMove` callback tracks camera center; Confirm button calls `context.pop(cameraCenter)`
+* Search via Google Places Autocomplete REST API → Place Details API for lat/lng resolution
+* GPS "Use GPS" button snaps map back to device location
+* Returns `LatLng` to Add Restaurant via `context.pop()`; re-fires duplicate check on return
 
 Deliverable:
-Map View live. Visited restaurants pinned. Nearby toggle functional.
+Map View live with Google Maps. Visited + nearby pins. Home AppBar map entry point. Interactive location picker in Add Restaurant flow.
 
 ---
 
@@ -471,6 +483,102 @@ Deliverable:
 Scalable and abuse-resistant image handling.
 
 Note: Image upload UI on Dish Detail screen is visible from Phase 1 but non-functional until this phase.
+
+---
+
+# 11.5. Phase 6.5 – Restaurant Data Enrichment & Smart Map Density
+
+## 11.5.1 Restaurant Schema Enrichment
+
+Google Places Nearby Search already returns rich metadata that we currently discard. Store it.
+
+**PostgreSQL migration** — add columns to `restaurants`:
+
+```sql
+ALTER TABLE restaurants
+  ADD COLUMN google_place_id    TEXT,
+  ADD COLUMN google_rating      FLOAT,
+  ADD COLUMN google_rating_count INT,
+  ADD COLUMN price_level        SMALLINT,   -- 0 free → 4 very expensive
+  ADD COLUMN business_status    TEXT,       -- OPERATIONAL | CLOSED_TEMPORARILY | CLOSED_PERMANENTLY
+  ADD COLUMN phone_number       TEXT,
+  ADD COLUMN website            TEXT,
+  ADD COLUMN opening_hours      JSONB;      -- { "weekday_text": [...7 strings], "open_now": bool }
+```
+
+**Drift migration** — same columns added to local `restaurants` table (via `schemaVersion` bump + migration callback).
+
+## 11.5.2 Places API Enrichment Flow
+
+**Nearby Search** (already called on map load) — capture and pass through to `_NearbyPlace` model:
+* `rating`, `user_ratings_total`, `price_level`, `opening_hours.open_now`, `business_status`, `place_id`
+
+**Place Details API** — called once on "Add to Remembite" button press, in parallel with createRestaurant:
+* Fields: `formatted_phone_number,website,opening_hours`
+* Endpoint: `GET /maps/googleapis.com/maps/api/place/details/json?place_id=...&fields=...&key=...`
+* Returns `opening_hours.weekday_text` (7-element string array) and `formatted_phone_number`, `website`
+
+**Bottom sheet enrichment** — before user taps "Add to Remembite", sheet now shows:
+* Google rating (⭐ x.x — 1,234 ratings)
+* Open now / Closed badge
+* Price level (₹ / ₹₹ / ₹₹₹ / ₹₹₹₹)
+* Cuisine type badge (already shown)
+
+**Backend update** — `POST /restaurants` request body additions:
+```json
+{
+  "google_place_id": "ChIJ...",
+  "google_rating": 4.2,
+  "google_rating_count": 1847,
+  "price_level": 2,
+  "business_status": "OPERATIONAL",
+  "phone_number": "+91 ...",
+  "website": "https://...",
+  "opening_hours": { "weekday_text": ["Monday: 9:00 AM – 9:00 PM", ...], "open_now": true }
+}
+```
+
+All new fields are nullable — manually added restaurants (without a Places API source) have `null` for all enrichment columns. `GET /restaurants/:id` response includes all new fields when present.
+
+## 11.5.3 Smart Map Pin Density (Flutter — no backend changes)
+
+The map becomes congested at city-level zoom when hundreds of Google Places pins are shown simultaneously.
+
+**State tracked without setState** (same pattern as `_cameraCenter`):
+```dart
+double _currentZoom = 14.0;   // updated in onCameraMove
+```
+
+**Scoring formula** (pure Dart, applied to `_nearbyPlaces` list):
+```dart
+double _placeScore(_NearbyPlace p) {
+  final rating     = ((p.rating ?? 3.0) / 5.0) * 40;        // 0–40
+  final popularity = (math.log(math.max(1, p.ratingCount ?? 0) + 1)
+                      / math.log(1000)) * 30;                 // 0–30 (log scale)
+  final openBonus  = (p.isOpen == true) ? 20.0 : 0.0;       // 0 or 20
+  final opStatus   = (p.businessStatus == 'OPERATIONAL') ? 10.0 : 0.0;
+  return rating + popularity + openBonus + opStatus;          // 0–100
+}
+```
+
+**Pin cap by zoom level**:
+| Camera zoom | Max Google Places pins shown |
+|---|---|
+| < 12 | 8 |
+| 12–13 | 15 |
+| 13–14 | 30 |
+| 14–15 | 60 |
+| ≥ 15 | all |
+
+**Rules**:
+* Sort `_nearbyPlaces` by `_placeScore()` descending, take top N per zoom level
+* Visited restaurant pins (`reacted_` markers) always shown at all zoom levels — never filtered
+* Nearby Remembite DB pins (`nearby_`) always shown — small set, quality-filtered by backend
+* Only Google Places pins (`places_`) are density-filtered
+* Filter runs inside `_buildMarkers()` — no extra API calls, no extra state
+
+Deliverable:
+Rich restaurant metadata stored and surfaced (Google rating, open hours, phone, website, price level). Map pin density adapts to zoom level based on quality signals. Bottom sheet shows enriched data before "Add to Remembite".
 
 ---
 
@@ -526,7 +634,8 @@ Production-ready stable system. Ready for user growth.
 ✔ Confidence thresholds enforced
 ✔ Favorites screen functional (filter + sort)
 ✔ Settings screen complete (all rows active, Pro-gating correct)
-✔ Map View live (visited + nearby pins)
+✔ Map View live (visited + nearby pins, smart density filtering by zoom)
+✔ Restaurant data enriched (Google rating, open hours, price level, phone, website) from Places API
 ✔ Taste insights visible on Profile for Pro users
 ✔ No blocking flows
 ✔ Crash-free test runs

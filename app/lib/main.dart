@@ -3,6 +3,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 import 'core/billing/billing_service.dart';
 import 'core/router/app_router.dart';
@@ -21,6 +23,22 @@ Future<void> _fcmBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Switch Google Maps Android to Virtual Display (AndroidView) mode.
+  //
+  // The default since google_maps_flutter_android 2.12 is Hybrid Composition
+  // (SurfaceAndroidView), where the native map view creates full-screen overlay
+  // surfaces that intercept ALL touches — breaking both map panning and Flutter
+  // overlay widgets (search bar, buttons) placed above the map in a Stack.
+  //
+  // Virtual Display composites the map into Flutter's rendering pipeline;
+  // all touches route through Flutter's normal gesture system, so overlays
+  // and map panning both work correctly.
+  final mapsImpl = GoogleMapsFlutterPlatform.instance;
+  if (mapsImpl is GoogleMapsFlutterAndroid) {
+    mapsImpl.useAndroidViewSurface = false;
+  }
+
   await Firebase.initializeApp();
 
   // Register the background message handler before runApp.

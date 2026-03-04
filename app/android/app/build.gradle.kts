@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -10,6 +12,11 @@ android {
     namespace = "com.fennsaji.remembite"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
+
+    val localProps = Properties()
+    val localPropsFile = rootProject.file("local.properties")
+    if (localPropsFile.exists()) localPropsFile.inputStream().use { localProps.load(it) }
+    val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY") ?: ""
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -29,6 +36,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["mapsApiKey"] = mapsApiKey
     }
 
     signingConfigs {

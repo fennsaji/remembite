@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/db/daos/reaction_dao.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/network/api_error.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/pending_edit_count_provider.dart';
@@ -111,8 +112,8 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
           child: CircularProgressIndicator(color: AppColors.accent),
         ),
         error: (e, _) => Center(
-          child: Text('Error: $e',
-              style: const TextStyle(color: AppColors.error)),
+          child: Text(apiErrorMessage(e),
+              style: const TextStyle(color: AppColors.secondaryText)),
         ),
         data: (restaurant) => CustomScrollView(
           slivers: [
@@ -766,10 +767,11 @@ class _SuggestEditBottomSheetState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Could not submit. Please try again.',
-              style: const TextStyle(fontFamily: 'DM Sans'),
+              apiErrorMessage(e),
+              style: const TextStyle(
+                  fontFamily: 'DM Sans', color: AppColors.primaryText),
             ),
-            backgroundColor: AppColors.error,
+            backgroundColor: AppColors.elevated,
           ),
         );
       }

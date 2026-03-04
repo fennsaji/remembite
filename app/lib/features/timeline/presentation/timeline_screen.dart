@@ -31,44 +31,68 @@ class TimelineScreen extends ConsumerWidget {
               ),
         ),
       ),
-      body: timelineAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.accent),
-        ),
-        error: (e, _) => Center(
-          child: Text(
-            'Could not load timeline.',
-            style: const TextStyle(color: AppColors.mutedText),
-          ),
-        ),
-        data: (entries) {
-          if (entries.isEmpty) {
-            return const Center(
-              child: Text(
-                'No visits yet.\nReact to dishes to build your timeline.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.mutedText),
+      body: RefreshIndicator(
+        color: AppColors.accent,
+        backgroundColor: AppColors.elevated,
+        onRefresh: () => ref.refresh(timelineProvider.future),
+        child: timelineAsync.when(
+          loading: () => const SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: 300,
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.accent),
               ),
+            ),
+          ),
+          error: (e, _) => const SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: 300,
+              child: Center(
+                child: Text(
+                  'Could not load timeline.',
+                  style: TextStyle(color: AppColors.mutedText),
+                ),
+              ),
+            ),
+          ),
+          data: (entries) {
+            if (entries.isEmpty) {
+              return const SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: 300,
+                  child: Center(
+                    child: Text(
+                      'No visits yet.\nReact to dishes to build your timeline.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.mutedText),
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            // Group by month
+            final grouped = <String, List<TimelineEntry>>{};
+            for (final entry in entries) {
+              final monthKey = _monthKey(entry.date);
+              grouped.putIfAbsent(monthKey, () => []).add(entry);
+            }
+
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 24),
+              children: grouped.entries.expand((group) {
+                return [
+                  _MonthHeader(monthKey: group.key),
+                  ...group.value.map((entry) => _VisitCard(entry: entry)),
+                ];
+              }).toList(),
             );
-          }
-
-          // Group by month
-          final grouped = <String, List<TimelineEntry>>{};
-          for (final entry in entries) {
-            final monthKey = _monthKey(entry.date);
-            grouped.putIfAbsent(monthKey, () => []).add(entry);
-          }
-
-          return ListView(
-            padding: const EdgeInsets.only(bottom: 24),
-            children: grouped.entries.expand((group) {
-              return [
-                _MonthHeader(monthKey: group.key),
-                ...group.value.map((entry) => _VisitCard(entry: entry)),
-              ];
-            }).toList(),
-          );
-        },
+          },
+        ),
       ),
     );
   }

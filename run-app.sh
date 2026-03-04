@@ -124,6 +124,7 @@ printf "  r  hot reload    R  hot restart    q  quit\n\n"
 
 # shellcheck disable=SC2086
 flutter run $DEVICE_FLAG \
-  --dart-define=API_URL="$API_URL"
+  --dart-define=API_URL="$API_URL" \
+  --dart-define=MAPS_API_KEY="${MAPS_API_KEY:-YOUR_MAPS_API_KEY_HERE}"
 
 printf "${GREEN}✅ Session ended.${NC}\n"

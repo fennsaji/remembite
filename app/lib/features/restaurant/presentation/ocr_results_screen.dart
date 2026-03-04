@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/api_error.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../dish/data/dish_repository.dart';
 import '../data/restaurant_repository.dart';
@@ -83,7 +84,11 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+            content: Text(apiErrorMessage(e),
+                style: const TextStyle(color: AppColors.primaryText)),
+            backgroundColor: AppColors.elevated,
+          ),
         );
         setState(() => _saving = false);
       }

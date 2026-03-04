@@ -39,97 +39,127 @@ Future<List<RestaurantSummary>> nearbyRestaurants(Ref ref) async {
   }
 }
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _refreshTick = 0;
+
+  Future<void> _onRefresh() async {
+    setState(() => _refreshTick++);
+    ref.invalidate(nearbyRestaurantsProvider);
+    try {
+      await ref.read(nearbyRestaurantsProvider.future);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final auth = ref.watch(authStateProvider).value;
     final nearbyAsync = ref.watch(nearbyRestaurantsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // App bar with search
-            SliverAppBar(
-              floating: true,
-              backgroundColor: AppColors.background,
-              automaticallyImplyLeading: false,
-              titleSpacing: 16,
-              title: _SearchBar(onTap: () => context.push('/search')),
-            ),
-
-            // Greeting
-            SliverToBoxAdapter(
-              child: Padding(
-                padding:
-                    const EdgeInsets.fromLTRB(20, 20, 20, 4),
-                child: Text(
-                  _greeting(auth?.displayName),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: AppColors.primaryText,
-                      ),
-                ),
-              ),
-            ),
-
-            // Recently Visited
-            const SliverToBoxAdapter(child: _SectionLabel(label: 'RECENTLY VISITED')),
-            const SliverToBoxAdapter(child: _RecentlyVisitedSection()),
-
-            // Nearby Restaurants
-            const SliverToBoxAdapter(child: _SectionLabel(label: 'NEARBY')),
-            nearbyAsync.when(
-              loading: () => SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 120,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.accent,
-                      strokeWidth: 2,
-                    ),
+        child: RefreshIndicator(
+          color: AppColors.accent,
+          backgroundColor: AppColors.elevated,
+          onRefresh: _onRefresh,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // App bar with search
+              SliverAppBar(
+                floating: true,
+                backgroundColor: AppColors.background,
+                automaticallyImplyLeading: false,
+                titleSpacing: 16,
+                title: _SearchBar(onTap: () => context.push('/search')),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.favorite_outline, color: AppColors.secondaryText),
+                    tooltip: 'Favorites',
+                    onPressed: () => context.push('/favorites'),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                ],
               ),
-              error: (_, __) => const SliverToBoxAdapter(
+
+              // Greeting
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
                   child: Text(
-                    'Could not load nearby restaurants.',
-                    style: TextStyle(color: AppColors.secondaryText),
+                    _greeting(auth?.displayName),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: AppColors.primaryText,
+                        ),
                   ),
                 ),
               ),
-              data: (restaurants) => restaurants.isEmpty
-                  ? SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.storefront_outlined,
-                                color: AppColors.accent, size: 16),
-                            const SizedBox(width: 8),
-                            Text(
-                              'No restaurants found nearby. Try adding one!',
-                              style: TextStyle(color: AppColors.secondaryText),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : SliverList.separated(
-                      separatorBuilder: (_, __) =>
-                          const Divider(color: AppColors.border, height: 1),
-                      itemCount: restaurants.length,
-                      itemBuilder: (context, i) =>
-                          _RestaurantTile(restaurant: restaurants[i]),
-                    ),
-            ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
+              // Recently Visited
+              const SliverToBoxAdapter(child: _SectionLabel(label: 'RECENTLY VISITED')),
+              SliverToBoxAdapter(
+                child: _RecentlyVisitedSection(key: ValueKey(_refreshTick)),
+              ),
+
+              // Nearby Restaurants
+              const SliverToBoxAdapter(child: _SectionLabel(label: 'NEARBY')),
+              nearbyAsync.when(
+                loading: () => SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 120,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.accent,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  ),
+                ),
+                error: (_, __) => const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      'Could not load nearby restaurants.',
+                      style: TextStyle(color: AppColors.secondaryText),
+                    ),
+                  ),
+                ),
+                data: (restaurants) => restaurants.isEmpty
+                    ? SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.storefront_outlined,
+                                  color: AppColors.accent, size: 16),
+                              const SizedBox(width: 8),
+                              Text(
+                                'No restaurants found nearby. Try adding one!',
+                                style: TextStyle(color: AppColors.secondaryText),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SliverList.separated(
+                        separatorBuilder: (_, __) =>
+                            const Divider(color: AppColors.border, height: 1),
+                        itemCount: restaurants.length,
+                        itemBuilder: (context, i) =>
+                            _RestaurantTile(restaurant: restaurants[i]),
+                      ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -152,7 +182,6 @@ class HomeScreen extends ConsumerWidget {
     final first = name?.split(' ').first ?? '';
     return 'Good $timeOfDay${first.isNotEmpty ? ', $first' : ''} 👋';
   }
-
 }
 
 class _SectionLabel extends StatelessWidget {
@@ -214,7 +243,7 @@ class _SearchBar extends StatelessWidget {
 }
 
 class _RecentlyVisitedSection extends ConsumerWidget {
-  const _RecentlyVisitedSection();
+  const _RecentlyVisitedSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -347,4 +376,3 @@ class _RestaurantTile extends StatelessWidget {
     );
   }
 }
-

@@ -14,7 +14,8 @@ Components:
 * Nearby Restaurants list (with star rating)
 * Recently Visited list
 * Floating Action Button: Search Restaurant (search icon) — navigates to `/search`; scan is only accessible from within a restaurant's context
-* Bottom Navigation: Home | Map | Favorites | Profile
+* AppBar icon: `Icons.map_outlined` (top-right) — navigates to `/map`
+* Bottom Navigation: Home | Favorites | Timeline | Profile
 
 Behavior:
 
@@ -89,17 +90,50 @@ Note: In early stages (pre-community scale), admin manually applies edits. Commu
 
 ### 1.6 Map View
 
+Navigation:
+
+* Accessed via `Icons.map_outlined` in Home screen AppBar (not in bottom navigation)
+
 Default:
 
-* Display only visited restaurants
+* Display only visited restaurants (pins from local Drift DB)
+* Auto-fetch nearby restaurants from Google Places Nearby Search on load
 
-Toggle:
+Pin types:
 
-* Show nearby restaurants
+* Orange (accent) — restaurants user has reacted to (from local Drift DB)
+* Yellow — nearby restaurants already in Remembite DB
+* Custom (turmeric circle + restaurant icon + name label) — Google Places results not yet in Remembite
 
 Pin interaction:
 
-* Opens Restaurant Super Screen
+* Tap visited/nearby pin → opens Restaurant Super Screen
+* Tap Google Places pin → bottom sheet: name, address, cuisine, Google rating, open/closed badge, price level → "Add to Remembite" button
+
+Map search:
+
+* Search bar overlay (top) — Google Places Autocomplete; tap result → move camera + show add sheet
+* "Search this area" button (bottom-left) — re-fetch Places for current camera center
+
+Smart pin density:
+
+* Google Places pins (not user's visited restaurants) are filtered by a quality score based on zoom level
+* Score formula: `rating * 0.4 + log(rating_count) * 0.3 + is_open * 0.2 + is_operational * 0.1`
+* Pin caps by zoom: <12 → 8 pins, 12–13 → 15, 13–14 → 30, 14–15 → 60, ≥15 → all
+* Visited restaurant pins (user's own data) always shown at all zoom levels — never filtered
+* Filtering is client-side from the already-fetched list; no extra API calls
+
+Map provider:
+
+* Google Maps (`google_maps_flutter`) — API key required (Maps SDK for Android + iOS)
+
+### 1.6.1 Location Picker (Add Restaurant Flow)
+
+* Full-screen route `/location-picker` — accessible via "Pick on Map →" button in Add Restaurant
+* Fixed crosshair overlay; map pans under it; Confirm captures center coordinates
+* Search powered by Google Places Autocomplete API
+* GPS "Use GPS" button snaps to device location
+* Returns `LatLng` to Add Restaurant, which re-fires duplicate detection on return
 
 ---
 

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/network/api_error.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/restaurant_repository.dart';
 
@@ -63,7 +64,11 @@ class _MenuScanScreenState extends ConsumerState<MenuScanScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('OCR failed: $e')),
+          SnackBar(
+            content: Text(apiErrorMessage(e),
+                style: const TextStyle(color: AppColors.primaryText)),
+            backgroundColor: AppColors.elevated,
+          ),
         );
       }
     } finally {
