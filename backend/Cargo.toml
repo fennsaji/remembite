@@ -53,5 +53,9 @@ dashmap = "5"
 # Base64 encoding/decoding (Pub/Sub webhook payload)
 base64 = "0.22"
 
+# Cloud storage (Cloudflare R2 via S3-compatible API)
+aws-sdk-s3 = "1"
+aws-config = { version = "1", default-features = false, features = ["rustls"] }
+
 [dev-dependencies]
 tokio-test = "0.4"

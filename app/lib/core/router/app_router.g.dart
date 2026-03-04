@@ -6,7 +6,7 @@ part of 'app_router.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appRouterHash() => r'6a5d55dbd1d989889a94eebfc6e1627edbed0b7f';
+String _$appRouterHash() => r'1e5d9070fa3f14bcb018297ee8297a4cbb4abced';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -64,7 +64,7 @@ class AppRouterFamily extends Family<GoRouter> {
 }
 
 /// See also [appRouter].
-class AppRouterProvider extends AutoDisposeProvider<GoRouter> {
+class AppRouterProvider extends Provider<GoRouter> {
   /// See also [appRouter].
   AppRouterProvider({String? initialLocation})
     : this._internal(
@@ -109,7 +109,7 @@ class AppRouterProvider extends AutoDisposeProvider<GoRouter> {
   }
 
   @override
-  AutoDisposeProviderElement<GoRouter> createElement() {
+  ProviderElement<GoRouter> createElement() {
     return _AppRouterProviderElement(this);
   }
 
@@ -130,12 +130,12 @@ class AppRouterProvider extends AutoDisposeProvider<GoRouter> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin AppRouterRef on AutoDisposeProviderRef<GoRouter> {
+mixin AppRouterRef on ProviderRef<GoRouter> {
   /// The parameter `initialLocation` of this provider.
   String? get initialLocation;
 }
 
-class _AppRouterProviderElement extends AutoDisposeProviderElement<GoRouter>
+class _AppRouterProviderElement extends ProviderElement<GoRouter>
     with AppRouterRef {
   _AppRouterProviderElement(super.provider);
 

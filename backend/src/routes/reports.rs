@@ -33,9 +33,9 @@ async fn create_report(
     user: AuthUser,
     Json(req): Json<ReportCreateRequest>,
 ) -> AppResult<(StatusCode, Json<ReportResponse>)> {
-    if req.entity_type != "restaurant" && req.entity_type != "dish" {
+    if req.entity_type != "restaurant" && req.entity_type != "dish" && req.entity_type != "image" {
         return Err(AppError::BadRequest(
-            "entity_type must be 'restaurant' or 'dish'".to_string(),
+            "entity_type must be 'restaurant', 'dish', or 'image'".to_string(),
         ));
     }
 

@@ -13,6 +13,7 @@ mod services;
 use std::sync::Arc;
 
 use axum::{Router, routing::{get, post}};
+use aws_sdk_s3::Client as S3Client;
 use sqlx::PgPool;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
@@ -34,6 +35,8 @@ pub struct AppState {
     pub llm: Arc<dyn LlmProvider>,
     pub job_queue: Arc<dyn JobQueue>,
     pub http: reqwest::Client,
+    pub s3: Arc<S3Client>,
+    pub rl_uploads: UserRateLimiter,           // 10/hr
     // Rate limiters
     pub rl_reactions: UserRateLimiter,        // 100/hr
     pub rl_restaurant_create: UserRateLimiter, // 10/hr
@@ -66,6 +69,24 @@ async fn main() -> anyhow::Result<()> {
     let (queue, receiver) = InProcessQueue::new(512);
     let job_queue: Arc<dyn JobQueue> = queue;
 
+    // S3 client for Cloudflare R2
+    let s3_creds = aws_sdk_s3::config::Credentials::new(
+        &config.r2_access_key_id,
+        &config.r2_secret_access_key,
+        None, None, "r2",
+    );
+    let s3_config = aws_sdk_s3::Config::builder()
+        .behavior_version(aws_sdk_s3::config::BehaviorVersion::latest())
+        .credentials_provider(s3_creds)
+        .region(aws_sdk_s3::config::Region::new("auto"))
+        .endpoint_url(format!(
+            "https://{}.r2.cloudflarestorage.com",
+            config.r2_account_id
+        ))
+        .force_path_style(true)
+        .build();
+    let s3 = Arc::new(S3Client::from_conf(s3_config));
+
     // App state
     let state = AppState {
         db,
@@ -73,6 +94,8 @@ async fn main() -> anyhow::Result<()> {
         llm,
         job_queue,
         http: reqwest::Client::new(),
+        s3,
+        rl_uploads: new_per_user_limiter(10),
         rl_reactions: new_per_user_limiter(100),
         rl_restaurant_create: new_per_user_limiter(10),
         rl_edit_suggestions: new_per_user_limiter(20),
@@ -120,9 +143,12 @@ async fn main() -> anyhow::Result<()> {
         .nest("/admin", routes::edit_suggestions::admin_router()
             .merge(routes::restaurants::admin_router())
             .merge(routes::reports::admin_router())
-            .merge(routes::dishes::admin_router()))
+            .merge(routes::dishes::admin_router())
+            .merge(routes::images::admin_router()))
         // Reports
         .nest("/reports", routes::reports::router())
+        // Images
+        .nest("/images", routes::images::router())
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
         .with_state(state);

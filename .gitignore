@@ -11,6 +11,12 @@
 app/android/app/google-services.json
 app/ios/Runner/GoogleService-Info.plist
 
+# Android local.properties — machine-specific paths + API keys, never commit
+app/android/local.properties
+
+# iOS secrets — API keys injected via xcconfig, never commit
+app/ios/Flutter/Secrets.xcconfig
+
 # macOS
 .DS_Store
 

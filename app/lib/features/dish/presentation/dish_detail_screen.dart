@@ -8,12 +8,16 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shimmer/shimmer.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../../../core/billing/pro_status_provider.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/dish_repository.dart';
+import '../data/image_repository.dart';
 import '../../restaurant/presentation/session_state.dart';
 
 part 'dish_detail_screen.g.dart';
@@ -64,6 +68,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
   String? _selectedSweetness;
   final _notesController = TextEditingController();
   bool _saving = false;
+  bool _uploadingPhoto = false;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   @override
@@ -126,6 +131,69 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
       ),
       builder: (_) => _ReportDishSheet(dishId: dishId),
     );
+  }
+
+  Future<void> _addPhoto(String dishId, bool isPublic) async {
+    final picker = ImagePicker();
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: AppColors.elevated,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined,
+                  color: AppColors.secondaryText),
+              title: const Text('Camera',
+                  style: TextStyle(color: AppColors.primaryText)),
+              onTap: () => Navigator.of(context).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined,
+                  color: AppColors.secondaryText),
+              title: const Text('Gallery',
+                  style: TextStyle(color: AppColors.primaryText)),
+              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+
+    final file = await picker.pickImage(source: source, imageQuality: 90);
+    if (file == null || !mounted) return;
+
+    setState(() => _uploadingPhoto = true);
+    try {
+      await ref.read(imageRepositoryProvider).uploadImage(
+        entityType: 'dish',
+        entityId: dishId,
+        file: file,
+        isPublic: isPublic,
+      );
+      if (mounted) {
+        ref.invalidate(dishImagesProvider(dishId));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Photo added!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(apiErrorMessage(e),
+                style: const TextStyle(color: AppColors.primaryText)),
+            backgroundColor: AppColors.elevated,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
   }
 
   @override
@@ -283,27 +351,35 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Add Photo placeholder (non-functional until Phase 6)
+            // Dish photos gallery
+            _ImageGallery(dishId: widget.dishId),
+            const SizedBox(height: 8),
+
+            // Add Photo
             _SectionLabel(label: 'PHOTO'),
             const SizedBox(height: 12),
-            Tooltip(
-              message: 'Coming soon',
-              child: OutlinedButton.icon(
-                onPressed: null,
-                icon: const Icon(Icons.add_a_photo_outlined,
-                    size: 18, color: AppColors.mutedText),
-                label: const Text(
-                  'Add Photo',
-                  style: TextStyle(color: AppColors.mutedText),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.border),
-                  backgroundColor: AppColors.elevated,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  minimumSize: const Size(double.infinity, 0),
-                ),
-              ),
-            ),
+            _uploadingPhoto
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: CircularProgressIndicator(
+                          color: AppColors.accent, strokeWidth: 2),
+                    ))
+                : OutlinedButton.icon(
+                    onPressed: () => _addPhoto(dish.id.toString(), true),
+                    icon: const Icon(Icons.add_a_photo_outlined,
+                        size: 18, color: AppColors.accent),
+                    label: const Text(
+                      'Add Photo',
+                      style: TextStyle(color: AppColors.accent),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.accent),
+                      backgroundColor: AppColors.elevated,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      minimumSize: const Size(double.infinity, 0),
+                    ),
+                  ),
             const SizedBox(height: 32),
 
             // Save button
@@ -728,6 +804,168 @@ class _ReportDishSheetState extends ConsumerState<_ReportDishSheet> {
         ],
       ),
     );
+  }
+}
+
+// ─── Image gallery ────────────────────────────────────────
+
+class _ImageGallery extends ConsumerWidget {
+  final String dishId;
+  const _ImageGallery({required this.dishId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final imagesAsync = ref.watch(dishImagesProvider(dishId));
+
+    return imagesAsync.when(
+      loading: () => const SizedBox(
+        height: 120,
+        child: Center(
+          child: CircularProgressIndicator(
+              color: AppColors.accent, strokeWidth: 2),
+        ),
+      ),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (images) {
+        if (images.isEmpty) return const SizedBox.shrink();
+        return SizedBox(
+          height: 120,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: images.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              return _ImageTile(image: images[i], dishId: dishId);
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ImageTile extends ConsumerStatefulWidget {
+  final ImageModel image;
+  final String dishId;
+  const _ImageTile({required this.image, required this.dishId});
+
+  @override
+  ConsumerState<_ImageTile> createState() => _ImageTileState();
+}
+
+class _ImageTileState extends ConsumerState<_ImageTile> {
+  String? _resolvedUrl;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    try {
+      final url =
+          await ref.read(imageRepositoryProvider).getDisplayUrl(widget.image);
+      if (mounted) setState(() { _resolvedUrl = url; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPress: () => _showReportMenu(context),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: _loading
+            ? Container(
+                width: 120,
+                height: 120,
+                color: AppColors.elevated,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                      color: AppColors.mutedText, strokeWidth: 1.5),
+                ),
+              )
+            : _resolvedUrl == null
+                ? Container(
+                    width: 120,
+                    height: 120,
+                    color: AppColors.elevated,
+                    child: const Icon(Icons.broken_image_outlined,
+                        color: AppColors.mutedText),
+                  )
+                : CachedNetworkImage(
+                    imageUrl: _resolvedUrl!,
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                      color: AppColors.elevated,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                            color: AppColors.mutedText, strokeWidth: 1.5),
+                      ),
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      color: AppColors.elevated,
+                      child: const Icon(Icons.broken_image_outlined,
+                          color: AppColors.mutedText),
+                    ),
+                  ),
+      ),
+    );
+  }
+
+  void _showReportMenu(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.elevated,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.flag_outlined,
+                  color: AppColors.secondaryText),
+              title: const Text('Report this image',
+                  style: TextStyle(color: AppColors.primaryText)),
+              onTap: () {
+                Navigator.of(context).pop();
+                _reportImage(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _reportImage(BuildContext context) async {
+    try {
+      await ref
+          .read(imageRepositoryProvider)
+          .reportImage(widget.image.id, 'Inappropriate image');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Image reported. Thank you.')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(apiErrorMessage(e),
+                style: const TextStyle(color: AppColors.primaryText)),
+            backgroundColor: AppColors.elevated,
+          ),
+        );
+      }
+    }
   }
 }
 

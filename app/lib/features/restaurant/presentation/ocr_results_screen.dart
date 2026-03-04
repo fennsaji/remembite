@@ -6,6 +6,7 @@ import '../../../core/network/api_error.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../dish/data/dish_repository.dart';
 import '../data/restaurant_repository.dart';
+import 'restaurant_screen.dart';
 
 class OcrResultsScreen extends ConsumerStatefulWidget {
   final String rawText;
@@ -79,7 +80,8 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
             .toList(),
       );
       if (mounted) {
-        context.pushReplacement('/restaurant/${widget.restaurantId}');
+        ref.invalidate(restaurantDishesProvider(widget.restaurantId!));
+        context.go('/restaurant/${widget.restaurantId}');
       }
     } catch (e) {
       if (mounted) {

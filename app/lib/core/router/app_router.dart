@@ -26,14 +26,33 @@ import '../theme/app_theme.dart';
 
 part 'app_router.g.dart';
 
-@riverpod
+// Notifier that pings GoRouter to re-evaluate its redirect when auth changes.
+// Only fires when sign-in state *actually* flips (null→user or user→null),
+// not on every re-emission, to avoid duplicate-page-key crashes during navigation.
+class _AuthNotifier extends ChangeNotifier {
+  bool? _lastSignedIn;
+
+  _AuthNotifier(Ref ref) {
+    ref.listen(authStateProvider, (_, next) {
+      final isSignedIn = next.value != null;
+      if (_lastSignedIn != isSignedIn) {
+        _lastSignedIn = isSignedIn;
+        notifyListeners();
+      }
+    });
+  }
+}
+
+@Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref, {String? initialLocation}) {
-  final authState = ref.watch(authStateProvider);
+  final notifier = _AuthNotifier(ref);
+  ref.onDispose(notifier.dispose);
 
   return GoRouter(
     initialLocation: initialLocation ?? '/home',
+    refreshListenable: notifier,
     redirect: (context, state) {
-      final isSignedIn = authState.value != null;
+      final isSignedIn = ref.read(authStateProvider).value != null;
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
 
       if (!isSignedIn && !isAuthRoute) return '/auth/sign-in';

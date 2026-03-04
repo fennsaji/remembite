@@ -378,3 +378,20 @@ pub struct TasteProfileStatusResponse {
     pub complete: bool,
     pub insights_locked: bool,
 }
+
+// ─────────────────────────────────────────────
+// Image DTOs
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Serialize)]
+pub struct ImageResponse {
+    pub id: Uuid,
+    pub entity_type: String,
+    pub entity_id: Uuid,
+    pub uploaded_by: Uuid,
+    pub r2_key: String,
+    pub is_public: bool,
+    /// Full CDN URL for public images; None for private (use /images/{id}/url instead)
+    pub cdn_url: Option<String>,
+    pub created_at: DateTime<Utc>,
+}
