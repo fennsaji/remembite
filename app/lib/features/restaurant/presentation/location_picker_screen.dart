@@ -117,19 +117,26 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Location permission denied — using Mumbai as default'),
+              content: Text(
+                'Location permission denied — using Mumbai as default',
+              ),
             ),
           );
         }
         return;
       }
 
-      final pos = await Geolocator.getCurrentPosition(
-        locationSettings:
-            const LocationSettings(accuracy: LocationAccuracy.medium),
-      ).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException('Location timed out');
-      });
+      final pos =
+          await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+            ),
+          ).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException('Location timed out');
+            },
+          );
 
       if (mounted) {
         final latLng = LatLng(pos.latitude, pos.longitude);
@@ -137,9 +144,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           _currentPosition = latLng;
           _cameraCenter = latLng;
         });
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(latLng, 15),
-        );
+        _mapController?.animateCamera(CameraUpdate.newLatLngZoom(latLng, 15));
       }
     } catch (_) {
       if (mounted) {
@@ -222,16 +227,15 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       if (!mounted) return;
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
-        final loc = (body['result'] as Map<String, dynamic>?)?['geometry']
-            ?['location'] as Map<String, dynamic>?;
+        final loc =
+            (body['result'] as Map<String, dynamic>?)?['geometry']?['location']
+                as Map<String, dynamic>?;
         if (loc != null) {
           final lat = (loc['lat'] as num).toDouble();
           final lng = (loc['lng'] as num).toDouble();
           final latLng = LatLng(lat, lng);
           _cameraCenter = latLng;
-          _mapController?.animateCamera(
-            CameraUpdate.newLatLngZoom(latLng, 16),
-          );
+          _mapController?.animateCamera(CameraUpdate.newLatLngZoom(latLng, 16));
         }
       }
     } catch (_) {
@@ -252,10 +256,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         ),
         title: Text(
           'Pick Location',
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(color: AppColors.primaryText),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: AppColors.primaryText),
         ),
       ),
       body: _currentPosition == null
@@ -274,10 +277,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                     style: const TextStyle(color: AppColors.primaryText),
                     decoration: InputDecoration(
                       hintText: 'Search for a place…',
-                      hintStyle:
-                          const TextStyle(color: AppColors.mutedText),
-                      prefixIcon: const Icon(Icons.search,
-                          color: AppColors.mutedText),
+                      hintStyle: const TextStyle(color: AppColors.mutedText),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: AppColors.mutedText,
+                      ),
                       suffixIcon: _searching
                           ? const Padding(
                               padding: EdgeInsets.all(12),
@@ -293,22 +297,18 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                           : null,
                       filled: true,
                       fillColor: AppColors.elevated,
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppColors.border),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppColors.border),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppColors.accent),
+                        borderSide: const BorderSide(color: AppColors.accent),
                       ),
                     ),
                   ),
@@ -363,8 +363,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   child: Stack(
                     children: [
                       GoogleMap(
-                        onMapCreated: (c) =>
-                            setState(() => _mapController = c),
+                        onMapCreated: (c) => setState(() => _mapController = c),
                         initialCameraPosition: CameraPosition(
                           target: _currentPosition!,
                           zoom: 15.0,
@@ -399,11 +398,12 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                                 onTap: _fetchingGps ? null : _fetchGps,
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 10),
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(24),
-                                    border:
-                                        Border.all(color: AppColors.accent),
+                                    border: Border.all(color: AppColors.accent),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -412,21 +412,24 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                                           ? const SizedBox(
                                               width: 14,
                                               height: 14,
-                                              child:
-                                                  CircularProgressIndicator(
+                                              child: CircularProgressIndicator(
                                                 strokeWidth: 2,
                                                 color: AppColors.accent,
-                                              ))
-                                          : const Icon(Icons.my_location,
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.my_location,
                                               size: 16,
-                                              color: AppColors.accent),
+                                              color: AppColors.accent,
+                                            ),
                                       const SizedBox(width: 6),
                                       const Text(
                                         'Use GPS',
                                         style: TextStyle(
-                                            color: AppColors.accent,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600),
+                                          color: AppColors.accent,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -445,25 +448,30 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                                 onTap: () => context.pop(_cameraCenter),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 10),
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(24),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.check,
-                                          size: 16,
-                                          color: AppColors.background),
+                                      const Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color: AppColors.background,
+                                      ),
                                       const SizedBox(width: 6),
                                       Text(
                                         _placeSelectedFromSearch
                                             ? 'Confirm'
                                             : 'Use this location',
                                         style: const TextStyle(
-                                            color: AppColors.background,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600),
+                                          color: AppColors.background,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ],
                                   ),

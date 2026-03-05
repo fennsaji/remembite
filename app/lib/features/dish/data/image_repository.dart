@@ -29,14 +29,14 @@ class ImageModel {
   });
 
   factory ImageModel.fromJson(Map<String, dynamic> json) => ImageModel(
-        id: json['id'] as String,
-        entityType: json['entity_type'] as String,
-        entityId: json['entity_id'] as String,
-        isPublic: json['is_public'] as bool,
-        cdnUrl: json['cdn_url'] as String?,
-        r2Key: json['r2_key'] as String,
-        createdAt: DateTime.parse(json['created_at'] as String),
-      );
+    id: json['id'] as String,
+    entityType: json['entity_type'] as String,
+    entityId: json['entity_id'] as String,
+    isPublic: json['is_public'] as bool,
+    cdnUrl: json['cdn_url'] as String?,
+    r2Key: json['r2_key'] as String,
+    createdAt: DateTime.parse(json['created_at'] as String),
+  );
 }
 
 class ImageRepository {
@@ -94,18 +94,18 @@ class ImageRepository {
   /// Get a URL to display an image (CDN for public, pre-signed for private).
   Future<String> getDisplayUrl(ImageModel image) async {
     if (image.cdnUrl != null) return image.cdnUrl!;
-    final response =
-        await _dio.get<Map<String, dynamic>>('/images/${image.id}/url');
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/images/${image.id}/url',
+    );
     return response.data!['url'] as String;
   }
 
   /// Report an image.
   Future<void> reportImage(String imageId, String reason) async {
-    await _dio.post<void>('/reports', data: {
-      'entity_type': 'image',
-      'entity_id': imageId,
-      'reason': reason,
-    });
+    await _dio.post<void>(
+      '/reports',
+      data: {'entity_type': 'image', 'entity_id': imageId, 'reason': reason},
+    );
   }
 }
 

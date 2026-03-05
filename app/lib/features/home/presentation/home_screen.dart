@@ -81,7 +81,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 title: _SearchBar(onTap: () => context.push('/search')),
                 actions: [
                   IconButton(
-                    icon: const Icon(Icons.favorite_outline, color: AppColors.secondaryText),
+                    icon: const Icon(
+                      Icons.favorite_outline,
+                      color: AppColors.secondaryText,
+                    ),
                     tooltip: 'Favorites',
                     onPressed: () => context.push('/favorites'),
                   ),
@@ -96,14 +99,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Text(
                     _greeting(auth?.displayName),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: AppColors.primaryText,
-                        ),
+                      color: AppColors.primaryText,
+                    ),
                   ),
                 ),
               ),
 
               // Recently Visited
-              const SliverToBoxAdapter(child: _SectionLabel(label: 'RECENTLY VISITED')),
+              const SliverToBoxAdapter(
+                child: _SectionLabel(label: 'RECENTLY VISITED'),
+              ),
               SliverToBoxAdapter(
                 child: _RecentlyVisitedSection(key: ValueKey(_refreshTick)),
               ),
@@ -137,12 +142,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                           child: Row(
                             children: [
-                              const Icon(Icons.storefront_outlined,
-                                  color: AppColors.accent, size: 16),
+                              const Icon(
+                                Icons.storefront_outlined,
+                                color: AppColors.accent,
+                                size: 16,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'No restaurants found nearby. Try adding one!',
-                                style: TextStyle(color: AppColors.secondaryText),
+                                style: TextStyle(
+                                  color: AppColors.secondaryText,
+                                ),
                               ),
                             ],
                           ),
@@ -177,8 +187,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final timeOfDay = hour < 12
         ? 'morning'
         : hour < 17
-            ? 'afternoon'
-            : 'evening';
+        ? 'afternoon'
+        : 'evening';
     final first = name?.split(' ').first ?? '';
     return 'Good $timeOfDay${first.isNotEmpty ? ', $first' : ''} 👋';
   }
@@ -199,10 +209,10 @@ class _SectionLabel extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.secondaryText,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.8,
-                ),
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.8,
+            ),
           ),
         ],
       ),
@@ -231,9 +241,9 @@ class _SearchBar extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               'Search restaurants or dishes…',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.mutedText,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
             ),
           ],
         ),
@@ -261,8 +271,11 @@ class _RecentlyVisitedSection extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
             child: Row(
               children: [
-                const Icon(Icons.add_location_alt_outlined,
-                    color: AppColors.accent, size: 16),
+                const Icon(
+                  Icons.add_location_alt_outlined,
+                  color: AppColors.accent,
+                  size: 16,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -281,8 +294,7 @@ class _RecentlyVisitedSection extends ConsumerWidget {
           height: 96,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemCount: rows.length,
             itemBuilder: (context, i) {
@@ -303,20 +315,18 @@ class _RecentlyVisitedSection extends ConsumerWidget {
                     children: [
                       Text(
                         r.name,
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelLarge
-                            ?.copyWith(color: AppColors.primaryText),
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: AppColors.primaryText,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         r.cuisineType ?? r.city,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: AppColors.mutedText),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.mutedText,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -339,36 +349,35 @@ class _RestaurantTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       onTap: () => context.push('/restaurant/${restaurant.id}'),
       title: Text(
         restaurant.name,
-        style: Theme.of(context)
-            .textTheme
-            .titleSmall
-            ?.copyWith(color: AppColors.primaryText),
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(color: AppColors.primaryText),
       ),
       subtitle: Text(
         restaurant.cuisineType ?? restaurant.city,
-        style: Theme.of(context)
-            .textTheme
-            .bodySmall
-            ?.copyWith(color: AppColors.mutedText),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
       ),
       trailing: restaurant.avgRating != null
           ? Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.star_rounded,
-                    color: AppColors.accent, size: 16),
+                const Icon(
+                  Icons.star_rounded,
+                  color: AppColors.accent,
+                  size: 16,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   restaurant.avgRating!.toStringAsFixed(1),
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(color: AppColors.secondaryText),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: AppColors.secondaryText,
+                  ),
                 ),
               ],
             )

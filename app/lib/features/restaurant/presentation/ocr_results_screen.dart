@@ -45,17 +45,16 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
     final lines = text
         .split('\n')
         .map((l) => l.trim())
-        .where((l) =>
-            l.isNotEmpty &&
-            l.length > 3 &&
-            !RegExp(r'^\d+$').hasMatch(l) &&
-            !RegExp(r'^[₹\d,.]+$').hasMatch(l))
+        .where(
+          (l) =>
+              l.isNotEmpty &&
+              l.length > 3 &&
+              !RegExp(r'^\d+$').hasMatch(l) &&
+              !RegExp(r'^[₹\d,.]+$').hasMatch(l),
+        )
         .toList();
 
-    return lines
-        .map((l) => _DishEntry(name: l, selected: true))
-        .take(30)
-        .toList();
+    return lines.map((l) => _DishEntry(name: l, selected: true)).toList();
   }
 
   Future<void> _saveDishes() async {
@@ -73,12 +72,14 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
 
     setState(() => _saving = true);
     try {
-      await ref.read(dishRepositoryProvider).batchCreateDishes(
-        widget.restaurantId!,
-        selected
-            .map((d) => <String, dynamic>{'name': d.name.trim()})
-            .toList(),
-      );
+      await ref
+          .read(dishRepositoryProvider)
+          .batchCreateDishes(
+            widget.restaurantId!,
+            selected
+                .map((d) => <String, dynamic>{'name': d.name.trim()})
+                .toList(),
+          );
       if (mounted) {
         ref.invalidate(restaurantDishesProvider(widget.restaurantId!));
         context.go('/restaurant/${widget.restaurantId}');
@@ -87,8 +88,10 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(apiErrorMessage(e),
-                style: const TextStyle(color: AppColors.primaryText)),
+            content: Text(
+              apiErrorMessage(e),
+              style: const TextStyle(color: AppColors.primaryText),
+            ),
             backgroundColor: AppColors.elevated,
           ),
         );
@@ -111,10 +114,9 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
         ),
         title: Text(
           'Extracted Dishes',
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(color: AppColors.primaryText),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: AppColors.primaryText),
         ),
         actions: [
           Padding(
@@ -122,10 +124,9 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
             child: Center(
               child: Text(
                 '$selectedCount selected',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.mutedText),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
               ),
             ),
           ),
@@ -161,7 +162,9 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
             onPressed: selectedCount > 0 && !_saving ? _saveDishes : null,
             child: _saving
                 ? const Text('Saving…')
-                : Text('Save $selectedCount Dish${selectedCount == 1 ? '' : 'es'}'),
+                : Text(
+                    'Save $selectedCount Dish${selectedCount == 1 ? '' : 'es'}',
+                  ),
           ),
         ),
       ),
@@ -204,10 +207,9 @@ class _DishRow extends StatelessWidget {
             child: TextFormField(
               initialValue: dish.name,
               onChanged: onNameChanged,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: AppColors.primaryText),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.primaryText),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 4),
@@ -215,8 +217,7 @@ class _DishRow extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon:
-                const Icon(Icons.close, color: AppColors.mutedText, size: 18),
+            icon: const Icon(Icons.close, color: AppColors.mutedText, size: 18),
             onPressed: onDelete,
           ),
         ],

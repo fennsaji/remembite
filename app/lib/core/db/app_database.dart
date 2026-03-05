@@ -8,9 +8,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'daos/dish_dao.dart';
+import 'daos/dish_intents_dao.dart';
 import 'daos/favorites_dao.dart';
 import 'daos/reaction_dao.dart';
 import 'daos/restaurant_dao.dart';
+import 'tables/dish_intents_table.dart';
 import 'tables/dishes_table.dart';
 import 'tables/favorites_table.dart';
 import 'tables/ratings_table.dart';
@@ -20,25 +22,14 @@ import 'tables/restaurants_table.dart';
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [
-    Restaurants,
-    Dishes,
-    Reactions,
-    Ratings,
-    Favorites,
-  ],
-  daos: [
-    RestaurantDao,
-    DishDao,
-    ReactionDao,
-    FavoritesDao,
-  ],
+  tables: [Restaurants, Dishes, Reactions, Ratings, Favorites, DishIntents],
+  daos: [RestaurantDao, DishDao, ReactionDao, FavoritesDao, DishIntentsDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -59,6 +50,9 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(restaurants, restaurants.phoneNumber);
         await m.addColumn(restaurants, restaurants.websiteUrl);
         await m.addColumn(restaurants, restaurants.openingHours);
+      }
+      if (from < 4) {
+        await m.createTable(dishIntents);
       }
     },
   );

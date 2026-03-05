@@ -22,22 +22,22 @@ Stream<List<FavoritedDish>> favoritedDishes(Ref ref, String userId) {
 // ─────────────────────────────────────────────────────────
 
 String _reactionEmoji(String? r) => switch (r) {
-      'so_yummy' => '🔥',
-      'tasty' => '😋',
-      'pretty_good' => '🙂',
-      'meh' => '😐',
-      'never_again' => '🤢',
-      _ => '',
-    };
+  'so_yummy' => '🔥',
+  'tasty' => '😋',
+  'pretty_good' => '🙂',
+  'meh' => '😐',
+  'never_again' => '🤢',
+  _ => '',
+};
 
 int _reactionWeight(String? r) => switch (r) {
-      'so_yummy' => 5,
-      'tasty' => 4,
-      'pretty_good' => 3,
-      'meh' => 2,
-      'never_again' => 1,
-      _ => 0,
-    };
+  'so_yummy' => 5,
+  'tasty' => 4,
+  'pretty_good' => 3,
+  'meh' => 2,
+  'never_again' => 1,
+  _ => 0,
+};
 
 // ─────────────────────────────────────────────────────────
 // FavoritesScreen
@@ -93,8 +93,10 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
         error: (e, _) {
           debugPrint('Favorites load error: $e');
           return const Center(
-            child: Text('Failed to load favorites',
-                style: TextStyle(color: AppColors.mutedText)),
+            child: Text(
+              'Failed to load favorites',
+              style: TextStyle(color: AppColors.mutedText),
+            ),
           );
         },
         data: (all) => _buildBody(context, all),
@@ -117,15 +119,17 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
 
     // Apply restaurant filter
     if (_selectedRestaurantId != null) {
-      filtered =
-          filtered.where((d) => d.restaurantId == _selectedRestaurantId).toList();
+      filtered = filtered
+          .where((d) => d.restaurantId == _selectedRestaurantId)
+          .toList();
     }
 
     // Apply sort
     if (_sortMode == 'weight') {
       filtered.sort((a, b) {
-        final wCmp =
-            _reactionWeight(b.reaction).compareTo(_reactionWeight(a.reaction));
+        final wCmp = _reactionWeight(
+          b.reaction,
+        ).compareTo(_reactionWeight(a.reaction));
         if (wCmp != 0) return wCmp;
         return b.favoritedAt.compareTo(a.favoritedAt);
       });
@@ -161,14 +165,8 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                     final emoji = _reactionEmoji(item.reaction);
                     return ListTile(
                       leading: emoji.isNotEmpty
-                          ? Text(
-                              emoji,
-                              style: const TextStyle(fontSize: 22),
-                            )
-                          : const Icon(
-                              Icons.favorite,
-                              color: AppColors.error,
-                            ),
+                          ? Text(emoji, style: const TextStyle(fontSize: 22))
+                          : const Icon(Icons.favorite, color: AppColors.error),
                       title: Text(
                         item.dishName,
                         style: const TextStyle(color: AppColors.primaryText),
@@ -259,10 +257,7 @@ class _ReactionFilterRow extends StatelessWidget {
   final String? selected;
   final ValueChanged<String?> onChanged;
 
-  const _ReactionFilterRow({
-    required this.selected,
-    required this.onChanged,
-  });
+  const _ReactionFilterRow({required this.selected, required this.onChanged});
 
   static const _reactions = [
     (null, 'All'),
@@ -290,7 +285,9 @@ class _ReactionFilterRow extends StatelessWidget {
               selected: isSelected,
               onSelected: (_) => onChanged(value),
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.background : AppColors.secondaryText,
+                color: isSelected
+                    ? AppColors.background
+                    : AppColors.secondaryText,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -359,8 +356,9 @@ class _RestaurantFilterRow extends StatelessWidget {
                 selected: isSelected,
                 onSelected: (_) => onChanged(e.key),
                 labelStyle: TextStyle(
-                  color:
-                      isSelected ? AppColors.background : AppColors.secondaryText,
+                  color: isSelected
+                      ? AppColors.background
+                      : AppColors.secondaryText,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),

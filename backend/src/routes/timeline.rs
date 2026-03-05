@@ -1,10 +1,10 @@
-use axum::{Json, Router, extract::State, routing::get};
+use axum::{Json, Router, extract::State, routing::{get, post}};
 use std::collections::BTreeMap;
 
 use crate::{
     AppState,
     auth::middleware::AuthUser,
-    dto::{DishReactionItem, TasteInsightsResponse, TasteProfileStatusResponse, TimelineEntry, TimelineResponse},
+    dto::{BootstrapRequest, BootstrapResponse, DishReactionItem, TasteInsightsResponse, TasteProfileStatusResponse, TimelineEntry, TimelineResponse},
     error::AppResult,
 };
 
@@ -17,6 +17,7 @@ pub fn router() -> Router<AppState> {
         .route("/timeline", get(get_timeline))
         .route("/taste-insights", get(get_taste_insights))
         .route("/taste-profile-status", get(get_taste_profile_status))
+        .route("/bootstrap", post(post_bootstrap))
 }
 
 async fn get_timeline(
@@ -210,4 +211,85 @@ async fn get_taste_profile_status(
         complete,
         insights_locked,
     }))
+}
+
+async fn post_bootstrap(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Json(req): Json<BootstrapRequest>,
+) -> AppResult<Json<BootstrapResponse>> {
+    use sqlx::Row;
+
+    // Idempotency — if already bootstrapped, no-op
+    let row = sqlx::query("SELECT bootstrapped_at FROM users WHERE id = $1")
+        .bind(user.id)
+        .fetch_one(&state.db)
+        .await?;
+    let already_done: Option<chrono::DateTime<chrono::Utc>> = row.try_get("bootstrapped_at")?;
+    if already_done.is_some() {
+        return Ok(Json(BootstrapResponse { ok: true }));
+    }
+
+    // Ensure taste vector row exists
+    sqlx::query(
+        "INSERT INTO user_taste_vectors (id, user_id) VALUES ($1, $2) ON CONFLICT (user_id) DO NOTHING",
+    )
+    .bind(uuid::Uuid::new_v4())
+    .bind(user.id)
+    .execute(&state.db)
+    .await?;
+
+    // Apply each reaction to the taste vector
+    for item in &req.reactions {
+        // Skip non-positive reactions (meh provides no directional signal)
+        let reaction_signal: f64 = match item.reaction.as_str() {
+            "so_yummy" => 1.0,
+            "tasty"    => 0.75,
+            _          => continue,
+        };
+
+        sqlx::query(
+            r#"
+            UPDATE user_taste_vectors SET
+                spice_preference    = spice_preference    + 0.1 * ($1 - spice_preference),
+                sweetness_preference = sweetness_preference + 0.1 * ($2 - sweetness_preference),
+                cuisine_distribution = jsonb_set(
+                    cuisine_distribution,
+                    ARRAY[$5::text],
+                    to_jsonb(
+                        COALESCE((cuisine_distribution ->> $5::text)::float, 0.0)
+                        + 0.1 * ($3 - COALESCE((cuisine_distribution ->> $5::text)::float, 0.0))
+                    )
+                ),
+                dish_type_distribution = jsonb_set(
+                    dish_type_distribution,
+                    ARRAY[$6::text],
+                    to_jsonb(
+                        COALESCE((dish_type_distribution ->> $6::text)::float, 0.0)
+                        + 0.1 * ($4 - COALESCE((dish_type_distribution ->> $6::text)::float, 0.0))
+                    )
+                ),
+                reaction_count = reaction_count + 1,
+                updated_at = NOW()
+            WHERE user_id = $7
+            "#,
+        )
+        .bind(item.spice_score)
+        .bind(item.sweetness_score)
+        .bind(reaction_signal)
+        .bind(reaction_signal)
+        .bind(&item.cuisine)
+        .bind(&item.dish_type)
+        .bind(user.id)
+        .execute(&state.db)
+        .await?;
+    }
+
+    // Mark bootstrapped
+    sqlx::query("UPDATE users SET bootstrapped_at = NOW() WHERE id = $1")
+        .bind(user.id)
+        .execute(&state.db)
+        .await?;
+
+    Ok(Json(BootstrapResponse { ok: true }))
 }

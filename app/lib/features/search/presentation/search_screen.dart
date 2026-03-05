@@ -51,11 +51,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     try {
       // Use last known position (instant, no permission prompt) for proximity boost.
       final pos = await Geolocator.getLastKnownPosition();
-      final results = await ref.read(searchRepositoryProvider).search(
-            q,
-            lat: pos?.latitude,
-            lng: pos?.longitude,
-          );
+      final results = await ref
+          .read(searchRepositoryProvider)
+          .search(q, lat: pos?.latitude, lng: pos?.longitude);
       if (mounted) setState(() => _results = results);
     } catch (_) {
       if (mounted) setState(() => _results = null);
@@ -80,21 +78,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               child: Text(
                 dish.name,
                 style: const TextStyle(
-                    color: AppColors.primaryText,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600),
+                  color: AppColors.primaryText,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            ...List.generate(dish.restaurantIds.length, (i) => ListTile(
-              leading: const Icon(Icons.restaurant,
-                  color: AppColors.accent, size: 20),
-              title: Text(dish.restaurantNames[i],
-                  style: const TextStyle(color: AppColors.primaryText)),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                context.push('/restaurant/${dish.restaurantIds[i]}');
-              },
-            )),
+            ...List.generate(
+              dish.restaurantIds.length,
+              (i) => ListTile(
+                leading: const Icon(
+                  Icons.restaurant,
+                  color: AppColors.accent,
+                  size: 20,
+                ),
+                title: Text(
+                  dish.restaurantNames[i],
+                  style: const TextStyle(color: AppColors.primaryText),
+                ),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  context.push('/restaurant/${dish.restaurantIds[i]}');
+                },
+              ),
+            ),
             const SizedBox(height: 8),
           ],
         ),
@@ -109,8 +116,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         leading: IconButton(
-          icon:
-              const Icon(Icons.arrow_back, color: AppColors.primaryText),
+          icon: const Icon(Icons.arrow_back, color: AppColors.primaryText),
           onPressed: () => context.pop(),
         ),
         titleSpacing: 0,
@@ -120,13 +126,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           style: const TextStyle(color: AppColors.primaryText),
           decoration: InputDecoration(
             hintText: 'Search restaurants or dishes…',
-            hintStyle:
-                const TextStyle(color: AppColors.mutedText),
+            hintStyle: const TextStyle(color: AppColors.mutedText),
             border: InputBorder.none,
             suffixIcon: _controller.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.close,
-                        color: AppColors.mutedText, size: 18),
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppColors.mutedText,
+                      size: 18,
+                    ),
                     onPressed: () {
                       _controller.clear();
                       setState(() => _results = null);
@@ -150,8 +158,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               }
             },
             icon: const Icon(Icons.add, color: AppColors.accent, size: 18),
-            label: const Text('Add New Restaurant',
-                style: TextStyle(color: AppColors.accent)),
+            label: const Text(
+              'Add New Restaurant',
+              style: TextStyle(color: AppColors.accent),
+            ),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: AppColors.border),
               backgroundColor: AppColors.surface,
@@ -208,29 +218,38 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ..._results!.restaurants.map(
             (r) => ListTile(
               onTap: () => context.push('/restaurant/${r.id}'),
-              leading: const Icon(Icons.restaurant,
-                  color: AppColors.accent, size: 20),
-              title: Text(r.name,
-                  style: const TextStyle(color: AppColors.primaryText)),
+              leading: const Icon(
+                Icons.restaurant,
+                color: AppColors.accent,
+                size: 20,
+              ),
+              title: Text(
+                r.name,
+                style: const TextStyle(color: AppColors.primaryText),
+              ),
               subtitle: Text(
-                [r.cuisineType, r.city]
-                    .whereType<String>()
-                    .join(' · '),
-                style:
-                    const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                [r.cuisineType, r.city].whereType<String>().join(' · '),
+                style: const TextStyle(
+                  color: AppColors.mutedText,
+                  fontSize: 12,
+                ),
               ),
               trailing: r.avgRating != null
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.star_rounded,
-                            color: AppColors.accent, size: 14),
+                        const Icon(
+                          Icons.star_rounded,
+                          color: AppColors.accent,
+                          size: 14,
+                        ),
                         const SizedBox(width: 2),
                         Text(
                           r.avgRating!.toStringAsFixed(1),
                           style: const TextStyle(
-                              color: AppColors.secondaryText,
-                              fontSize: 12),
+                            color: AppColors.secondaryText,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     )
@@ -240,35 +259,43 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ],
         if (_results!.dishes.isNotEmpty) ...[
           _SectionHeader(label: 'DISHES'),
-          ..._results!.dishes.map(
-            (d) {
-              final subtitle = d.restaurantIds.length == 1
-                  ? (d.restaurantNames.isNotEmpty ? d.restaurantNames[0] : d.name)
-                  : 'Available at ${d.restaurantCount} restaurants';
-              return ListTile(
-                onTap: () {
-                  if (d.restaurantIds.length == 1) {
-                    context.push('/restaurant/${d.restaurantIds[0]}');
-                  } else {
-                    _showRestaurantPicker(context, d);
-                  }
-                },
-                leading: const Icon(Icons.local_dining_outlined,
-                    color: AppColors.secondaryText, size: 20),
-                title: Text(d.name,
-                    style: const TextStyle(color: AppColors.primaryText)),
-                subtitle: Text(
-                  subtitle,
-                  style: const TextStyle(
-                      color: AppColors.mutedText, fontSize: 12),
+          ..._results!.dishes.map((d) {
+            final subtitle = d.restaurantIds.length == 1
+                ? (d.restaurantNames.isNotEmpty ? d.restaurantNames[0] : d.name)
+                : 'Available at ${d.restaurantCount} restaurants';
+            return ListTile(
+              onTap: () {
+                if (d.restaurantIds.length == 1) {
+                  context.push('/restaurant/${d.restaurantIds[0]}');
+                } else {
+                  _showRestaurantPicker(context, d);
+                }
+              },
+              leading: const Icon(
+                Icons.local_dining_outlined,
+                color: AppColors.secondaryText,
+                size: 20,
+              ),
+              title: Text(
+                d.name,
+                style: const TextStyle(color: AppColors.primaryText),
+              ),
+              subtitle: Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppColors.mutedText,
+                  fontSize: 12,
                 ),
-                trailing: d.restaurantIds.length > 1
-                    ? const Icon(Icons.chevron_right,
-                        color: AppColors.mutedText, size: 16)
-                    : null,
-              );
-            },
-          ),
+              ),
+              trailing: d.restaurantIds.length > 1
+                  ? const Icon(
+                      Icons.chevron_right,
+                      color: AppColors.mutedText,
+                      size: 16,
+                    )
+                  : null,
+            );
+          }),
         ],
       ],
     );
@@ -290,9 +317,9 @@ class _SectionHeader extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.secondaryText,
-                  letterSpacing: 0.8,
-                ),
+              color: AppColors.secondaryText,
+              letterSpacing: 0.8,
+            ),
           ),
         ],
       ),

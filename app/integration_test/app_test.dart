@@ -12,8 +12,9 @@ void main() {
     // (or GoogleService-Info.plist on iOS). Firebase.initializeApp() inside app.main()
     // will throw in environments without Firebase test configuration.
     // Run with: flutter test integration_test/app_test.dart -d <device-id>
-    testWidgets('App launches and shows sign-in screen when not authenticated',
-        (tester) async {
+    testWidgets('App launches and shows sign-in screen when not authenticated', (
+      tester,
+    ) async {
       // Use runAsync to properly await app.main(), which contains async
       // Firebase.initializeApp() and other async setup.
       await tester.runAsync(() async => app.main());

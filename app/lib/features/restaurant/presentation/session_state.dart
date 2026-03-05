@@ -11,7 +11,10 @@ class RestaurantSessionState extends _$RestaurantSessionState {
       (reactionCount: 0, ratingShown: false);
 
   void incrementReaction() {
-    state = (reactionCount: state.reactionCount + 1, ratingShown: state.ratingShown);
+    state = (
+      reactionCount: state.reactionCount + 1,
+      ratingShown: state.ratingShown,
+    );
   }
 
   void markRatingShown() {

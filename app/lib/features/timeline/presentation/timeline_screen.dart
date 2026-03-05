@@ -26,9 +26,9 @@ class TimelineScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         title: Text(
           'Visit Timeline',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.primaryText,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: AppColors.primaryText),
         ),
       ),
       body: RefreshIndicator(
@@ -118,9 +118,9 @@ class _MonthHeader extends StatelessWidget {
           Text(
             monthKey.toUpperCase(),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.secondaryText,
-                  letterSpacing: 0.8,
-                ),
+              color: AppColors.secondaryText,
+              letterSpacing: 0.8,
+            ),
           ),
         ],
       ),
@@ -157,9 +157,9 @@ class _VisitCard extends StatelessWidget {
             ),
             child: Text(
               formattedDate,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppColors.secondaryText,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: AppColors.secondaryText),
             ),
           ),
           const SizedBox(width: 12),
@@ -171,8 +171,8 @@ class _VisitCard extends StatelessWidget {
                 Text(
                   entry.restaurantName,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppColors.primaryText,
-                      ),
+                    color: AppColors.primaryText,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Wrap(
@@ -197,12 +197,18 @@ class _ReactionChip extends StatelessWidget {
 
   String get _emoji {
     switch (reaction.reaction) {
-      case 'so_yummy': return '🔥';
-      case 'tasty': return '😋';
-      case 'pretty_good': return '🙂';
-      case 'meh': return '😐';
-      case 'never_again': return '🤢';
-      default: return '•';
+      case 'so_yummy':
+        return '🔥';
+      case 'tasty':
+        return '😋';
+      case 'pretty_good':
+        return '🙂';
+      case 'meh':
+        return '😐';
+      case 'never_again':
+        return '🤢';
+      default:
+        return '•';
     }
   }
 
@@ -218,9 +224,9 @@ class _ReactionChip extends StatelessWidget {
       child: Text(
         '$_emoji ${reaction.dishName}',
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontSize: 11,
-            ),
+          color: AppColors.secondaryText,
+          fontSize: 11,
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),

@@ -27,12 +27,7 @@ part 'map_screen.g.dart';
 // Record type for map restaurant pins
 // ─────────────────────────────────────────────
 
-typedef MapRestaurant = ({
-  String id,
-  String name,
-  double lat,
-  double lng,
-});
+typedef MapRestaurant = ({String id, String name, double lat, double lng});
 
 // ─────────────────────────────────────────────
 // Google Places nearby result model
@@ -78,7 +73,9 @@ class _NearbyPlace {
       rating: (json['rating'] as num?)?.toDouble(),
       ratingCount: json['user_ratings_total'] as int?,
       priceLevel: json['price_level'] as int?,
-      isOpen: (json['opening_hours'] as Map<String, dynamic>?)?['open_now'] as bool?,
+      isOpen:
+          (json['opening_hours'] as Map<String, dynamic>?)?['open_now']
+              as bool?,
       businessStatus: json['business_status'] as String? ?? 'OPERATIONAL',
     );
   }
@@ -134,7 +131,8 @@ class _PlacePrediction {
     final sf = json['structured_formatting'] as Map<String, dynamic>? ?? {};
     return _PlacePrediction(
       placeId: json['place_id'] as String,
-      mainText: sf['main_text'] as String? ?? json['description'] as String? ?? '',
+      mainText:
+          sf['main_text'] as String? ?? json['description'] as String? ?? '',
       secondaryText: sf['secondary_text'] as String? ?? '',
     );
   }
@@ -145,8 +143,9 @@ class _PlacePrediction {
 // Updated on GPS fix and when user taps "Search this area"
 // ─────────────────────────────────────────────
 
-final _mapSearchParamsProvider =
-    StateProvider<({LatLng center, int radius})?>((ref) => null);
+final _mapSearchParamsProvider = StateProvider<({LatLng center, int radius})?>(
+  (ref) => null,
+);
 
 // ─────────────────────────────────────────────
 // Provider: DB restaurants for current map area
@@ -292,8 +291,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       if (!serviceEnabled) {
         if (mounted) {
           setState(() => _currentPosition = _fallback);
-          ref.read(_mapSearchParamsProvider.notifier).state =
-              (center: _fallback, radius: _fetchRadiusForZoom(_currentZoom));
+          ref.read(_mapSearchParamsProvider.notifier).state = (
+            center: _fallback,
+            radius: _fetchRadiusForZoom(_currentZoom),
+          );
         }
         return;
       }
@@ -306,32 +307,39 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           perm == LocationPermission.deniedForever) {
         if (mounted) {
           setState(() => _currentPosition = _fallback);
-          ref.read(_mapSearchParamsProvider.notifier).state =
-              (center: _fallback, radius: _fetchRadiusForZoom(_currentZoom));
+          ref.read(_mapSearchParamsProvider.notifier).state = (
+            center: _fallback,
+            radius: _fetchRadiusForZoom(_currentZoom),
+          );
         }
         return;
       }
 
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings:
-            const LocationSettings(accuracy: LocationAccuracy.medium),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+        ),
       ).timeout(const Duration(seconds: 10));
 
       if (mounted) {
         final latlng = LatLng(pos.latitude, pos.longitude);
-        setState(() { _currentPosition = latlng; });
-        ref.read(_mapSearchParamsProvider.notifier).state =
-            (center: latlng, radius: _fetchRadiusForZoom(_currentZoom));
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(latlng, 14),
+        setState(() {
+          _currentPosition = latlng;
+        });
+        ref.read(_mapSearchParamsProvider.notifier).state = (
+          center: latlng,
+          radius: _fetchRadiusForZoom(_currentZoom),
         );
+        _mapController?.animateCamera(CameraUpdate.newLatLngZoom(latlng, 14));
       }
     } catch (_) {
       if (mounted) {
-          setState(() => _currentPosition = _fallback);
-          ref.read(_mapSearchParamsProvider.notifier).state =
-              (center: _fallback, radius: _fetchRadiusForZoom(_currentZoom));
-        }
+        setState(() => _currentPosition = _fallback);
+        ref.read(_mapSearchParamsProvider.notifier).state = (
+          center: _fallback,
+          radius: _fetchRadiusForZoom(_currentZoom),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _fetchingLocation = false);
@@ -407,7 +415,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         'https://maps.googleapis.com/maps/api/place/details/json'
         '?place_id=${prediction.placeId}'
         '&fields=geometry,name,vicinity,formatted_address,types,'
-            'rating,user_ratings_total,opening_hours,business_status,price_level'
+        'rating,user_ratings_total,opening_hours,business_status,price_level'
         '&key=$_mapsApiKey',
       );
       final response = await http.get(uri);
@@ -416,15 +424,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         if (body['status'] == 'OK') {
           final result = body['result'] as Map<String, dynamic>;
-          final loc = (result['geometry'] as Map)['location'] as Map<String, dynamic>;
+          final loc =
+              (result['geometry'] as Map)['location'] as Map<String, dynamic>;
           final lat = (loc['lat'] as num).toDouble();
           final lng = (loc['lng'] as num).toDouble();
-          final types = (result['types'] as List<dynamic>? ?? []).cast<String>();
+          final types = (result['types'] as List<dynamic>? ?? [])
+              .cast<String>();
           final hours = result['opening_hours'] as Map<String, dynamic>?;
           final place = _NearbyPlace(
             placeId: prediction.placeId,
             name: result['name'] as String? ?? prediction.mainText,
-            vicinity: result['vicinity'] as String? ??
+            vicinity:
+                result['vicinity'] as String? ??
                 result['formatted_address'] as String? ??
                 prediction.secondaryText,
             lat: lat,
@@ -434,13 +445,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ratingCount: result['user_ratings_total'] as int?,
             priceLevel: result['price_level'] as int?,
             isOpen: hours?['open_now'] as bool?,
-            businessStatus: result['business_status'] as String? ?? 'OPERATIONAL',
+            businessStatus:
+                result['business_status'] as String? ?? 'OPERATIONAL',
           );
           _mapController?.animateCamera(
             CameraUpdate.newLatLngZoom(LatLng(lat, lng), 16),
           );
           if (!mounted) return;
-          final reacted = ref.read(reactedRestaurantsOnMapProvider).valueOrNull ?? [];
+          final reacted =
+              ref.read(reactedRestaurantsOnMapProvider).valueOrNull ?? [];
           // Use a direct API call with a 200 m radius so we get fresh DB data
           // regardless of whether mapNearbyRestaurantsProvider is currently loading
           // (valueOrNull returns [] during re-fetches triggered by camera-idle).
@@ -450,7 +463,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 .read(restaurantRepositoryProvider)
                 .getNearbyRestaurants(lat, lng, radius: 200);
           } catch (_) {
-            nearbyCheck = ref.read(mapNearbyRestaurantsProvider).valueOrNull ?? [];
+            nearbyCheck =
+                ref.read(mapNearbyRestaurantsProvider).valueOrNull ?? [];
           }
           if (!mounted) return;
           final existingId = _findInDb(place, reacted, nearbyCheck);
@@ -460,7 +474,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             return;
           }
           // Not in DB — show Add sheet with pre-built custom pin
-          final icon = await _buildMarkerIcon(place.name, fillColor: _placesMarkerColor);
+          final icon = await _buildMarkerIcon(
+            place.name,
+            fillColor: _placesMarkerColor,
+          );
           _markerIcons['_search_selected'] = icon;
           if (mounted) {
             setState(() => _selectedPlace = place);
@@ -554,14 +571,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ..layout();
     iconPainter.paint(
       canvas,
-      Offset(cx - iconPainter.width / 2,
-          circleRadius * s - iconPainter.height / 2),
+      Offset(
+        cx - iconPainter.width / 2,
+        circleRadius * s - iconPainter.height / 2,
+      ),
     );
 
     final labelTop = circleD * s + gap * s;
     final labelLeft = cx - labelW / 2;
     final labelRect = RRect.fromLTRBR(
-      labelLeft, labelTop, labelLeft + labelW, labelTop + labelH,
+      labelLeft,
+      labelTop,
+      labelLeft + labelW,
+      labelTop + labelH,
       Radius.circular(6 * s),
     );
     canvas.drawRRect(
@@ -604,14 +626,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (_markerIcons.containsKey(key)) return;
     if (_buildingIcons.contains(key)) return;
     _buildingIcons.add(key);
-    _buildMarkerIcon(name).then((icon) {
-      _markerIcons[key] = icon;
-      _buildingIcons.remove(key);
-      if (mounted) setState(() {});
-    }).catchError((Object _) {
-      // Unblock the key so it can be retried on the next build pass
-      _buildingIcons.remove(key);
-    });
+    _buildMarkerIcon(name)
+        .then((icon) {
+          _markerIcons[key] = icon;
+          _buildingIcons.remove(key);
+          if (mounted) setState(() {});
+        })
+        .catchError((Object _) {
+          // Unblock the key so it can be retried on the next build pass
+          _buildingIcons.remove(key);
+        });
   }
 
   /// Returns the DB restaurant ID if [place] matches an existing DB entry,
@@ -625,18 +649,23 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final placeName = place.name.toLowerCase().trim();
     // Coordinate match
     final byCoordReacted = reacted.where(
-        (r) => (r.lat - place.lat).abs() < d && (r.lng - place.lng).abs() < d);
+      (r) => (r.lat - place.lat).abs() < d && (r.lng - place.lng).abs() < d,
+    );
     if (byCoordReacted.isNotEmpty) return byCoordReacted.first.id;
-    final byCoordNearby = nearby.where((r) =>
-        (r.latitude - place.lat).abs() < d &&
-        (r.longitude - place.lng).abs() < d);
+    final byCoordNearby = nearby.where(
+      (r) =>
+          (r.latitude - place.lat).abs() < d &&
+          (r.longitude - place.lng).abs() < d,
+    );
     if (byCoordNearby.isNotEmpty) return byCoordNearby.first.id;
     // Name match — catches GPS-drifted duplicates
-    final byNameReacted =
-        reacted.where((r) => r.name.toLowerCase().trim() == placeName);
+    final byNameReacted = reacted.where(
+      (r) => r.name.toLowerCase().trim() == placeName,
+    );
     if (byNameReacted.isNotEmpty) return byNameReacted.first.id;
-    final byNameNearby =
-        nearby.where((r) => r.name.toLowerCase().trim() == placeName);
+    final byNameNearby = nearby.where(
+      (r) => r.name.toLowerCase().trim() == placeName,
+    );
     if (byNameNearby.isNotEmpty) return byNameNearby.first.id;
     return null;
   }
@@ -646,8 +675,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     _NearbyPlace place,
     List<MapRestaurant> reacted,
     List<RestaurantSummary> nearby,
-  ) =>
-      _findInDb(place, reacted, nearby) != null;
+  ) => _findInDb(place, reacted, nearby) != null;
 
   // ── Places fetch ───────────────────────────────────────────────────────
 
@@ -681,21 +709,27 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             '?location=${pos.latitude},${pos.longitude}'
             '&radius=$radius&type=restaurant&key=$_mapsApiKey';
         final uri = Uri.parse(
-            pageToken != null ? '$base&pagetoken=$pageToken' : base);
-        final response = await http.get(uri).timeout(const Duration(minutes: 1));
+          pageToken != null ? '$base&pagetoken=$pageToken' : base,
+        );
+        final response = await http
+            .get(uri)
+            .timeout(const Duration(minutes: 1));
         if (!mounted) break;
         if (response.statusCode != 200) break;
 
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final status = body['status'] as String? ?? 'UNKNOWN';
         if (status != 'OK' && status != 'ZERO_RESULTS') {
-          debugPrint('[MapScreen] Places API: $status — ${body['error_message']}');
+          debugPrint(
+            '[MapScreen] Places API: $status — ${body['error_message']}',
+          );
           break;
         }
 
         final results = body['results'] as List<dynamic>? ?? [];
         allPlaces.addAll(
-            results.map((e) => _NearbyPlace.fromJson(e as Map<String, dynamic>)));
+          results.map((e) => _NearbyPlace.fromJson(e as Map<String, dynamic>)),
+        );
 
         pageToken = body['next_page_token'] as String?;
         if (pageToken == null) break;
@@ -706,7 +740,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       await Future.wait(
         allPlaces.map((p) async {
           if (_markerIcons.containsKey(p.placeId)) return;
-          final icon = await _buildMarkerIcon(p.name, fillColor: _placesMarkerColor);
+          final icon = await _buildMarkerIcon(
+            p.name,
+            fillColor: _placesMarkerColor,
+          );
           _markerIcons[p.placeId] = icon;
         }),
       );
@@ -742,8 +779,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           return _PlaceDetail(
             phoneNumber: result['formatted_phone_number'] as String?,
             website: result['website'] as String?,
-            weekdayText: (hours?['weekday_text'] as List<dynamic>?)
-                    ?.cast<String>() ??
+            weekdayText:
+                (hours?['weekday_text'] as List<dynamic>?)?.cast<String>() ??
                 [],
             isOpenNow: hours?['open_now'] as bool?,
           );
@@ -766,9 +803,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   double _placeScore(_NearbyPlace p) {
     final rating = ((p.rating ?? 3.0) / 5.0) * 40;
-    final popularity = (math.log(math.max(1.0, (p.ratingCount ?? 0).toDouble() + 1)) /
-            math.log(1000))
-        .clamp(0.0, 1.0) *
+    final popularity =
+        (math.log(math.max(1.0, (p.ratingCount ?? 0).toDouble() + 1)) /
+                math.log(1000))
+            .clamp(0.0, 1.0) *
         30;
     final openBonus = (p.isOpen == true) ? 20.0 : 0.0;
     final opStatus = (p.businessStatus == 'OPERATIONAL') ? 10.0 : 0.0;
@@ -815,38 +853,46 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     // ── Search-selected place pin (always visible, even while DB loads) ──
     final sel = _selectedPlace;
     if (sel != null && _markerIcons.containsKey('_search_selected')) {
-      markers.add(Marker(
-        markerId: const MarkerId('_search_selected'),
-        position: LatLng(sel.lat, sel.lng),
-        icon: _markerIcons['_search_selected']!,
-        zIndexInt: 2,
-        onTap: () => _showAddPlaceSheet(sel),
-      ));
+      markers.add(
+        Marker(
+          markerId: const MarkerId('_search_selected'),
+          position: LatLng(sel.lat, sel.lng),
+          icon: _markerIcons['_search_selected']!,
+          zIndexInt: 2,
+          onTap: () => _showAddPlaceSheet(sel),
+        ),
+      );
     }
 
     // ── DB: nearby restaurants in Remembite ───────────────────────────
     for (final r in nearby) {
       _ensureDbMarkerIcon(r.id, r.name);
-      markers.add(Marker(
-        markerId: MarkerId('nearby_${r.id}'),
-        position: LatLng(r.latitude, r.longitude),
-        icon: _markerIcons['db_${r.id}'] ??
-            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-        onTap: () => context.push('/restaurant/${r.id}'),
-      ));
+      markers.add(
+        Marker(
+          markerId: MarkerId('nearby_${r.id}'),
+          position: LatLng(r.latitude, r.longitude),
+          icon:
+              _markerIcons['db_${r.id}'] ??
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          onTap: () => context.push('/restaurant/${r.id}'),
+        ),
+      );
     }
 
     // ── DB: restaurants user has reacted to (not already in nearby) ───
     for (final r in reacted) {
       if (nearby.any((n) => n.id == r.id)) continue; // already added above
       _ensureDbMarkerIcon(r.id, r.name);
-      markers.add(Marker(
-        markerId: MarkerId('reacted_${r.id}'),
-        position: LatLng(r.lat, r.lng),
-        icon: _markerIcons['db_${r.id}'] ??
-            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-        onTap: () => context.push('/restaurant/${r.id}'),
-      ));
+      markers.add(
+        Marker(
+          markerId: MarkerId('reacted_${r.id}'),
+          position: LatLng(r.lat, r.lng),
+          icon:
+              _markerIcons['db_${r.id}'] ??
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          onTap: () => context.push('/restaurant/${r.id}'),
+        ),
+      );
     }
 
     // ── Google Places pins — only rendered after DB fetch completes ──
@@ -864,20 +910,24 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       if (placedCount >= maxPins) break;
       // Skip if too close to an already-placed pin (disabled at zoom ≥ 15).
       if (minSpacing > 0) {
-        final tooClose = placedLatLngs.any((p) =>
-            _distanceMeters(p.$1, p.$2, place.lat, place.lng) < minSpacing);
+        final tooClose = placedLatLngs.any(
+          (p) => _distanceMeters(p.$1, p.$2, place.lat, place.lng) < minSpacing,
+        );
         if (tooClose) continue;
       }
       if (_isAlreadyInDb(place, reacted, nearby)) continue;
       placedLatLngs.add((place.lat, place.lng));
       placedCount++;
-      markers.add(Marker(
-        markerId: MarkerId('places_${place.placeId}'),
-        position: LatLng(place.lat, place.lng),
-        icon: _markerIcons[place.placeId] ??
-            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-        onTap: () => _showAddPlaceSheet(place),
-      ));
+      markers.add(
+        Marker(
+          markerId: MarkerId('places_${place.placeId}'),
+          position: LatLng(place.lat, place.lng),
+          icon:
+              _markerIcons[place.placeId] ??
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          onTap: () => _showAddPlaceSheet(place),
+        ),
+      );
     }
 
     return markers;
@@ -896,7 +946,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       context: context,
       backgroundColor: AppColors.elevated,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       isDismissible: true,
       enableDrag: true,
       builder: (sheetContext) {
@@ -933,49 +984,71 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   // ── Drag handle ──
                   Center(
                     child: Container(
-                      width: 40, height: 4,
+                      width: 40,
+                      height: 4,
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                          color: AppColors.border,
-                          borderRadius: BorderRadius.circular(2)),
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
 
                   // ── Name ──
-                  Text(place.name,
-                      style: GoogleFonts.fraunces(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primaryText)),
+                  Text(
+                    place.name,
+                    style: GoogleFonts.fraunces(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryText,
+                    ),
+                  ),
                   const SizedBox(height: 6),
 
                   // ── Vicinity / address ──
-                  Row(children: [
-                    const Icon(Icons.location_on_outlined,
-                        size: 14, color: AppColors.mutedText),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(place.vicinity,
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: AppColors.mutedText,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          place.vicinity,
                           style: GoogleFonts.dmSans(
-                              fontSize: 13, color: AppColors.secondaryText),
+                            fontSize: 13,
+                            color: AppColors.secondaryText,
+                          ),
                           maxLines: 2,
-                          overflow: TextOverflow.ellipsis),
-                    ),
-                  ]),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
 
                   // ── Permanently closed warning ──
                   if (isPermanentlyClosed) ...[
-                    Row(children: [
-                      const Icon(Icons.warning_amber_rounded,
-                          size: 16, color: AppColors.error),
-                      const SizedBox(width: 6),
-                      Text('Permanently closed',
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          size: 16,
+                          color: AppColors.error,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Permanently closed',
                           style: GoogleFonts.dmSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.error)),
-                    ]),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.error,
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 8),
                   ],
 
@@ -996,64 +1069,93 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     const SizedBox(height: 8),
                   ] else ...[
                     // Rating row
-                    Row(children: [
-                      const Icon(Icons.star_rounded,
-                          size: 14, color: AppColors.accent),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${place.rating?.toStringAsFixed(1) ?? '–'}  '
-                        '(${_formatCount(place.ratingCount ?? 0)} ratings)',
-                        style: GoogleFonts.dmSans(
-                            fontSize: 13, color: AppColors.secondaryText),
-                      ),
-                    ]),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          size: 14,
+                          color: AppColors.accent,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${place.rating?.toStringAsFixed(1) ?? '–'}  '
+                          '(${_formatCount(place.ratingCount ?? 0)} ratings)',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 13,
+                            color: AppColors.secondaryText,
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 8),
 
                     // Open / Closed badge + price level row
-                    Row(children: [
-                      if ((place.isOpen ?? placeDetail?.isOpenNow) == true) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: const Color(0xFF4CAF50)
-                                    .withValues(alpha: 0.4)),
-                          ),
-                          child: Text('Open now',
+                    Row(
+                      children: [
+                        if ((place.isOpen ?? placeDetail?.isOpenNow) ==
+                            true) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFF4CAF50,
+                              ).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(
+                                  0xFF4CAF50,
+                                ).withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: Text(
+                              'Open now',
                               style: GoogleFonts.dmSans(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF4CAF50))),
-                        ),
-                        const SizedBox(width: 8),
-                      ] else if ((place.isOpen ?? placeDetail?.isOpenNow) == false) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: AppColors.error.withValues(alpha: 0.3)),
-                          ),
-                          child: Text('Closed',
-                              style: GoogleFonts.dmSans(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.error)),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      if (symbols.isNotEmpty)
-                        Text(symbols,
-                            style: GoogleFonts.dmSans(
-                                fontSize: 13,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.accent)),
-                    ]),
+                                color: const Color(0xFF4CAF50),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ] else if ((place.isOpen ?? placeDetail?.isOpenNow) ==
+                            false) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppColors.error.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              'Closed',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.error,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        if (symbols.isNotEmpty)
+                          Text(
+                            symbols,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 8),
                   ],
 
@@ -1061,18 +1163,24 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   if (place.cuisineType != null) ...[
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: AppColors.accent.withValues(alpha: 0.3)),
+                          color: AppColors.accent.withValues(alpha: 0.3),
+                        ),
                       ),
-                      child: Text(place.cuisineType!,
-                          style: GoogleFonts.dmSans(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.accent)),
+                      child: Text(
+                        place.cuisineType!,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.accent,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -1081,15 +1189,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
                   // ── Add to Remembite button ──
                   SizedBox(
-                    width: double.infinity, height: 52,
+                    width: double.infinity,
+                    height: 52,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent,
                         foregroundColor: AppColors.background,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28)),
-                        disabledBackgroundColor:
-                            AppColors.accent.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        disabledBackgroundColor: AppColors.accent.withValues(
+                          alpha: 0.4,
+                        ),
                       ),
                       onPressed: (_addingPlace || isPermanentlyClosed)
                           ? null
@@ -1100,8 +1211,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                               final router = GoRouter.of(context);
                               final messenger = ScaffoldMessenger.of(context);
                               try {
-                                final repo =
-                                    ref.read(restaurantRepositoryProvider);
+                                final repo = ref.read(
+                                  restaurantRepositoryProvider,
+                                );
                                 final detail = await repo.createRestaurant(
                                   name: place.name,
                                   city: place.vicinity,
@@ -1116,13 +1228,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                   phoneNumber: placeDetail?.phoneNumber,
                                   websiteUrl: placeDetail?.website,
                                   openingHoursJson:
-                                      placeDetail?.weekdayText.isNotEmpty == true
-                                          ? jsonEncode({
-                                              'weekday_text':
-                                                  placeDetail!.weekdayText,
-                                              'open_now': place.isOpen,
-                                            })
-                                          : null,
+                                      placeDetail?.weekdayText.isNotEmpty ==
+                                          true
+                                      ? jsonEncode({
+                                          'weekday_text':
+                                              placeDetail!.weekdayText,
+                                          'open_now': place.isOpen,
+                                        })
+                                      : null,
                                 );
                                 if (!mounted) return;
                                 // Refresh DB providers so the new restaurant
@@ -1134,11 +1247,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                 router.push('/restaurant/${detail.id}');
                               } catch (e) {
                                 if (!mounted) return;
-                                messenger.showSnackBar(SnackBar(
-                                    content: Text(apiErrorMessage(e),
-                                        style: const TextStyle(
-                                            color: AppColors.primaryText)),
-                                    backgroundColor: AppColors.elevated));
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      apiErrorMessage(e),
+                                      style: const TextStyle(
+                                        color: AppColors.primaryText,
+                                      ),
+                                    ),
+                                    backgroundColor: AppColors.elevated,
+                                  ),
+                                );
                               } finally {
                                 if (mounted) {
                                   setState(() => _addingPlace = false);
@@ -1150,14 +1269,20 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             },
                       child: _addingPlace
                           ? const SizedBox(
-                              width: 20, height: 20,
+                              width: 20,
+                              height: 20,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.background))
-                          : Text('Add to Remembite',
+                                strokeWidth: 2,
+                                color: AppColors.background,
+                              ),
+                            )
+                          : Text(
+                              'Add to Remembite',
                               style: GoogleFonts.dmSans(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600)),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -1179,7 +1304,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final nearbyAsync = ref.watch(mapNearbyRestaurantsProvider);
     // GPS not yet resolved → params null → treat as initial loading
     final paramsReady = ref.watch(_mapSearchParamsProvider) != null;
-    final isSearchingArea = !paramsReady || _fetchingPlaces || nearbyAsync.isLoading;
+    final isSearchingArea =
+        !paramsReady || _fetchingPlaces || nearbyAsync.isLoading;
     final pos = _currentPosition;
 
     return Scaffold(
@@ -1188,16 +1314,22 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         backgroundColor: AppColors.elevated,
         automaticallyImplyLeading: false,
         elevation: 0,
-        title: Text('Map',
-            style: GoogleFonts.dmSans(
-                color: AppColors.primaryText,
-                fontSize: 17,
-                fontWeight: FontWeight.w600)),
+        title: Text(
+          'Map',
+          style: GoogleFonts.dmSans(
+            color: AppColors.primaryText,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: pos == null
           ? Center(
               child: CircularProgressIndicator(
-                  color: AppColors.accent, strokeWidth: 2))
+                color: AppColors.accent,
+                strokeWidth: 2,
+              ),
+            )
           : Stack(
               fit: StackFit.expand,
               children: [
@@ -1208,8 +1340,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     setState(() => _mapController = controller);
                     _fetchPlaces();
                   },
-                  initialCameraPosition:
-                      CameraPosition(target: pos, zoom: 14.0),
+                  initialCameraPosition: CameraPosition(
+                    target: pos,
+                    zoom: 14.0,
+                  ),
                   mapType: MapType.normal,
                   myLocationEnabled: false,
                   myLocationButtonEnabled: false,
@@ -1220,13 +1354,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   // and overlay buttons still fire normally.
                   gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                     Factory<ScaleGestureRecognizer>(
-                        () => ScaleGestureRecognizer()),
+                      () => ScaleGestureRecognizer(),
+                    ),
                   },
                   onCameraMove: (position) {
                     _cameraCenter = position.target;
                     final newZoom = position.zoom;
                     if ((_currentZoom - newZoom).abs() >= 0.5) {
-                      setState(() { _currentZoom = newZoom; });
+                      setState(() {
+                        _currentZoom = newZoom;
+                      });
                     } else {
                       _currentZoom = newZoom;
                     }
@@ -1235,8 +1372,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     // Auto-refresh both APIs when camera settles.
                     final center = _cameraCenter;
                     if (center != null) {
-                      ref.read(_mapSearchParamsProvider.notifier).state =
-                          (center: center, radius: _fetchRadiusForZoom(_currentZoom));
+                      ref.read(_mapSearchParamsProvider.notifier).state = (
+                        center: center,
+                        radius: _fetchRadiusForZoom(_currentZoom),
+                      );
                     }
                     _fetchPlaces();
                   },
@@ -1278,17 +1417,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                   controller: _searchController,
                                   focusNode: _searchFocusNode,
                                   style: GoogleFonts.dmSans(
-                                      fontSize: 14,
-                                      color: AppColors.primaryText),
+                                    fontSize: 14,
+                                    color: AppColors.primaryText,
+                                  ),
                                   decoration: InputDecoration(
                                     hintText: 'Search restaurants & places…',
                                     hintStyle: GoogleFonts.dmSans(
-                                        fontSize: 14,
-                                        color: AppColors.mutedText),
+                                      fontSize: 14,
+                                      color: AppColors.mutedText,
+                                    ),
                                     border: InputBorder.none,
                                     isDense: true,
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 14),
+                                      horizontal: 8,
+                                      vertical: 14,
+                                    ),
                                   ),
                                   textInputAction: TextInputAction.search,
                                   onSubmitted: (_) {
@@ -1306,9 +1449,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    child: Icon(Icons.close,
-                                        size: 18, color: AppColors.mutedText),
+                                      horizontal: 10,
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 18,
+                                      color: AppColors.mutedText,
+                                    ),
                                   ),
                                 )
                               else
@@ -1340,15 +1487,20 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                 padding: EdgeInsets.zero,
                                 shrinkWrap: true,
                                 itemCount: _predictions.length,
-                                separatorBuilder: (_, __) =>
-                                    Divider(height: 1, color: AppColors.border, indent: 48),
+                                separatorBuilder: (_, __) => Divider(
+                                  height: 1,
+                                  color: AppColors.border,
+                                  indent: 48,
+                                ),
                                 itemBuilder: (_, i) {
                                   final p = _predictions[i];
                                   return InkWell(
                                     onTap: () => _selectPrediction(p),
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 14, vertical: 12),
+                                        horizontal: 14,
+                                        vertical: 12,
+                                      ),
                                       child: Row(
                                         children: [
                                           Container(
@@ -1360,8 +1512,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(6),
                                             ),
-                                            child: const Icon(Icons.restaurant,
-                                                size: 15, color: AppColors.accent),
+                                            child: const Icon(
+                                              Icons.restaurant,
+                                              size: 15,
+                                              color: AppColors.accent,
+                                            ),
                                           ),
                                           const SizedBox(width: 12),
                                           Expanded(
@@ -1374,20 +1529,24 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                                   style: GoogleFonts.dmSans(
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.w600,
-                                                    color: AppColors.primaryText,
+                                                    color:
+                                                        AppColors.primaryText,
                                                   ),
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                                 if (p.secondaryText.isNotEmpty)
                                                   Text(
                                                     p.secondaryText,
                                                     style: GoogleFonts.dmSans(
                                                       fontSize: 11,
-                                                      color: AppColors.secondaryText,
+                                                      color: AppColors
+                                                          .secondaryText,
                                                     ),
                                                     maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                               ],
                                             ),
@@ -1424,8 +1583,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                           : () {
                               final center = _cameraCenter;
                               if (center != null) {
-                                ref.read(_mapSearchParamsProvider.notifier).state =
-                                    (center: center, radius: _fetchRadiusForZoom(_currentZoom));
+                                ref
+                                    .read(_mapSearchParamsProvider.notifier)
+                                    .state = (
+                                  center: center,
+                                  radius: _fetchRadiusForZoom(_currentZoom),
+                                );
                               }
                               _fetchPlaces(fromButton: true);
                             },
@@ -1435,7 +1598,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                           border: Border.all(color: AppColors.border),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -1444,17 +1609,24 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                     width: 14,
                                     height: 14,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: AppColors.accent),
+                                      strokeWidth: 2,
+                                      color: AppColors.accent,
+                                    ),
                                   )
-                                : const Icon(Icons.search,
-                                    size: 16, color: AppColors.accent),
+                                : const Icon(
+                                    Icons.search,
+                                    size: 16,
+                                    color: AppColors.accent,
+                                  ),
                             const SizedBox(width: 8),
-                            Text('Search this area',
-                                style: GoogleFonts.dmSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.primaryText)),
+                            Text(
+                              'Search this area',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryText,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -1467,35 +1639,37 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   bottom: 24,
                   right: 16,
                   child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.elevated,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.border),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black38,
-                            blurRadius: 6,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: _fetchingLocation
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.accent,
-                                ),
-                              )
-                            : const Icon(Icons.my_location,
-                                size: 20, color: AppColors.accent),
-                        onPressed:
-                            _fetchingLocation ? null : _fetchLocation,
-                        tooltip: 'My location',
-                      ),
+                    decoration: BoxDecoration(
+                      color: AppColors.elevated,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black38,
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
+                    child: IconButton(
+                      icon: _fetchingLocation
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.accent,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.my_location,
+                              size: 20,
+                              color: AppColors.accent,
+                            ),
+                      onPressed: _fetchingLocation ? null : _fetchLocation,
+                      tooltip: 'My location',
+                    ),
+                  ),
                 ),
               ],
             ),

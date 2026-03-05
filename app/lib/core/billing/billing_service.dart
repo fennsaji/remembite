@@ -9,10 +9,7 @@ import '../sync/sync_worker.dart';
 
 part 'billing_service.g.dart';
 
-const _kProductIds = {
-  'remembite_pro_monthly',
-  'remembite_pro_annual',
-};
+const _kProductIds = {'remembite_pro_monthly', 'remembite_pro_annual'};
 
 enum BillingState { idle, loading, purchasing, error }
 
@@ -34,16 +31,18 @@ class BillingService extends _$BillingService {
     final available = await InAppPurchase.instance.isAvailable();
     if (!available) return;
 
-    _purchaseSub = InAppPurchase.instance.purchaseStream
-        .listen(_handlePurchaseUpdate);
+    _purchaseSub = InAppPurchase.instance.purchaseStream.listen(
+      _handlePurchaseUpdate,
+    );
 
     await _loadProducts();
     await InAppPurchase.instance.restorePurchases();
   }
 
   Future<void> _loadProducts() async {
-    final response =
-        await InAppPurchase.instance.queryProductDetails(_kProductIds);
+    final response = await InAppPurchase.instance.queryProductDetails(
+      _kProductIds,
+    );
     _products = response.productDetails;
   }
 

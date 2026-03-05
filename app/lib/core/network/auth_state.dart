@@ -82,7 +82,10 @@ class AuthState extends _$AuthState {
       FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
         try {
           final refreshDio = ref.read(apiClientProvider);
-          await refreshDio.patch('/users/me/fcm-token', data: {'token': newToken});
+          await refreshDio.patch(
+            '/users/me/fcm-token',
+            data: {'token': newToken},
+          );
         } catch (e) {
           debugPrint('FCM token refresh update failed: $e');
         }

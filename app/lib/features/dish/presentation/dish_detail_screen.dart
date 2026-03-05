@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/billing/pro_status_provider.dart';
+import '../../../core/db/app_database.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_error.dart';
 import '../../../core/network/auth_state.dart';
@@ -35,14 +35,16 @@ const _reactions = [
 ];
 
 const _spiceOptions = [
+  ('None', 0.0),
   ('Mild', 0.2),
   ('Med', 0.5),
   ('Hot', 0.9),
 ];
 
 const _sweetnessOptions = [
+  ('None', 0.0),
   ('Low', 0.2),
-  ('Medium', 0.5),
+  ('Med', 0.5),
   ('Sweet', 0.9),
 ];
 
@@ -69,6 +71,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
   final _notesController = TextEditingController();
   bool _saving = false;
   bool _uploadingPhoto = false;
+  bool? _wantToTry;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   @override
@@ -89,6 +92,19 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
     super.dispose();
   }
 
+  Future<void> _toggleWantToTry(DishDetail dish) async {
+    final prev = _wantToTry ?? dish.isWantToTry;
+    setState(() => _wantToTry = !prev);
+    try {
+      final result = await ref
+          .read(dishRepositoryProvider)
+          .toggleWantToTry(dish.id);
+      if (mounted) setState(() => _wantToTry = result);
+    } catch (_) {
+      if (mounted) setState(() => _wantToTry = prev);
+    }
+  }
+
   void _showMoreOptions(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
@@ -101,8 +117,10 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.flag_outlined,
-                  color: AppColors.secondaryText),
+              leading: const Icon(
+                Icons.flag_outlined,
+                color: AppColors.secondaryText,
+              ),
               title: const Text(
                 'Report this dish',
                 style: TextStyle(color: AppColors.primaryText),
@@ -139,23 +157,32 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
       context: context,
       backgroundColor: AppColors.elevated,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.camera_alt_outlined,
-                  color: AppColors.secondaryText),
-              title: const Text('Camera',
-                  style: TextStyle(color: AppColors.primaryText)),
+              leading: const Icon(
+                Icons.camera_alt_outlined,
+                color: AppColors.secondaryText,
+              ),
+              title: const Text(
+                'Camera',
+                style: TextStyle(color: AppColors.primaryText),
+              ),
               onTap: () => Navigator.of(context).pop(ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined,
-                  color: AppColors.secondaryText),
-              title: const Text('Gallery',
-                  style: TextStyle(color: AppColors.primaryText)),
+              leading: const Icon(
+                Icons.photo_library_outlined,
+                color: AppColors.secondaryText,
+              ),
+              title: const Text(
+                'Gallery',
+                style: TextStyle(color: AppColors.primaryText),
+              ),
               onTap: () => Navigator.of(context).pop(ImageSource.gallery),
             ),
           ],
@@ -169,24 +196,28 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
 
     setState(() => _uploadingPhoto = true);
     try {
-      await ref.read(imageRepositoryProvider).uploadImage(
-        entityType: 'dish',
-        entityId: dishId,
-        file: file,
-        isPublic: isPublic,
-      );
+      await ref
+          .read(imageRepositoryProvider)
+          .uploadImage(
+            entityType: 'dish',
+            entityId: dishId,
+            file: file,
+            isPublic: isPublic,
+          );
       if (mounted) {
         ref.invalidate(dishImagesProvider(dishId));
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Photo added!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Photo added!')));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(apiErrorMessage(e),
-                style: const TextStyle(color: AppColors.primaryText)),
+            content: Text(
+              apiErrorMessage(e),
+              style: const TextStyle(color: AppColors.primaryText),
+            ),
             backgroundColor: AppColors.elevated,
           ),
         );
@@ -208,14 +239,26 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         leading: IconButton(
-          icon:
-              const Icon(Icons.arrow_back, color: AppColors.primaryText),
+          icon: const Icon(Icons.arrow_back, color: AppColors.primaryText),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert,
-                color: AppColors.secondaryText),
+            icon: Icon(
+              (_wantToTry ?? dishAsync.value?.isWantToTry ?? false)
+                  ? Icons.bookmark
+                  : Icons.bookmark_border_outlined,
+              color: (_wantToTry ?? dishAsync.value?.isWantToTry ?? false)
+                  ? AppColors.accent
+                  : AppColors.secondaryText,
+            ),
+            tooltip: 'Want to Try',
+            onPressed: dishAsync.value == null
+                ? null
+                : () => _toggleWantToTry(dishAsync.value!),
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: AppColors.secondaryText),
             onPressed: () => _showMoreOptions(context),
             tooltip: 'More options',
           ),
@@ -226,8 +269,10 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
           child: CircularProgressIndicator(color: AppColors.accent),
         ),
         error: (e, _) => Center(
-          child: Text(apiErrorMessage(e),
-              style: const TextStyle(color: AppColors.secondaryText)),
+          child: Text(
+            apiErrorMessage(e),
+            style: const TextStyle(color: AppColors.secondaryText),
+          ),
         ),
         data: (dish) => ListView(
           padding: const EdgeInsets.all(20),
@@ -236,17 +281,17 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
             Text(
               dish.name,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppColors.primaryText,
-                    fontWeight: FontWeight.w700,
-                  ),
+                color: AppColors.primaryText,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             if (dish.category != null) ...[
               const SizedBox(height: 4),
               Text(
                 dish.category!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.mutedText,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
               ),
             ],
             if (dish.price != null) ...[
@@ -254,11 +299,15 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
               Text(
                 '₹${dish.price}',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: AppColors.secondaryText,
-                    ),
+                  color: AppColors.secondaryText,
+                ),
               ),
             ],
-            const SizedBox(height: 28),
+            const SizedBox(height: 20),
+
+            // Community reactions
+            _CommunityReactionsSection(dishId: widget.dishId),
+            const SizedBox(height: 8),
 
             // Reaction picker
             _SectionLabel(label: 'YOUR REACTION'),
@@ -269,38 +318,36 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
                 final (emoji, value, label) = r;
                 final isSelected = _selectedReaction == value;
                 return GestureDetector(
-                  onTap: () =>
-                      setState(() => _selectedReaction = value),
+                  onTap: () => setState(() => _selectedReaction = value),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 8),
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.accent.withValues(alpha: 0.15)
                           : AppColors.elevated,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isSelected
-                            ? AppColors.accent
-                            : AppColors.border,
+                        color: isSelected ? AppColors.accent : AppColors.border,
                       ),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(emoji,
-                            style: const TextStyle(fontSize: 24)),
+                        Text(emoji, style: const TextStyle(fontSize: 24)),
                         const SizedBox(height: 2),
                         Text(
                           label,
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: isSelected
-                                        ? AppColors.accent
-                                        : AppColors.mutedText,
-                                    fontSize: 9,
-                                  ),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: isSelected
+                                    ? AppColors.accent
+                                    : AppColors.mutedText,
+                                fontSize: 9,
+                              ),
                         ),
                       ],
                     ),
@@ -363,12 +410,18 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 14),
                       child: CircularProgressIndicator(
-                          color: AppColors.accent, strokeWidth: 2),
-                    ))
+                        color: AppColors.accent,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  )
                 : OutlinedButton.icon(
                     onPressed: () => _addPhoto(dish.id.toString(), true),
-                    icon: const Icon(Icons.add_a_photo_outlined,
-                        size: 18, color: AppColors.accent),
+                    icon: const Icon(
+                      Icons.add_a_photo_outlined,
+                      size: 18,
+                      color: AppColors.accent,
+                    ),
                     label: const Text(
                       'Add Photo',
                       style: TextStyle(color: AppColors.accent),
@@ -384,12 +437,12 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
 
             // Save button
             ElevatedButton(
-              onPressed: (_selectedReaction != null || _selectedSpice != null) && !_saving
+              onPressed:
+                  (_selectedReaction != null || _selectedSpice != null) &&
+                      !_saving
                   ? () => _save(dish, auth)
                   : null,
-              child: _saving
-                  ? const Text('Saving…')
-                  : const Text('Save'),
+              child: _saving ? const Text('Saving…') : const Text('Save'),
             ),
           ],
         ),
@@ -397,7 +450,12 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
     );
   }
 
-  Widget _buildAiSignalCard(BuildContext context, DishDetail dish, bool isPro, CompatibilitySignal? compat) {
+  Widget _buildAiSignalCard(
+    BuildContext context,
+    DishDetail dish,
+    bool isPro,
+    CompatibilitySignal? compat,
+  ) {
     if (dish.attributeState == 'classifying') {
       return Padding(
         padding: const EdgeInsets.only(bottom: 24),
@@ -415,95 +473,112 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
       );
     }
 
-    if (dish.attributeState == 'classified' &&
-        dish.attributePriors != null &&
-        dish.voteCount >= 10) {
-      if (!isPro) {
-        return _LockedAiSignalCard(
-          onUpgrade: () => context.push('/upgrade'),
-        );
-      }
-
+    if (dish.attributeState == 'classified' && dish.attributePriors != null) {
       final priors = dish.attributePriors!;
-      final spiceScore =
-          priors.finalSpiceScore ?? priors.spiceScore;
-      final sweetScore =
-          priors.finalSweetnessScore ?? priors.sweetnessScore;
+      final spiceScore = priors.finalSpiceScore ?? priors.spiceScore;
+      final sweetScore = priors.finalSweetnessScore ?? priors.sweetnessScore;
+
+      // Compatibility signal: Pro-only, needs sufficient community votes
+      final showCompat =
+          isPro && dish.voteCount >= 10 && compat?.signal != null;
 
       return Padding(
         padding: const EdgeInsets.only(bottom: 24),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.proSurface,
-                AppColors.surface,
-              ],
-            ),
+            color: AppColors.elevated,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.proAccent.withValues(alpha: 0.3)),
+            border: Border.all(color: AppColors.border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  _SectionLabel(label: 'AI SIGNAL'),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.proAccent.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      'PRO',
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall
-                          ?.copyWith(
-                              color: AppColors.proAccent, fontSize: 9),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              if (compat?.signal != null) ...[
-                Text(
-                  compat!.signal!,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppColors.proAccent,
-                        fontWeight: FontWeight.w600,
+              // Pro AI signal (if eligible)
+              if (showCompat) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        compat!.signal!,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: AppColors.proAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.proAccent.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'PRO',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: AppColors.proAccent,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
               ],
+              _SectionLabel(label: 'DISH PROFILE'),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
-                    child: _AttributeBar(
-                      label: '🌶 Spice',
-                      value: spiceScore,
-                    ),
+                    child: _AttributeBar(label: '🌶 Spice', value: spiceScore),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _AttributeBar(
-                      label: '🍬 Sweet',
-                      value: sweetScore,
-                    ),
+                    child: _AttributeBar(label: '🍬 Sweet', value: sweetScore),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
               Text(
                 '${priors.cuisine} • ${priors.dishType}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.mutedText,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
               ),
+              // Upgrade teaser for free users
+              if (!isPro) ...[
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () => context.push('/upgrade'),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.auto_awesome,
+                        size: 13,
+                        color: AppColors.proAccent,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Unlock AI taste prediction',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: AppColors.proAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 10,
+                        color: AppColors.proAccent,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -530,6 +605,12 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
         ref
             .read(restaurantSessionStateProvider(dish.restaurantId).notifier)
             .incrementReaction();
+        // Remove intent locally so restaurant screen updates immediately
+        await ref
+            .read(appDatabaseProvider)
+            .dishIntentsDao
+            .removeOnReaction(dish.id);
+        if (mounted) setState(() => _wantToTry = false);
       }
 
       if (_selectedSpice != null) {
@@ -556,8 +637,10 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(apiErrorMessage(e),
-                style: const TextStyle(color: AppColors.primaryText)),
+            content: Text(
+              apiErrorMessage(e),
+              style: const TextStyle(color: AppColors.primaryText),
+            ),
             backgroundColor: AppColors.elevated,
           ),
         );
@@ -580,9 +663,9 @@ class _SectionLabel extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppColors.secondaryText,
-                letterSpacing: 0.8,
-              ),
+            color: AppColors.secondaryText,
+            letterSpacing: 0.8,
+          ),
         ),
       ],
     );
@@ -614,24 +697,20 @@ class _VoteRow extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.accent
-                    : AppColors.elevated,
+                color: isSelected ? AppColors.accent : AppColors.elevated,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: isSelected
-                      ? AppColors.accent
-                      : AppColors.border,
+                  color: isSelected ? AppColors.accent : AppColors.border,
                 ),
               ),
               child: Text(
                 label,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: isSelected
-                          ? AppColors.background
-                          : AppColors.secondaryText,
-                    ),
+                  color: isSelected
+                      ? AppColors.background
+                      : AppColors.secondaryText,
+                ),
               ),
             ),
           ),
@@ -654,9 +733,9 @@ class _AttributeBar extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.secondaryText,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.secondaryText),
         ),
         const SizedBox(height: 4),
         ClipRRect(
@@ -664,8 +743,7 @@ class _AttributeBar extends StatelessWidget {
           child: LinearProgressIndicator(
             value: value.clamp(0.0, 1.0),
             backgroundColor: AppColors.elevated,
-            valueColor:
-                const AlwaysStoppedAnimation<Color>(AppColors.accent),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
             minHeight: 8,
           ),
         ),
@@ -694,11 +772,14 @@ class _ReportDishSheetState extends ConsumerState<_ReportDishSheet> {
     setState(() => _submitting = true);
     try {
       final dio = ref.read(apiClientProvider);
-      await dio.post('/reports', data: {
-        'entity_type': 'dish',
-        'entity_id': widget.dishId,
-        'reason': _selectedReason,
-      });
+      await dio.post(
+        '/reports',
+        data: {
+          'entity_type': 'dish',
+          'entity_id': widget.dishId,
+          'reason': _selectedReason,
+        },
+      );
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -715,8 +796,10 @@ class _ReportDishSheetState extends ConsumerState<_ReportDishSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(apiErrorMessage(e),
-                style: const TextStyle(color: AppColors.primaryText)),
+            content: Text(
+              apiErrorMessage(e),
+              style: const TextStyle(color: AppColors.primaryText),
+            ),
             backgroundColor: AppColors.elevated,
           ),
         );
@@ -737,41 +820,44 @@ class _ReportDishSheetState extends ConsumerState<_ReportDishSheet> {
           Text(
             'Report Dish',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.primaryText,
-                  fontFamily: 'Fraunces',
-                ),
+              color: AppColors.primaryText,
+              fontFamily: 'Fraunces',
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'Help us keep dish info accurate and appropriate.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.mutedText,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
           ),
           const SizedBox(height: 16),
-          ..._reportReasons.map((reason) => RadioListTile<String>(
-                value: reason,
-                groupValue: _selectedReason,
-                onChanged: (v) {
-                  if (v != null) setState(() => _selectedReason = v);
-                },
-                title: Text(
-                  reason,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.primaryText,
-                      ),
-                ),
-                activeColor: AppColors.accent,
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-              )),
+          ..._reportReasons.map(
+            (reason) => RadioListTile<String>(
+              value: reason,
+              groupValue: _selectedReason,
+              onChanged: (v) {
+                if (v != null) setState(() => _selectedReason = v);
+              },
+              title: Text(
+                reason,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.primaryText),
+              ),
+              activeColor: AppColors.accent,
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+            ),
+          ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed:
-                      _submitting ? null : () => Navigator.of(context).pop(),
+                  onPressed: _submitting
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.secondaryText,
                     side: const BorderSide(color: AppColors.border),
@@ -822,7 +908,9 @@ class _ImageGallery extends ConsumerWidget {
         height: 120,
         child: Center(
           child: CircularProgressIndicator(
-              color: AppColors.accent, strokeWidth: 2),
+            color: AppColors.accent,
+            strokeWidth: 2,
+          ),
         ),
       ),
       error: (_, __) => const SizedBox.shrink(),
@@ -865,9 +953,15 @@ class _ImageTileState extends ConsumerState<_ImageTile> {
 
   Future<void> _resolve() async {
     try {
-      final url =
-          await ref.read(imageRepositoryProvider).getDisplayUrl(widget.image);
-      if (mounted) setState(() { _resolvedUrl = url; _loading = false; });
+      final url = await ref
+          .read(imageRepositoryProvider)
+          .getDisplayUrl(widget.image);
+      if (mounted) {
+        setState(() {
+          _resolvedUrl = url;
+          _loading = false;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -886,35 +980,43 @@ class _ImageTileState extends ConsumerState<_ImageTile> {
                 color: AppColors.elevated,
                 child: const Center(
                   child: CircularProgressIndicator(
-                      color: AppColors.mutedText, strokeWidth: 1.5),
+                    color: AppColors.mutedText,
+                    strokeWidth: 1.5,
+                  ),
                 ),
               )
             : _resolvedUrl == null
-                ? Container(
-                    width: 120,
-                    height: 120,
-                    color: AppColors.elevated,
-                    child: const Icon(Icons.broken_image_outlined,
-                        color: AppColors.mutedText),
-                  )
-                : CachedNetworkImage(
-                    imageUrl: _resolvedUrl!,
-                    width: 120,
-                    height: 120,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(
-                      color: AppColors.elevated,
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                            color: AppColors.mutedText, strokeWidth: 1.5),
-                      ),
-                    ),
-                    errorWidget: (_, __, ___) => Container(
-                      color: AppColors.elevated,
-                      child: const Icon(Icons.broken_image_outlined,
-                          color: AppColors.mutedText),
+            ? Container(
+                width: 120,
+                height: 120,
+                color: AppColors.elevated,
+                child: const Icon(
+                  Icons.broken_image_outlined,
+                  color: AppColors.mutedText,
+                ),
+              )
+            : CachedNetworkImage(
+                imageUrl: _resolvedUrl!,
+                width: 120,
+                height: 120,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  color: AppColors.elevated,
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.mutedText,
+                      strokeWidth: 1.5,
                     ),
                   ),
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  color: AppColors.elevated,
+                  child: const Icon(
+                    Icons.broken_image_outlined,
+                    color: AppColors.mutedText,
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -924,16 +1026,21 @@ class _ImageTileState extends ConsumerState<_ImageTile> {
       context: context,
       backgroundColor: AppColors.elevated,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.flag_outlined,
-                  color: AppColors.secondaryText),
-              title: const Text('Report this image',
-                  style: TextStyle(color: AppColors.primaryText)),
+              leading: const Icon(
+                Icons.flag_outlined,
+                color: AppColors.secondaryText,
+              ),
+              title: const Text(
+                'Report this image',
+                style: TextStyle(color: AppColors.primaryText),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 _reportImage(context);
@@ -959,8 +1066,10 @@ class _ImageTileState extends ConsumerState<_ImageTile> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(apiErrorMessage(e),
-                style: const TextStyle(color: AppColors.primaryText)),
+            content: Text(
+              apiErrorMessage(e),
+              style: const TextStyle(color: AppColors.primaryText),
+            ),
             backgroundColor: AppColors.elevated,
           ),
         );
@@ -971,61 +1080,78 @@ class _ImageTileState extends ConsumerState<_ImageTile> {
 
 // ─────────────────────────────────────────────
 
-class _LockedAiSignalCard extends StatelessWidget {
-  final VoidCallback onUpgrade;
-  const _LockedAiSignalCard({required this.onUpgrade});
+const _reactionOrder = [
+  'so_yummy',
+  'tasty',
+  'pretty_good',
+  'meh',
+  'never_again',
+];
+
+const _reactionEmojis = {
+  'so_yummy': '🔥',
+  'tasty': '😋',
+  'pretty_good': '🙂',
+  'meh': '😐',
+  'never_again': '🤢',
+};
+
+class _CommunityReactionsSection extends ConsumerWidget {
+  final String dishId;
+  const _CommunityReactionsSection({required this.dishId});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ImageFiltered(
-            imageFilter: ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-            child: Text(
-              '🔥 You\'ll probably love this',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(color: AppColors.primaryText),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(dishReactionSummaryProvider(dishId));
+
+    return summaryAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (summary) {
+        if (summary.total == 0) return const SizedBox.shrink();
+
+        final pairs = _reactionOrder
+            .where((key) => (summary.breakdown[key] ?? 0) > 0)
+            .map((key) => (_reactionEmojis[key]!, summary.breakdown[key]!))
+            .toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _SectionLabel(label: 'COMMUNITY'),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                for (int i = 0; i < pairs.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 16),
+                  Column(
+                    children: [
+                      Text(pairs[i].$1, style: const TextStyle(fontSize: 22)),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${pairs[i].$2}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.secondaryText,
+                          fontFamily: 'DM Sans',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const Spacer(),
+                Text(
+                  '${summary.total} reaction${summary.total == 1 ? '' : 's'}',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              const Icon(Icons.lock_outline,
-                  color: AppColors.mutedText, size: 14),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  'Unlock predictions — upgrade to Pro',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: AppColors.mutedText),
-                ),
-              ),
-              TextButton(
-                onPressed: onUpgrade,
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  minimumSize: Size.zero,
-                ),
-                child: const Text('Upgrade',
-                    style: TextStyle(color: AppColors.accent)),
-              ),
-            ],
-          ),
-        ],
-      ),
+            const SizedBox(height: 20),
+          ],
+        );
+      },
     );
   }
 }

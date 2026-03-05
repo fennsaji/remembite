@@ -22,8 +22,8 @@ String apiErrorMessage(dynamic e) {
         return 'Something went wrong on our end. Please try again.';
       }
       if (status == 400) {
-        return _extract400Message(e.response?.data)
-            ?? 'Invalid request. Please try again.';
+        return _extract400Message(e.response?.data) ??
+            'Invalid request. Please try again.';
       }
       if (status == 403) return 'Access denied.';
       if (status == 404) return 'Not found.';

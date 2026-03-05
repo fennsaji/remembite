@@ -76,14 +76,17 @@ GoRouter appRouter(Ref ref, {String? initialLocation}) {
       // Always requires restaurantId — use /restaurant/:id/scan
       GoRoute(
         path: '/restaurant/:restaurantId/scan',
-        builder: (context, state) => MenuScanScreen(
-          restaurantId: state.pathParameters['restaurantId'],
-        ),
+        builder: (context, state) =>
+            MenuScanScreen(restaurantId: state.pathParameters['restaurantId']),
       ),
       GoRoute(
         path: '/scan/results',
         builder: (context, state) {
-          final extra = (state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null) ?? {};
+          final extra =
+              (state.extra is Map<String, dynamic>
+                  ? state.extra as Map<String, dynamic>
+                  : null) ??
+              {};
           return OcrResultsScreen(
             rawText: extra['rawText'] as String? ?? '',
             restaurantId: extra['restaurantId'] as String?,
@@ -101,9 +104,8 @@ GoRouter appRouter(Ref ref, {String? initialLocation}) {
       // Pending edits (full-screen, has its own AppBar — outside shell)
       GoRoute(
         path: '/restaurant/:id/edits',
-        builder: (context, state) => PendingEditsScreen(
-          restaurantId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            PendingEditsScreen(restaurantId: state.pathParameters['id']!),
       ),
 
       // Location picker (full-screen map, no bottom nav)
@@ -192,10 +194,14 @@ class MainShell extends StatelessWidget {
         currentIndex: index,
         onTap: (i) {
           switch (i) {
-            case 0: GoRouter.of(context).go('/home');
-            case 1: GoRouter.of(context).go('/map');
-            case 2: GoRouter.of(context).go('/timeline');
-            case 3: GoRouter.of(context).go('/profile');
+            case 0:
+              GoRouter.of(context).go('/home');
+            case 1:
+              GoRouter.of(context).go('/map');
+            case 2:
+              GoRouter.of(context).go('/timeline');
+            case 3:
+              GoRouter.of(context).go('/profile');
           }
         },
       ),
@@ -207,10 +213,7 @@ class _FloatingPillNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const _FloatingPillNav({
-    required this.currentIndex,
-    required this.onTap,
-  });
+  const _FloatingPillNav({required this.currentIndex, required this.onTap});
 
   static const _items = [
     (Icons.home_outlined, Icons.home, 'Home'),
@@ -253,7 +256,8 @@ class _FloatingPillNav extends StatelessWidget {
                       Icon(
                         isActive ? filledIcon : outlinedIcon,
                         color: isActive
-                            ? AppColors.accent // #E6A830
+                            ? AppColors
+                                  .accent // #E6A830
                             : AppColors.secondaryText,
                         size: 22,
                       ),
@@ -281,4 +285,3 @@ class _FloatingPillNav extends StatelessWidget {
     );
   }
 }
-

@@ -123,7 +123,9 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
       if (mounted) setState(() => _votingIds.remove(suggestionId));
       // Refresh independently — errors here don't mis-report vote failure
       await _fetchSuggestions();
-      if (mounted) ref.invalidate(pendingEditCountProvider(widget.restaurantId));
+      if (mounted) {
+        ref.invalidate(pendingEditCountProvider(widget.restaurantId));
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _votingIds.remove(suggestionId));
@@ -141,13 +143,13 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
   }
 
   String _fieldLabel(String field) => switch (field) {
-        'name' => 'Name',
-        'city' => 'City',
-        'cuisine_type' => 'Cuisine Type',
-        'category' => 'Category',
-        'price' => 'Price',
-        _ => field,
-      };
+    'name' => 'Name',
+    'city' => 'City',
+    'cuisine_type' => 'Cuisine Type',
+    'category' => 'Category',
+    'price' => 'Price',
+    _ => field,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -163,9 +165,9 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
         title: Text(
           'Community Edits',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.primaryText,
-                fontFamily: 'Fraunces',
-              ),
+            color: AppColors.primaryText,
+            fontFamily: 'Fraunces',
+          ),
         ),
         actions: [
           IconButton(
@@ -198,16 +200,19 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
               Text(
                 'Could not load edits.',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: AppColors.primaryText,
-                      fontFamily: 'DM Sans',
-                    ),
+                  color: AppColors.primaryText,
+                  fontFamily: 'DM Sans',
+                ),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: _fetchSuggestions,
                 child: const Text(
                   'Retry',
-                  style: TextStyle(color: AppColors.accent, fontFamily: 'DM Sans'),
+                  style: TextStyle(
+                    color: AppColors.accent,
+                    fontFamily: 'DM Sans',
+                  ),
                 ),
               ),
             ],
@@ -225,24 +230,27 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check_circle_outline,
-                  color: AppColors.accent, size: 48),
+              const Icon(
+                Icons.check_circle_outline,
+                color: AppColors.accent,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               Text(
                 'No pending edits',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.primaryText,
-                      fontFamily: 'DM Sans',
-                    ),
+                  color: AppColors.primaryText,
+                  fontFamily: 'DM Sans',
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'This restaurant has no community edits awaiting review.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.mutedText,
-                      fontFamily: 'DM Sans',
-                    ),
+                  color: AppColors.mutedText,
+                  fontFamily: 'DM Sans',
+                ),
               ),
             ],
           ),
@@ -305,8 +313,7 @@ class _EditSuggestionCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.elevated,
                   borderRadius: BorderRadius.circular(6),
@@ -315,36 +322,36 @@ class _EditSuggestionCard extends StatelessWidget {
                 child: Text(
                   fieldLabel.toUpperCase(),
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.secondaryText,
-                        letterSpacing: 0.8,
-                        fontFamily: 'DM Sans',
-                      ),
+                    color: AppColors.secondaryText,
+                    letterSpacing: 0.8,
+                    fontFamily: 'DM Sans',
+                  ),
                 ),
               ),
               const Spacer(),
               // Net votes display
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: netVotes >= 0
                       ? AppColors.accentMuted
                       : AppColors.elevated,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: netVotes >= 0
-                        ? AppColors.accent
-                        : AppColors.border,
+                    color: netVotes >= 0 ? AppColors.accent : AppColors.border,
                   ),
                 ),
                 child: Text(
                   '$netVotesLabel votes',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: netVotes >= 0
-                            ? AppColors.accent
-                            : AppColors.mutedText,
-                        fontFamily: 'DM Sans',
-                      ),
+                    color: netVotes >= 0
+                        ? AppColors.accent
+                        : AppColors.mutedText,
+                    fontFamily: 'DM Sans',
+                  ),
                 ),
               ),
             ],
@@ -355,9 +362,9 @@ class _EditSuggestionCard extends StatelessWidget {
           Text(
             suggestion.proposedValue,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.primaryText,
-                  fontFamily: 'DM Sans',
-                ),
+              color: AppColors.primaryText,
+              fontFamily: 'DM Sans',
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -435,9 +442,9 @@ class _VoteButton extends StatelessWidget {
                   Text(
                     label,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: activeColor,
-                          fontFamily: 'DM Sans',
-                        ),
+                      color: activeColor,
+                      fontFamily: 'DM Sans',
+                    ),
                   ),
                 ],
               ),

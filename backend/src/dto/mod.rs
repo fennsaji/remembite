@@ -130,6 +130,7 @@ pub struct DishDetailResponse {
     pub community_score: Option<f64>,
     pub vote_count: i32,
     pub attribute_priors: Option<AttributePriorResponse>,
+    pub is_want_to_try: bool,
     pub created_at: DateTime<Utc>,
 }
 
@@ -400,6 +401,40 @@ pub struct TasteProfileStatusResponse {
     pub progress: f64,
     pub complete: bool,
     pub insights_locked: bool,
+}
+
+// ─────────────────────────────────────────────
+// Intent DTOs
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Serialize)]
+pub struct IntentToggleResponse {
+    pub active: bool,
+}
+
+// ─────────────────────────────────────────────
+// Bootstrap DTOs
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct BootstrapRequest {
+    pub reactions: Vec<BootstrapItem>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct BootstrapItem {
+    #[allow(dead_code)]
+    pub dish_name: String,
+    pub reaction: String,
+    pub spice_score: f64,
+    pub sweetness_score: f64,
+    pub dish_type: String,
+    pub cuisine: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct BootstrapResponse {
+    pub ok: bool,
 }
 
 // ─────────────────────────────────────────────

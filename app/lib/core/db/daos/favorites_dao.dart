@@ -55,35 +55,34 @@ class FavoritesDao extends DatabaseAccessor<AppDatabase>
       ''',
       variables: [Variable.withString(userId)],
       readsFrom: {favorites, dishes, restaurants, reactions},
-    )
-        .watch()
-        .map((rows) => rows
-            .map((row) => FavoritedDish(
-                  dishId: row.read<String>('dish_id'),
-                  dishName: row.read<String>('dish_name'),
-                  restaurantId: row.read<String>('restaurant_id'),
-                  restaurantName: row.read<String>('restaurant_name'),
-                  reaction: row.readNullable<String>('reaction'),
-                  favoritedAt: row.read<DateTime>('favorited_at'),
-                ))
-            .toList());
+    ).watch().map(
+      (rows) => rows
+          .map(
+            (row) => FavoritedDish(
+              dishId: row.read<String>('dish_id'),
+              dishName: row.read<String>('dish_name'),
+              restaurantId: row.read<String>('restaurant_id'),
+              restaurantName: row.read<String>('restaurant_name'),
+              reaction: row.readNullable<String>('reaction'),
+              favoritedAt: row.read<DateTime>('favorited_at'),
+            ),
+          )
+          .toList(),
+    );
   }
 
   /// Toggles the favorite state for [dishId] by [userId].
   /// Returns `true` if the dish is now favorited, `false` if unfavorited.
   Future<bool> toggleFavorite(String userId, String dishId) async {
-    final existing = await (select(favorites)
-          ..where(
-            (f) => f.userId.equals(userId) & f.dishId.equals(dishId),
-          ))
-        .getSingleOrNull();
+    final existing =
+        await (select(favorites)
+              ..where((f) => f.userId.equals(userId) & f.dishId.equals(dishId)))
+            .getSingleOrNull();
 
     if (existing != null) {
-      await (delete(favorites)
-            ..where(
-              (f) => f.userId.equals(userId) & f.dishId.equals(dishId),
-            ))
-          .go();
+      await (delete(
+        favorites,
+      )..where((f) => f.userId.equals(userId) & f.dishId.equals(dishId))).go();
       return false;
     } else {
       await into(favorites).insert(

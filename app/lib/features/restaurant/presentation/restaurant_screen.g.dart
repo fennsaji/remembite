@@ -270,7 +270,7 @@ class _RestaurantDishesProviderElement
   String get restaurantId => (origin as RestaurantDishesProvider).restaurantId;
 }
 
-String _$yourTopBitesHash() => r'473586fa3e44c06bf150c0e2f7a21b0c669789c2';
+String _$yourTopBitesHash() => r'33c4d3723df218ec85f55f39e885b51a3052e2d3';
 
 /// See also [yourTopBites].
 @ProviderFor(yourTopBites)
@@ -309,7 +309,7 @@ class YourTopBitesFamily extends Family<AsyncValue<List<TopBiteRow>>> {
 }
 
 /// See also [yourTopBites].
-class YourTopBitesProvider extends AutoDisposeFutureProvider<List<TopBiteRow>> {
+class YourTopBitesProvider extends AutoDisposeStreamProvider<List<TopBiteRow>> {
   /// See also [yourTopBites].
   YourTopBitesProvider(String restaurantId)
     : this._internal(
@@ -339,7 +339,7 @@ class YourTopBitesProvider extends AutoDisposeFutureProvider<List<TopBiteRow>> {
 
   @override
   Override overrideWith(
-    FutureOr<List<TopBiteRow>> Function(YourTopBitesRef provider) create,
+    Stream<List<TopBiteRow>> Function(YourTopBitesRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -356,7 +356,7 @@ class YourTopBitesProvider extends AutoDisposeFutureProvider<List<TopBiteRow>> {
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<TopBiteRow>> createElement() {
+  AutoDisposeStreamProviderElement<List<TopBiteRow>> createElement() {
     return _YourTopBitesProviderElement(this);
   }
 
@@ -376,13 +376,13 @@ class YourTopBitesProvider extends AutoDisposeFutureProvider<List<TopBiteRow>> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin YourTopBitesRef on AutoDisposeFutureProviderRef<List<TopBiteRow>> {
+mixin YourTopBitesRef on AutoDisposeStreamProviderRef<List<TopBiteRow>> {
   /// The parameter `restaurantId` of this provider.
   String get restaurantId;
 }
 
 class _YourTopBitesProviderElement
-    extends AutoDisposeFutureProviderElement<List<TopBiteRow>>
+    extends AutoDisposeStreamProviderElement<List<TopBiteRow>>
     with YourTopBitesRef {
   _YourTopBitesProviderElement(super.provider);
 
@@ -390,28 +390,27 @@ class _YourTopBitesProviderElement
   String get restaurantId => (origin as YourTopBitesProvider).restaurantId;
 }
 
-String _$dishReactionSummaryHash() =>
-    r'4ed4d4d5f7510b707e6a13072ba73c4b0a655d5a';
+String _$wantToTryDishesHash() => r'c545092f080f69d42ef1a9860896a602d4319622';
 
-/// See also [dishReactionSummary].
-@ProviderFor(dishReactionSummary)
-const dishReactionSummaryProvider = DishReactionSummaryFamily();
+/// See also [wantToTryDishes].
+@ProviderFor(wantToTryDishes)
+const wantToTryDishesProvider = WantToTryDishesFamily();
 
-/// See also [dishReactionSummary].
-class DishReactionSummaryFamily extends Family<AsyncValue<ReactionSummary>> {
-  /// See also [dishReactionSummary].
-  const DishReactionSummaryFamily();
+/// See also [wantToTryDishes].
+class WantToTryDishesFamily extends Family<AsyncValue<List<DishItem>>> {
+  /// See also [wantToTryDishes].
+  const WantToTryDishesFamily();
 
-  /// See also [dishReactionSummary].
-  DishReactionSummaryProvider call(String dishId) {
-    return DishReactionSummaryProvider(dishId);
+  /// See also [wantToTryDishes].
+  WantToTryDishesProvider call(String restaurantId) {
+    return WantToTryDishesProvider(restaurantId);
   }
 
   @override
-  DishReactionSummaryProvider getProviderOverride(
-    covariant DishReactionSummaryProvider provider,
+  WantToTryDishesProvider getProviderOverride(
+    covariant WantToTryDishesProvider provider,
   ) {
-    return call(provider.dishId);
+    return call(provider.restaurantId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -426,71 +425,72 @@ class DishReactionSummaryFamily extends Family<AsyncValue<ReactionSummary>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'dishReactionSummaryProvider';
+  String? get name => r'wantToTryDishesProvider';
 }
 
-/// See also [dishReactionSummary].
-class DishReactionSummaryProvider
-    extends AutoDisposeFutureProvider<ReactionSummary> {
-  /// See also [dishReactionSummary].
-  DishReactionSummaryProvider(String dishId)
+/// See also [wantToTryDishes].
+class WantToTryDishesProvider
+    extends AutoDisposeStreamProvider<List<DishItem>> {
+  /// See also [wantToTryDishes].
+  WantToTryDishesProvider(String restaurantId)
     : this._internal(
-        (ref) => dishReactionSummary(ref as DishReactionSummaryRef, dishId),
-        from: dishReactionSummaryProvider,
-        name: r'dishReactionSummaryProvider',
+        (ref) => wantToTryDishes(ref as WantToTryDishesRef, restaurantId),
+        from: wantToTryDishesProvider,
+        name: r'wantToTryDishesProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$dishReactionSummaryHash,
-        dependencies: DishReactionSummaryFamily._dependencies,
+            : _$wantToTryDishesHash,
+        dependencies: WantToTryDishesFamily._dependencies,
         allTransitiveDependencies:
-            DishReactionSummaryFamily._allTransitiveDependencies,
-        dishId: dishId,
+            WantToTryDishesFamily._allTransitiveDependencies,
+        restaurantId: restaurantId,
       );
 
-  DishReactionSummaryProvider._internal(
+  WantToTryDishesProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.dishId,
+    required this.restaurantId,
   }) : super.internal();
 
-  final String dishId;
+  final String restaurantId;
 
   @override
   Override overrideWith(
-    FutureOr<ReactionSummary> Function(DishReactionSummaryRef provider) create,
+    Stream<List<DishItem>> Function(WantToTryDishesRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: DishReactionSummaryProvider._internal(
-        (ref) => create(ref as DishReactionSummaryRef),
+      override: WantToTryDishesProvider._internal(
+        (ref) => create(ref as WantToTryDishesRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        dishId: dishId,
+        restaurantId: restaurantId,
       ),
     );
   }
 
   @override
-  AutoDisposeFutureProviderElement<ReactionSummary> createElement() {
-    return _DishReactionSummaryProviderElement(this);
+  AutoDisposeStreamProviderElement<List<DishItem>> createElement() {
+    return _WantToTryDishesProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is DishReactionSummaryProvider && other.dishId == dishId;
+    return other is WantToTryDishesProvider &&
+        other.restaurantId == restaurantId;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, dishId.hashCode);
+    hash = _SystemHash.combine(hash, restaurantId.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -498,18 +498,18 @@ class DishReactionSummaryProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin DishReactionSummaryRef on AutoDisposeFutureProviderRef<ReactionSummary> {
-  /// The parameter `dishId` of this provider.
-  String get dishId;
+mixin WantToTryDishesRef on AutoDisposeStreamProviderRef<List<DishItem>> {
+  /// The parameter `restaurantId` of this provider.
+  String get restaurantId;
 }
 
-class _DishReactionSummaryProviderElement
-    extends AutoDisposeFutureProviderElement<ReactionSummary>
-    with DishReactionSummaryRef {
-  _DishReactionSummaryProviderElement(super.provider);
+class _WantToTryDishesProviderElement
+    extends AutoDisposeStreamProviderElement<List<DishItem>>
+    with WantToTryDishesRef {
+  _WantToTryDishesProviderElement(super.provider);
 
   @override
-  String get dishId => (origin as DishReactionSummaryProvider).dishId;
+  String get restaurantId => (origin as WantToTryDishesProvider).restaurantId;
 }
 
 // ignore_for_file: type=lint

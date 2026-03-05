@@ -56,10 +56,10 @@ class TasteInsights {
   });
 
   factory TasteInsights.fromJson(Map<String, dynamic> json) => TasteInsights(
-        ready: json['ready'] as bool? ?? false,
-        reactionCount: (json['reaction_count'] as num?)?.toInt() ?? 0,
-        insights: (json['insights'] as List<dynamic>?)?.cast<String>() ?? [],
-      );
+    ready: json['ready'] as bool? ?? false,
+    reactionCount: (json['reaction_count'] as num?)?.toInt() ?? 0,
+    insights: (json['insights'] as List<dynamic>?)?.cast<String>() ?? [],
+  );
 }
 
 // ─────────────────────────────────────────────

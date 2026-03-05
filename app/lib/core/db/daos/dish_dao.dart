@@ -13,8 +13,9 @@ class DishDao extends DatabaseAccessor<AppDatabase> with _$DishDaoMixin {
       (select(dishes)..where((d) => d.id.equals(id))).getSingleOrNull();
 
   Future<List<DishRow>> getByRestaurant(String restaurantId) =>
-      (select(dishes)..where((d) => d.restaurantId.equals(restaurantId))
-        ..orderBy([(d) => OrderingTerm.desc(d.communityScore)]))
+      (select(dishes)
+            ..where((d) => d.restaurantId.equals(restaurantId))
+            ..orderBy([(d) => OrderingTerm.desc(d.communityScore)]))
           .get();
 
   Future<void> upsert(DishesCompanion row) =>

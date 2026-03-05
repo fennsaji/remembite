@@ -7,43 +7,43 @@ import 'package:google_fonts/google_fonts.dart';
 // ─────────────────────────────────────────────────────────
 
 class AppColorsDark {
-  static const background   = Color(0xFF0F0D0B); // Abyss
-  static const surface      = Color(0xFF1A1612); // Embers
-  static const elevated     = Color(0xFF241E18); // Char
-  static const border       = Color(0xFF2E2520); // Dusk
+  static const background = Color(0xFF0F0D0B); // Abyss
+  static const surface = Color(0xFF1A1612); // Embers
+  static const elevated = Color(0xFF241E18); // Char
+  static const border = Color(0xFF2E2520); // Dusk
 
-  static const primaryText   = Color(0xFFF5EEE4); // Cream
+  static const primaryText = Color(0xFFF5EEE4); // Cream
   static const secondaryText = Color(0xFFB89F87); // Parchment
-  static const mutedText     = Color(0xFF8E7868); // Ash — 4.7:1 on Abyss
+  static const mutedText = Color(0xFF8E7868); // Ash — 4.7:1 on Abyss
 
-  static const accent      = Color(0xFFE6A830); // Turmeric
+  static const accent = Color(0xFFE6A830); // Turmeric
   static const accentPress = Color(0xFFC98A1A); // Saffron
   static const accentMuted = Color(0xFF2A2115); // Gilded tint
 
   static const error = Color(0xFFD95F3B); // Chili
 
   static const proSurface = Color(0xFF2A2115); // Gilded
-  static const proAccent  = Color(0xFFF0C060); // Gold Leaf
+  static const proAccent = Color(0xFFF0C060); // Gold Leaf
 }
 
 class AppColorsLight {
-  static const background   = Color(0xFFFAF7F2); // Linen
-  static const surface      = Color(0xFFF2EDE5); // Cotton
-  static const elevated     = Color(0xFFEBE4D9); // Pearl
-  static const border       = Color(0xFFD9CFC3); // Wheat
+  static const background = Color(0xFFFAF7F2); // Linen
+  static const surface = Color(0xFFF2EDE5); // Cotton
+  static const elevated = Color(0xFFEBE4D9); // Pearl
+  static const border = Color(0xFFD9CFC3); // Wheat
 
-  static const primaryText   = Color(0xFF1C1410); // Espresso
+  static const primaryText = Color(0xFF1C1410); // Espresso
   static const secondaryText = Color(0xFF5C4A38); // Bark
-  static const mutedText     = Color(0xFF7A6350); // Sand — 5.3:1 on Linen
+  static const mutedText = Color(0xFF7A6350); // Sand — 5.3:1 on Linen
 
-  static const accent      = Color(0xFFC47E10); // Turmeric (darkened for contrast)
+  static const accent = Color(0xFFC47E10); // Turmeric (darkened for contrast)
   static const accentPress = Color(0xFFA36808); // Deep Amber
   static const accentMuted = Color(0xFFFFF3D6); // Honey tint
 
   static const error = Color(0xFFC04A28); // Chili Light
 
   static const proSurface = Color(0xFFFFF3D6); // Honey
-  static const proAccent  = Color(0xFFB8720E); // Amber Pro
+  static const proAccent = Color(0xFFB8720E); // Amber Pro
 }
 
 // Convenience alias — defaults to dark (primary theme)
@@ -93,8 +93,13 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColorsDark.accent,
           foregroundColor: AppColorsDark.primaryText,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          textStyle: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 17),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          textStyle: GoogleFonts.dmSans(
+            fontWeight: FontWeight.w600,
+            fontSize: 17,
+          ),
           minimumSize: const Size(double.infinity, 56),
         ),
       ),
@@ -102,8 +107,13 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColorsDark.secondaryText,
           side: const BorderSide(color: AppColorsDark.border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          textStyle: GoogleFonts.dmSans(fontWeight: FontWeight.w500, fontSize: 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          textStyle: GoogleFonts.dmSans(
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
           minimumSize: const Size(double.infinity, 52),
         ),
       ),
@@ -170,8 +180,13 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColorsLight.accent,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          textStyle: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 17),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          textStyle: GoogleFonts.dmSans(
+            fontWeight: FontWeight.w600,
+            fontSize: 17,
+          ),
           minimumSize: const Size(double.infinity, 56),
         ),
       ),
@@ -179,8 +194,13 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColorsLight.secondaryText,
           side: const BorderSide(color: AppColorsLight.border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          textStyle: GoogleFonts.dmSans(fontWeight: FontWeight.w500, fontSize: 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          textStyle: GoogleFonts.dmSans(
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
           minimumSize: const Size(double.infinity, 52),
         ),
       ),
@@ -207,21 +227,49 @@ class AppTheme {
   // Fraunces for display/headlines, DM Sans for body/labels
   static TextTheme _buildTextTheme(TextTheme base) {
     return base.copyWith(
-      displayLarge:  GoogleFonts.fraunces(fontSize: 57, fontWeight: FontWeight.w700),
-      displayMedium: GoogleFonts.fraunces(fontSize: 45, fontWeight: FontWeight.w700),
-      displaySmall:  GoogleFonts.fraunces(fontSize: 36, fontWeight: FontWeight.w700),
-      headlineLarge:  GoogleFonts.fraunces(fontSize: 32, fontWeight: FontWeight.w700),
-      headlineMedium: GoogleFonts.fraunces(fontSize: 28, fontWeight: FontWeight.w700),
-      headlineSmall:  GoogleFonts.fraunces(fontSize: 24, fontWeight: FontWeight.w600),
-      titleLarge:  GoogleFonts.dmSans(fontSize: 22, fontWeight: FontWeight.w600),
-      titleMedium: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
-      titleSmall:  GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600),
-      bodyLarge:   GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w400),
-      bodyMedium:  GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w400),
-      bodySmall:   GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w400),
-      labelLarge:  GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600),
-      labelMedium: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600),
-      labelSmall:  GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.8),
+      displayLarge: GoogleFonts.fraunces(
+        fontSize: 57,
+        fontWeight: FontWeight.w700,
+      ),
+      displayMedium: GoogleFonts.fraunces(
+        fontSize: 45,
+        fontWeight: FontWeight.w700,
+      ),
+      displaySmall: GoogleFonts.fraunces(
+        fontSize: 36,
+        fontWeight: FontWeight.w700,
+      ),
+      headlineLarge: GoogleFonts.fraunces(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+      ),
+      headlineMedium: GoogleFonts.fraunces(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+      ),
+      headlineSmall: GoogleFonts.fraunces(
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+      ),
+      titleLarge: GoogleFonts.dmSans(fontSize: 22, fontWeight: FontWeight.w600),
+      titleMedium: GoogleFonts.dmSans(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
+      titleSmall: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600),
+      bodyLarge: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w400),
+      bodyMedium: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w400),
+      bodySmall: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w400),
+      labelLarge: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600),
+      labelMedium: GoogleFonts.dmSans(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      ),
+      labelSmall: GoogleFonts.dmSans(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.8,
+      ),
     );
   }
 }

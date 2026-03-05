@@ -51,6 +51,7 @@ Must support:
 * Optional spice intensity voting
 * Optional sweetness intensity voting
 * Save changes
+* **"Want to Try" intent toggle** — bookmark-style button; persisted server-side per user per dish; auto-removed when user submits a reaction (tried = implicit from reaction)
 
 ---
 

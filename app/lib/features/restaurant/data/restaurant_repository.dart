@@ -153,11 +153,7 @@ class ParsedDishItem {
   final int? priceRupees;
   final String? category;
 
-  const ParsedDishItem({
-    required this.name,
-    this.priceRupees,
-    this.category,
-  });
+  const ParsedDishItem({required this.name, this.priceRupees, this.category});
 
   factory ParsedDishItem.fromJson(Map<String, dynamic> json) => ParsedDishItem(
     name: json['name'] as String,
@@ -244,7 +240,8 @@ class RestaurantRepository {
         if (businessStatus != null) 'business_status': businessStatus,
         if (phoneNumber != null) 'phone_number': phoneNumber,
         if (websiteUrl != null) 'website': websiteUrl,
-        if (openingHoursJson != null) 'opening_hours': jsonDecode(openingHoursJson),
+        if (openingHoursJson != null)
+          'opening_hours': jsonDecode(openingHoursJson),
       },
     );
     return RestaurantDetail.fromJson(response.data as Map<String, dynamic>);
@@ -274,11 +271,14 @@ class RestaurantRepository {
     String? city,
     String? cuisineType,
   }) async {
-    await _dio.patch('/restaurants/$id', data: {
-      if (name != null) 'name': name,
-      if (city != null) 'city': city,
-      if (cuisineType != null) 'cuisine_type': cuisineType,
-    });
+    await _dio.patch(
+      '/restaurants/$id',
+      data: {
+        if (name != null) 'name': name,
+        if (city != null) 'city': city,
+        if (cuisineType != null) 'cuisine_type': cuisineType,
+      },
+    );
   }
 
   Future<void> upsertRating(String restaurantId, int stars) async {

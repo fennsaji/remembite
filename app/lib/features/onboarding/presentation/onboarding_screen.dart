@@ -1,11 +1,9 @@
-import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 
-import '../../../core/db/app_database.dart';
-import '../../../core/network/auth_state.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_theme.dart';
 
 // Hardcoded bootstrapping dishes for taste calibration
@@ -33,6 +31,69 @@ const _reactionEmojis = [
   ('😐', 'meh', 'Meh'),
 ];
 
+const _dishAttributes = {
+  'Butter Chicken': (
+    spice: 0.2,
+    sweet: 0.0,
+    type: 'main',
+    cuisine: 'North Indian',
+  ),
+  'Biryani': (spice: 0.5, sweet: 0.0, type: 'main', cuisine: 'North Indian'),
+  'Masala Dosa': (
+    spice: 0.2,
+    sweet: 0.0,
+    type: 'main',
+    cuisine: 'South Indian',
+  ),
+  'Chole Bhature': (
+    spice: 0.5,
+    sweet: 0.0,
+    type: 'main',
+    cuisine: 'North Indian',
+  ),
+  'Paneer Tikka': (
+    spice: 0.5,
+    sweet: 0.0,
+    type: 'starter',
+    cuisine: 'North Indian',
+  ),
+  'Vada Pav': (spice: 0.2, sweet: 0.0, type: 'snack', cuisine: 'Indian Street'),
+  'Pani Puri': (
+    spice: 0.5,
+    sweet: 0.0,
+    type: 'snack',
+    cuisine: 'Indian Street',
+  ),
+  'Idli Sambar': (
+    spice: 0.0,
+    sweet: 0.0,
+    type: 'main',
+    cuisine: 'South Indian',
+  ),
+  'Dal Makhani': (
+    spice: 0.2,
+    sweet: 0.0,
+    type: 'main',
+    cuisine: 'North Indian',
+  ),
+  'Gulab Jamun': (spice: 0.0, sweet: 0.8, type: 'dessert', cuisine: 'Indian'),
+  'Pav Bhaji': (spice: 0.5, sweet: 0.0, type: 'main', cuisine: 'Indian Street'),
+  'Aloo Paratha': (
+    spice: 0.2,
+    sweet: 0.0,
+    type: 'bread',
+    cuisine: 'North Indian',
+  ),
+  'Samosa': (spice: 0.2, sweet: 0.0, type: 'starter', cuisine: 'North Indian'),
+  'Rajma Chawal': (
+    spice: 0.2,
+    sweet: 0.0,
+    type: 'main',
+    cuisine: 'North Indian',
+  ),
+  'Khichdi': (spice: 0.0, sweet: 0.0, type: 'main', cuisine: 'Indian'),
+};
+
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -43,6 +104,8 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _currentIndex = 0;
   String? _selectedReaction;
+  final Map<String, String> _collectedReactions = {};
+  bool _submitting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -60,16 +123,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Text(
                 'Quick — let us\nlearn your taste',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: AppColors.primaryText,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  color: AppColors.primaryText,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Takes about 30 seconds. You can skip any time.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.secondaryText,
-                    ),
+                  color: AppColors.secondaryText,
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -80,17 +143,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: LinearProgressIndicator(
                     value: _currentIndex / _bootstrapDishes.length,
                     backgroundColor: AppColors.elevated,
-                    valueColor:
-                        const AlwaysStoppedAnimation<Color>(AppColors.accent),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.accent,
+                    ),
                     minHeight: 4,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${_currentIndex + 1} of ${_bootstrapDishes.length}',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.mutedText,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: AppColors.mutedText),
                 ),
                 const SizedBox(height: 32),
 
@@ -111,7 +175,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => _advance(null),
+                        onPressed: _submitting ? null : () => _advance(null),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.secondaryText,
                           side: const BorderSide(color: AppColors.border),
@@ -122,7 +186,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: _selectedReaction != null
+                        onPressed: (_selectedReaction != null && !_submitting)
                             ? () => _advance(_selectedReaction)
                             : null,
                         child: const Text('Next'),
@@ -133,12 +197,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 const SizedBox(height: 12),
                 Center(
                   child: TextButton(
-                    onPressed: () => context.go('/home'),
+                    onPressed: _submitting ? null : () => _submitAndFinish(),
                     child: Text(
                       'Skip All',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.mutedText,
-                          ),
+                        color: AppColors.mutedText,
+                      ),
                     ),
                   ),
                 ),
@@ -153,18 +217,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const SizedBox(height: 16),
                         Text(
                           'Taste profile started!',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
+                          style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(color: AppColors.primaryText),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'It gets smarter with every dish you try.',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.secondaryText,
-                                  ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppColors.secondaryText),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -172,7 +232,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () => context.go('/home'),
+                  onPressed: _submitting ? null : () => _submitAndFinish(),
                   child: const Text('Start Exploring'),
                 ),
               ],
@@ -185,38 +245,49 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _advance(String? reaction) async {
+    final dish = _bootstrapDishes[_currentIndex];
     if (reaction != null) {
-      await _saveReaction(
-        dishName: _bootstrapDishes[_currentIndex],
-        reaction: reaction,
-      );
+      _collectedReactions[dish] = reaction;
     }
-    setState(() {
-      _currentIndex++;
-      _selectedReaction = null;
-    });
+    if (_currentIndex < _bootstrapDishes.length - 1) {
+      setState(() {
+        _currentIndex++;
+        _selectedReaction = null;
+      });
+    } else {
+      // Last dish — submit and go home
+      await _submitAndFinish();
+    }
   }
 
-  Future<void> _saveReaction({
-    required String dishName,
-    required String reaction,
-  }) async {
-    final auth = ref.read(authStateProvider).value;
-    if (auth == null) return;
+  Future<void> _submitAndFinish() async {
+    setState(() => _submitting = true);
+    try {
+      final dio = ref.read(apiClientProvider);
+      final items = _collectedReactions.entries.map((e) {
+        final attrs = _dishAttributes[e.key];
+        return {
+          'dish_name': e.key,
+          'reaction': e.value,
+          'spice_score': attrs?.spice ?? 0.0,
+          'sweetness_score': attrs?.sweet ?? 0.0,
+          'dish_type': attrs?.type ?? 'main',
+          'cuisine': attrs?.cuisine ?? 'Indian',
+        };
+      }).toList();
 
-    final db = ref.read(appDatabaseProvider);
-    const uuid = Uuid();
-    // Store locally with a stable ID derived from dish name (bootstrapping)
-    await db.reactionDao.upsert(
-      ReactionsCompanion(
-        id: Value(uuid.v4()),
-        userId: Value(auth.id),
-        dishId: Value('bootstrap_${dishName.toLowerCase().replaceAll(' ', '_')}'),
-        reaction: Value(reaction),
-        createdAt: Value(DateTime.now()),
-        syncedAt: const Value(null),
-      ),
-    );
+      await dio.post('/users/me/bootstrap', data: {'reactions': items});
+
+      const storage = FlutterSecureStorage();
+      await storage.write(key: 'has_bootstrapped', value: 'true');
+    } catch (_) {
+      // Network error — still mark done so user isn't stuck in onboarding loop
+      const storage = FlutterSecureStorage();
+      await storage.write(key: 'has_bootstrapped', value: 'true');
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+    if (mounted) context.go('/home');
   }
 }
 
@@ -244,25 +315,22 @@ class _DishCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            '🍽️',
-            style: const TextStyle(fontSize: 56),
-          ),
+          Text('🍽️', style: const TextStyle(fontSize: 56)),
           const SizedBox(height: 24),
           Text(
             dishName,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppColors.primaryText,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: AppColors.primaryText,
+              fontWeight: FontWeight.w700,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
           Text(
             'Have you tried it?',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.secondaryText,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.secondaryText),
           ),
           const SizedBox(height: 20),
           Row(
@@ -284,24 +352,21 @@ class _DishCard extends StatelessWidget {
                         : AppColors.elevated,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color:
-                          isSelected ? AppColors.accent : AppColors.border,
+                      color: isSelected ? AppColors.accent : AppColors.border,
                     ),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(emoji,
-                          style: const TextStyle(fontSize: 28)),
+                      Text(emoji, style: const TextStyle(fontSize: 28)),
                       const SizedBox(height: 4),
                       Text(
                         label,
-                        style:
-                            Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: isSelected
-                                      ? AppColors.accent
-                                      : AppColors.secondaryText,
-                                ),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: isSelected
+                              ? AppColors.accent
+                              : AppColors.secondaryText,
+                        ),
                       ),
                     ],
                   ),

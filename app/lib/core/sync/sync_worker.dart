@@ -41,9 +41,7 @@ class SyncWorker extends _$SyncWorker {
   }
 
   void _listenConnectivity() {
-    _connectivitySub = Connectivity()
-        .onConnectivityChanged
-        .listen((results) {
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
       if (results.any((r) => r != ConnectivityResult.none)) {
         _syncPending();
       }
@@ -104,20 +102,23 @@ class SyncWorker extends _$SyncWorker {
   Future<void> _pullFromCloud(AppDatabase db, Dio dio, AuthUser auth) async {
     try {
       final resp = await dio.get('/sync/full');
-      final reactions =
-          (resp.data['reactions'] as List).cast<Map<String, dynamic>>();
+      final reactions = (resp.data['reactions'] as List)
+          .cast<Map<String, dynamic>>();
       for (final r in reactions) {
-        await db.reactionDao.upsert(ReactionsCompanion(
-          id: Value(r['id'] as String),
-          userId: Value(auth.id),
-          dishId: Value(r['dish_id'] as String),
-          reaction: Value(r['reaction'] as String),
-          createdAt: Value(
+        await db.reactionDao.upsert(
+          ReactionsCompanion(
+            id: Value(r['id'] as String),
+            userId: Value(auth.id),
+            dishId: Value(r['dish_id'] as String),
+            reaction: Value(r['reaction'] as String),
+            createdAt: Value(
               DateTime.tryParse(r['updated_at'] as String? ?? '') ??
-                  DateTime.now()),
-          updatedAt: Value(DateTime.now()),
-          syncedAt: Value(DateTime.now()),
-        ));
+                  DateTime.now(),
+            ),
+            updatedAt: Value(DateTime.now()),
+            syncedAt: Value(DateTime.now()),
+          ),
+        );
       }
     } catch (_) {
       // Cloud pull failed — not fatal, user still has local data

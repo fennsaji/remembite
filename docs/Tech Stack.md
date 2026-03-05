@@ -149,13 +149,13 @@ Implementations:
 ### Current Provider
 | Choice | Rationale |
 |---|---|
-| **Gemini 2.0 Flash** (Google) | ~70% cheaper than alternatives. Free tier covers early-stage volume. Strong structured JSON output. Good Indian cuisine knowledge. |
-| Config | `LLM_PROVIDER=gemini` in `.env`. API key via `GEMINI_API_KEY`. |
+| **Gemini 2.5 Flash-Lite** (Google) | Cheapest stable model ($0.10/$0.40 per 1M tokens). Free tier covers early-stage volume. Strong structured JSON output. Good Indian cuisine knowledge. |
+| Config | `LLM_PROVIDER=gemini` in `.env`. API key via `GEMINI_API_KEY`. Model ID: `gemini-2.5-flash-lite`. |
 
 ### Provider Comparison (reference)
 | Provider | Input | Output | Free Tier | Notes |
 |---|---|---|---|---|
-| **Gemini 2.0 Flash** ✓ | $0.075/1M | $0.30/1M | Yes | Current choice |
+| **Gemini 2.5 Flash-Lite** ✓ | $0.10/1M | $0.40/1M | Yes | Current choice |
 | GPT-4o-mini | $0.15/1M | $0.60/1M | No | Strong JSON mode |
 | Claude Haiku 4.5 | $0.25/1M | $1.25/1M | No | Reliable structured output |
 

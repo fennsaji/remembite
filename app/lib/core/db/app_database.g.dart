@@ -2699,6 +2699,308 @@ class FavoritesCompanion extends UpdateCompanion<FavoriteRow> {
   }
 }
 
+class $DishIntentsTable extends DishIntents
+    with TableInfo<$DishIntentsTable, DishIntent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DishIntentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dishIdMeta = const VerificationMeta('dishId');
+  @override
+  late final GeneratedColumn<String> dishId = GeneratedColumn<String>(
+    'dish_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _intentMeta = const VerificationMeta('intent');
+  @override
+  late final GeneratedColumn<String> intent = GeneratedColumn<String>(
+    'intent',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('want_to_try'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, dishId, intent, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'dish_intents';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DishIntent> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('dish_id')) {
+      context.handle(
+        _dishIdMeta,
+        dishId.isAcceptableOrUnknown(data['dish_id']!, _dishIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dishIdMeta);
+    }
+    if (data.containsKey('intent')) {
+      context.handle(
+        _intentMeta,
+        intent.isAcceptableOrUnknown(data['intent']!, _intentMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DishIntent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DishIntent(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      dishId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dish_id'],
+      )!,
+      intent: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}intent'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DishIntentsTable createAlias(String alias) {
+    return $DishIntentsTable(attachedDatabase, alias);
+  }
+}
+
+class DishIntent extends DataClass implements Insertable<DishIntent> {
+  final String id;
+  final String dishId;
+  final String intent;
+  final DateTime createdAt;
+  const DishIntent({
+    required this.id,
+    required this.dishId,
+    required this.intent,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['dish_id'] = Variable<String>(dishId);
+    map['intent'] = Variable<String>(intent);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  DishIntentsCompanion toCompanion(bool nullToAbsent) {
+    return DishIntentsCompanion(
+      id: Value(id),
+      dishId: Value(dishId),
+      intent: Value(intent),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory DishIntent.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DishIntent(
+      id: serializer.fromJson<String>(json['id']),
+      dishId: serializer.fromJson<String>(json['dishId']),
+      intent: serializer.fromJson<String>(json['intent']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'dishId': serializer.toJson<String>(dishId),
+      'intent': serializer.toJson<String>(intent),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  DishIntent copyWith({
+    String? id,
+    String? dishId,
+    String? intent,
+    DateTime? createdAt,
+  }) => DishIntent(
+    id: id ?? this.id,
+    dishId: dishId ?? this.dishId,
+    intent: intent ?? this.intent,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  DishIntent copyWithCompanion(DishIntentsCompanion data) {
+    return DishIntent(
+      id: data.id.present ? data.id.value : this.id,
+      dishId: data.dishId.present ? data.dishId.value : this.dishId,
+      intent: data.intent.present ? data.intent.value : this.intent,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DishIntent(')
+          ..write('id: $id, ')
+          ..write('dishId: $dishId, ')
+          ..write('intent: $intent, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, dishId, intent, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DishIntent &&
+          other.id == this.id &&
+          other.dishId == this.dishId &&
+          other.intent == this.intent &&
+          other.createdAt == this.createdAt);
+}
+
+class DishIntentsCompanion extends UpdateCompanion<DishIntent> {
+  final Value<String> id;
+  final Value<String> dishId;
+  final Value<String> intent;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const DishIntentsCompanion({
+    this.id = const Value.absent(),
+    this.dishId = const Value.absent(),
+    this.intent = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DishIntentsCompanion.insert({
+    required String id,
+    required String dishId,
+    this.intent = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       dishId = Value(dishId);
+  static Insertable<DishIntent> custom({
+    Expression<String>? id,
+    Expression<String>? dishId,
+    Expression<String>? intent,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (dishId != null) 'dish_id': dishId,
+      if (intent != null) 'intent': intent,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DishIntentsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? dishId,
+    Value<String>? intent,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return DishIntentsCompanion(
+      id: id ?? this.id,
+      dishId: dishId ?? this.dishId,
+      intent: intent ?? this.intent,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (dishId.present) {
+      map['dish_id'] = Variable<String>(dishId.value);
+    }
+    if (intent.present) {
+      map['intent'] = Variable<String>(intent.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DishIntentsCompanion(')
+          ..write('id: $id, ')
+          ..write('dishId: $dishId, ')
+          ..write('intent: $intent, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2707,10 +3009,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ReactionsTable reactions = $ReactionsTable(this);
   late final $RatingsTable ratings = $RatingsTable(this);
   late final $FavoritesTable favorites = $FavoritesTable(this);
+  late final $DishIntentsTable dishIntents = $DishIntentsTable(this);
   late final RestaurantDao restaurantDao = RestaurantDao(this as AppDatabase);
   late final DishDao dishDao = DishDao(this as AppDatabase);
   late final ReactionDao reactionDao = ReactionDao(this as AppDatabase);
   late final FavoritesDao favoritesDao = FavoritesDao(this as AppDatabase);
+  late final DishIntentsDao dishIntentsDao = DishIntentsDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2721,6 +3027,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     reactions,
     ratings,
     favorites,
+    dishIntents,
   ];
 }
 
@@ -4063,6 +4370,187 @@ typedef $$FavoritesTableProcessedTableManager =
       FavoriteRow,
       PrefetchHooks Function()
     >;
+typedef $$DishIntentsTableCreateCompanionBuilder =
+    DishIntentsCompanion Function({
+      required String id,
+      required String dishId,
+      Value<String> intent,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+typedef $$DishIntentsTableUpdateCompanionBuilder =
+    DishIntentsCompanion Function({
+      Value<String> id,
+      Value<String> dishId,
+      Value<String> intent,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$DishIntentsTableFilterComposer
+    extends Composer<_$AppDatabase, $DishIntentsTable> {
+  $$DishIntentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dishId => $composableBuilder(
+    column: $table.dishId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get intent => $composableBuilder(
+    column: $table.intent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DishIntentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DishIntentsTable> {
+  $$DishIntentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dishId => $composableBuilder(
+    column: $table.dishId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get intent => $composableBuilder(
+    column: $table.intent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DishIntentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DishIntentsTable> {
+  $$DishIntentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get dishId =>
+      $composableBuilder(column: $table.dishId, builder: (column) => column);
+
+  GeneratedColumn<String> get intent =>
+      $composableBuilder(column: $table.intent, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$DishIntentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DishIntentsTable,
+          DishIntent,
+          $$DishIntentsTableFilterComposer,
+          $$DishIntentsTableOrderingComposer,
+          $$DishIntentsTableAnnotationComposer,
+          $$DishIntentsTableCreateCompanionBuilder,
+          $$DishIntentsTableUpdateCompanionBuilder,
+          (
+            DishIntent,
+            BaseReferences<_$AppDatabase, $DishIntentsTable, DishIntent>,
+          ),
+          DishIntent,
+          PrefetchHooks Function()
+        > {
+  $$DishIntentsTableTableManager(_$AppDatabase db, $DishIntentsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DishIntentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DishIntentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DishIntentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> dishId = const Value.absent(),
+                Value<String> intent = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DishIntentsCompanion(
+                id: id,
+                dishId: dishId,
+                intent: intent,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String dishId,
+                Value<String> intent = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DishIntentsCompanion.insert(
+                id: id,
+                dishId: dishId,
+                intent: intent,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DishIntentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DishIntentsTable,
+      DishIntent,
+      $$DishIntentsTableFilterComposer,
+      $$DishIntentsTableOrderingComposer,
+      $$DishIntentsTableAnnotationComposer,
+      $$DishIntentsTableCreateCompanionBuilder,
+      $$DishIntentsTableUpdateCompanionBuilder,
+      (
+        DishIntent,
+        BaseReferences<_$AppDatabase, $DishIntentsTable, DishIntent>,
+      ),
+      DishIntent,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4077,6 +4565,8 @@ class $AppDatabaseManager {
       $$RatingsTableTableManager(_db, _db.ratings);
   $$FavoritesTableTableManager get favorites =>
       $$FavoritesTableTableManager(_db, _db.favorites);
+  $$DishIntentsTableTableManager get dishIntents =>
+      $$DishIntentsTableTableManager(_db, _db.dishIntents);
 }
 
 // **************************************************************************

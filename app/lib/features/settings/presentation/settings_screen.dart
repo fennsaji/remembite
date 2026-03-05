@@ -36,9 +36,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open link')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Could not open link')));
       }
     }
   }
@@ -51,16 +51,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _exportData() async {
     setState(() => _exportLoading = true);
     try {
-      final response = await ref.read(apiClientProvider).get<dynamic>('/users/me/export');
+      final response = await ref
+          .read(apiClientProvider)
+          .get<dynamic>('/users/me/export');
       final jsonString = jsonEncode(response.data);
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/remembite_export.json');
       await file.writeAsString(jsonString);
       if (!mounted) return;
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/json')],
-        subject: 'Remembite Data Export',
-      );
+      await Share.shareXFiles([
+        XFile(file.path, mimeType: 'application/json'),
+      ], subject: 'Remembite Data Export');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +123,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               trailing: TextButton(
                 onPressed: () => context.push('/upgrade'),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -142,10 +146,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.workspace_premium_outlined,
               title: 'Pro Active',
               subtitle: 'Manage subscription',
-              trailing: const Icon(Icons.open_in_new,
-                  size: 16, color: AppColors.accent),
+              trailing: const Icon(
+                Icons.open_in_new,
+                size: 16,
+                color: AppColors.accent,
+              ),
               onTap: () => _launchUrl(
-                  'https://play.google.com/store/account/subscriptions'),
+                'https://play.google.com/store/account/subscriptions',
+              ),
             ),
 
           const SizedBox(height: 20),
@@ -195,7 +203,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppColors.accent))
+                        strokeWidth: 2,
+                        color: AppColors.accent,
+                      ),
+                    )
                   : null,
               onTap: _exportLoading ? null : _exportData,
             ),

@@ -1,3 +1,19 @@
+# Backend
+
+## Reset local database
+
+Wipes all data and re-applies migrations from scratch:
+
+```bash
+./run-api.sh down
+docker volume rm remembite_postgres_data
+./run-api.sh
+```
+
+Migrations run automatically on startup via `sqlx::migrate!()` — no manual step needed.
+
+---
+
 # Backend Tests
 
 ## Non-DB tests (run instantly, no setup needed)

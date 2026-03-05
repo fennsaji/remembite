@@ -64,8 +64,10 @@ class ProfileScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined,
-                color: AppColors.secondaryText),
+            icon: const Icon(
+              Icons.settings_outlined,
+              color: AppColors.secondaryText,
+            ),
             onPressed: () => context.push('/settings'),
             tooltip: 'Settings',
           ),
@@ -107,15 +109,18 @@ class ProfileScreen extends ConsumerWidget {
                                 errorWidget: (_, __, ___) => Text(
                                   auth.displayName[0].toUpperCase(),
                                   style: const TextStyle(
-                                      color: AppColors.primaryText,
-                                      fontSize: 20),
+                                    color: AppColors.primaryText,
+                                    fontSize: 20,
+                                  ),
                                 ),
                               ),
                             )
                           : Text(
                               (auth?.displayName ?? 'U')[0].toUpperCase(),
                               style: const TextStyle(
-                                  color: AppColors.primaryText, fontSize: 20),
+                                color: AppColors.primaryText,
+                                fontSize: 20,
+                              ),
                             ),
                     ),
                     const SizedBox(width: 14),
@@ -128,9 +133,7 @@ class ProfileScreen extends ConsumerWidget {
                               Flexible(
                                 child: Text(
                                   auth?.displayName ?? '',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
+                                  style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(color: AppColors.primaryText),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -139,7 +142,9 @@ class ProfileScreen extends ConsumerWidget {
                                 const SizedBox(width: 8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 2),
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: AppColors.accent,
                                     borderRadius: BorderRadius.circular(6),
@@ -161,9 +166,7 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           Text(
                             auth?.email ?? '',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(color: AppColors.mutedText),
                           ),
                         ],
@@ -181,9 +184,15 @@ class ProfileScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                   child: Row(
                     children: [
-                      _StatBox(value: '${stats.restaurantsVisited}', label: 'Restaurants'),
+                      _StatBox(
+                        value: '${stats.restaurantsVisited}',
+                        label: 'Restaurants',
+                      ),
                       const SizedBox(width: 12),
-                      _StatBox(value: '${stats.dishesTracked}', label: 'Dishes'),
+                      _StatBox(
+                        value: '${stats.dishesTracked}',
+                        label: 'Dishes',
+                      ),
                       const SizedBox(width: 12),
                       _StatBox(
                         value: _reactionEmoji(stats.mostUsedReaction),
@@ -215,10 +224,7 @@ class ProfileScreen extends ConsumerWidget {
                 },
               ),
             ),
-            if (isPro)
-              SliverToBoxAdapter(
-                child: const _ProInfoCard(),
-              ),
+            if (isPro) SliverToBoxAdapter(child: const _ProInfoCard()),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
@@ -240,12 +246,12 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   static String _reactionEmoji(String? reaction) => switch (reaction) {
-    'so_yummy'    => '🔥',
-    'tasty'       => '😋',
+    'so_yummy' => '🔥',
+    'tasty' => '😋',
     'pretty_good' => '🙂',
-    'meh'         => '😐',
+    'meh' => '😐',
     'never_again' => '🤢',
-    _             => '—',
+    _ => '—',
   };
 }
 
@@ -266,17 +272,20 @@ class _StatBox extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(value,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.primaryText,
-                      fontWeight: FontWeight.bold,
-                    )),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: AppColors.primaryText,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(label,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall
-                    ?.copyWith(color: AppColors.mutedText)),
+            Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: AppColors.mutedText),
+            ),
           ],
         ),
       ),
@@ -292,8 +301,10 @@ class _TasteProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = status.progress;
-    final remaining =
-        (status.threshold - status.reactionCount).clamp(0, status.threshold);
+    final remaining = (status.threshold - status.reactionCount).clamp(
+      0,
+      status.threshold,
+    );
     final isComplete = status.complete;
     final isPro = !status.insightsLocked;
 
@@ -320,10 +331,10 @@ class _TasteProfileCard extends StatelessWidget {
                 Text(
                   'TASTE PROFILE',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.secondaryText,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.8,
-                      ),
+                    color: AppColors.secondaryText,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.8,
+                  ),
                 ),
               ],
             ),
@@ -333,8 +344,9 @@ class _TasteProfileCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: AppColors.border,
-                valueColor:
-                    const AlwaysStoppedAnimation<Color>(AppColors.accent),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppColors.accent,
+                ),
                 minHeight: 6,
               ),
             ),
@@ -343,10 +355,9 @@ class _TasteProfileCard extends StatelessWidget {
               isComplete
                   ? 'Taste profile complete!'
                   : 'React to $remaining more dishes to unlock predictions',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: AppColors.secondaryText),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.secondaryText),
             ),
             if (!isPro && isComplete) ...[
               const SizedBox(height: 12),
@@ -358,7 +369,8 @@ class _TasteProfileCard extends StatelessWidget {
                     backgroundColor: AppColors.accent,
                     foregroundColor: AppColors.background,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text('Unlock Predictions — Upgrade to Pro'),
                 ),
@@ -388,8 +400,9 @@ class _TasteInsightsCard extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(14),
-          border:
-              Border.all(color: AppColors.proAccent.withValues(alpha: 0.25)),
+          border: Border.all(
+            color: AppColors.proAccent.withValues(alpha: 0.25),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,15 +414,17 @@ class _TasteInsightsCard extends StatelessWidget {
                 Text(
                   'TASTE INSIGHTS',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.secondaryText,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.8,
-                      ),
+                    color: AppColors.secondaryText,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.8,
+                  ),
                 ),
                 const SizedBox(width: 6),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.proAccent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
@@ -417,9 +432,9 @@ class _TasteInsightsCard extends StatelessWidget {
                   child: Text(
                     'PRO',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.proAccent,
-                          fontSize: 9,
-                        ),
+                      color: AppColors.proAccent,
+                      fontSize: 9,
+                    ),
                   ),
                 ),
               ],
@@ -430,15 +445,18 @@ class _TasteInsightsCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
-                    const Icon(Icons.auto_awesome,
-                        size: 14, color: AppColors.proAccent),
+                    const Icon(
+                      Icons.auto_awesome,
+                      size: 14,
+                      color: AppColors.proAccent,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         insight,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.primaryText,
-                            ),
+                          color: AppColors.primaryText,
+                        ),
                       ),
                     ),
                   ],
@@ -468,8 +486,11 @@ class _ProInfoCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.workspace_premium_outlined,
-                color: AppColors.accent, size: 20),
+            const Icon(
+              Icons.workspace_premium_outlined,
+              color: AppColors.accent,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
@@ -480,11 +501,14 @@ class _ProInfoCard extends StatelessWidget {
             TextButton(
               onPressed: () async {
                 final url = Uri.parse(
-                    'https://play.google.com/store/account/subscriptions');
+                  'https://play.google.com/store/account/subscriptions',
+                );
                 if (await canLaunchUrl(url)) launchUrl(url);
               },
-              child: const Text('Manage',
-                  style: TextStyle(color: AppColors.accent)),
+              child: const Text(
+                'Manage',
+                style: TextStyle(color: AppColors.accent),
+              ),
             ),
           ],
         ),

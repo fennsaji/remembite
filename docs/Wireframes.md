@@ -188,6 +188,9 @@ Saved dishes immediately visible with "Classifying..." attribute state until LLM
 
 | Dish Name                                        |
 | ------------------------------------------------ |
+| [ 🔖 Want to Try ]  ← bookmark toggle chip      |
+| (active = accent fill; inactive = ghost border) |
+|                                                  |
 | Your Reaction: 🔥 So Yummy                       |
 |                                                  |
 | [Classifying...] (shown while LLM job pending)  |
@@ -208,6 +211,7 @@ Saved dishes immediately visible with "Classifying..." attribute state until LLM
 | 🍬 Low  🍬🍬 Medium  🍬🍬🍬 High  [Skip]         |
 |                                                  |
 | [ Save Changes ]                                 |
+| Note: Saving a reaction auto-removes Want to Try |
 
 ---
 

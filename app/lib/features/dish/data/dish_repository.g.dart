@@ -169,5 +169,127 @@ class _CompatibilitySignalProviderElement
   String get dishId => (origin as CompatibilitySignalProvider).dishId;
 }
 
+String _$dishReactionSummaryHash() =>
+    r'4ed4d4d5f7510b707e6a13072ba73c4b0a655d5a';
+
+/// See also [dishReactionSummary].
+@ProviderFor(dishReactionSummary)
+const dishReactionSummaryProvider = DishReactionSummaryFamily();
+
+/// See also [dishReactionSummary].
+class DishReactionSummaryFamily extends Family<AsyncValue<ReactionSummary>> {
+  /// See also [dishReactionSummary].
+  const DishReactionSummaryFamily();
+
+  /// See also [dishReactionSummary].
+  DishReactionSummaryProvider call(String dishId) {
+    return DishReactionSummaryProvider(dishId);
+  }
+
+  @override
+  DishReactionSummaryProvider getProviderOverride(
+    covariant DishReactionSummaryProvider provider,
+  ) {
+    return call(provider.dishId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'dishReactionSummaryProvider';
+}
+
+/// See also [dishReactionSummary].
+class DishReactionSummaryProvider
+    extends AutoDisposeFutureProvider<ReactionSummary> {
+  /// See also [dishReactionSummary].
+  DishReactionSummaryProvider(String dishId)
+    : this._internal(
+        (ref) => dishReactionSummary(ref as DishReactionSummaryRef, dishId),
+        from: dishReactionSummaryProvider,
+        name: r'dishReactionSummaryProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$dishReactionSummaryHash,
+        dependencies: DishReactionSummaryFamily._dependencies,
+        allTransitiveDependencies:
+            DishReactionSummaryFamily._allTransitiveDependencies,
+        dishId: dishId,
+      );
+
+  DishReactionSummaryProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.dishId,
+  }) : super.internal();
+
+  final String dishId;
+
+  @override
+  Override overrideWith(
+    FutureOr<ReactionSummary> Function(DishReactionSummaryRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: DishReactionSummaryProvider._internal(
+        (ref) => create(ref as DishReactionSummaryRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        dishId: dishId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<ReactionSummary> createElement() {
+    return _DishReactionSummaryProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DishReactionSummaryProvider && other.dishId == dishId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, dishId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin DishReactionSummaryRef on AutoDisposeFutureProviderRef<ReactionSummary> {
+  /// The parameter `dishId` of this provider.
+  String get dishId;
+}
+
+class _DishReactionSummaryProviderElement
+    extends AutoDisposeFutureProviderElement<ReactionSummary>
+    with DishReactionSummaryRef {
+  _DishReactionSummaryProviderElement(super.provider);
+
+  @override
+  String get dishId => (origin as DishReactionSummaryProvider).dishId;
+}
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

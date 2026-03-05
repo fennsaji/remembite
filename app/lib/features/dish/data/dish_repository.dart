@@ -24,6 +24,7 @@ class DishDetail {
   final double? communityScore;
   final int voteCount;
   final AttributePriors? attributePriors;
+  final bool isWantToTry;
 
   const DishDetail({
     required this.id,
@@ -35,6 +36,7 @@ class DishDetail {
     this.communityScore,
     required this.voteCount,
     this.attributePriors,
+    required this.isWantToTry,
   });
 
   factory DishDetail.fromJson(Map<String, dynamic> json) => DishDetail(
@@ -48,8 +50,10 @@ class DishDetail {
     voteCount: json['vote_count'] as int,
     attributePriors: json['attribute_priors'] != null
         ? AttributePriors.fromJson(
-            json['attribute_priors'] as Map<String, dynamic>)
+            json['attribute_priors'] as Map<String, dynamic>,
+          )
         : null,
+    isWantToTry: json['is_want_to_try'] as bool? ?? false,
   );
 }
 
@@ -81,8 +85,8 @@ class AttributePriors {
         dishType: json['dish_type'] as String,
         cuisine: json['cuisine'] as String,
         finalSpiceScore: (json['final_spice_score'] as num?)?.toDouble(),
-        finalSweetnessScore:
-            (json['final_sweetness_score'] as num?)?.toDouble(),
+        finalSweetnessScore: (json['final_sweetness_score'] as num?)
+            ?.toDouble(),
         communityVoteCount: json['community_vote_count'] as int,
         confidenceScore: (json['confidence_score'] as num?)?.toDouble(),
       );
@@ -150,8 +154,9 @@ class ReactionSummary {
   factory ReactionSummary.fromJson(Map<String, dynamic> json) =>
       ReactionSummary(
         total: (json['total'] as num).toInt(),
-        breakdown: (json['breakdown'] as Map<String, dynamic>)
-            .map((k, v) => MapEntry(k, (v as num).toInt())),
+        breakdown: (json['breakdown'] as Map<String, dynamic>).map(
+          (k, v) => MapEntry(k, (v as num).toInt()),
+        ),
         weightedScore: (json['weighted_score'] as num).toDouble(),
       );
 }
@@ -173,8 +178,10 @@ class DishRepository {
         .toList();
 
     // Cache locally
-    await _db.dishDao.upsertAll(items
-        .map((d) => DishesCompanion(
+    await _db.dishDao.upsertAll(
+      items
+          .map(
+            (d) => DishesCompanion(
               id: Value(d.id),
               restaurantId: Value(d.restaurantId),
               name: Value(d.name),
@@ -184,8 +191,10 @@ class DishRepository {
               communityScore: Value(d.communityScore),
               voteCount: Value(d.voteCount),
               syncedAt: Value(DateTime.now()),
-            ))
-        .toList());
+            ),
+          )
+          .toList(),
+    );
 
     return items;
   }
@@ -229,7 +238,10 @@ class DishRepository {
 
     // Fire-and-forget sync
     try {
-      await _dio.post('/dishes/$dishId/reactions', data: {'reaction': reaction});
+      await _dio.post(
+        '/dishes/$dishId/reactions',
+        data: {'reaction': reaction},
+      );
       final local = await _db.reactionDao.getByUserAndDish(userId, dishId);
       if (local != null) {
         await _db.reactionDao.markSynced(local.id);
@@ -247,6 +259,13 @@ class DishRepository {
   Future<bool> toggleFavorite(String dishId) async {
     final response = await _dio.post('/dishes/$dishId/favorites');
     return (response.data as Map<String, dynamic>)['favorited'] as bool;
+  }
+
+  Future<bool> toggleWantToTry(String dishId) async {
+    final response = await _dio.post('/dishes/$dishId/intent');
+    final active = (response.data as Map<String, dynamic>)['active'] as bool;
+    await _db.dishIntentsDao.setWantToTry(dishId, active);
+    return active;
   }
 
   Future<void> upsertAttributeVote({
@@ -279,8 +298,7 @@ DishRepository dishRepository(Ref ref) {
 }
 
 @riverpod
-Future<CompatibilitySignal?> compatibilitySignal(
-    Ref ref, String dishId) async {
+Future<CompatibilitySignal?> compatibilitySignal(Ref ref, String dishId) async {
   final isPro = ref.watch(proStatusProvider);
   if (!isPro) return null;
   try {
@@ -289,3 +307,7 @@ Future<CompatibilitySignal?> compatibilitySignal(
     return null;
   }
 }
+
+@riverpod
+Future<ReactionSummary> dishReactionSummary(Ref ref, String dishId) =>
+    ref.watch(dishRepositoryProvider).getReactionSummary(dishId);

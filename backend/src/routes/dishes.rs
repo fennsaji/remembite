@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use axum::{
     Json, Router,
     extract::{Path, State},
@@ -11,8 +13,8 @@ use crate::{
     auth::middleware::AuthUser,
     dto::{
         AttributeVoteRequest, CompatibilityResponse, DishAttributesResponse,
-        DishBatchCreateRequest, DishDetailResponse, DishResponse, ReactionSummaryResponse,
-        ReactionUpsertRequest,
+        DishBatchCreateRequest, DishDetailResponse, DishResponse, IntentToggleResponse,
+        ReactionSummaryResponse, ReactionUpsertRequest,
     },
     error::{AppError, AppResult},
     jobs::queue::Job,
@@ -38,6 +40,7 @@ pub fn dishes_router() -> Router<AppState> {
         .route("/:id/reactions", post(upsert_reaction).get(reaction_summary))
         .route("/:id/attribute_votes", post(upsert_attribute_vote))
         .route("/:id/favorites", post(toggle_favorite))
+        .route("/:id/intent", post(toggle_intent))
         .route("/:id/attributes", get(get_dish_attributes))
         .route("/:id/compatibility", get(get_compatibility))
 }
@@ -100,9 +103,37 @@ async fn batch_create_dishes(
     use sqlx::Row;
     let cuisine: String = cuisine_row.try_get("cuisine")?;
 
+    // Fetch existing (name, category) pairs for this restaurant to detect duplicates
+    let existing_rows = sqlx::query(
+        "SELECT LOWER(name) as name_lower, LOWER(COALESCE(category, '')) as cat_lower \
+         FROM dishes WHERE restaurant_id = $1",
+    )
+    .bind(restaurant_id)
+    .fetch_all(&state.db)
+    .await?;
+
+    // `seen` starts with DB state; insert() returns false if key already present
+    let mut seen: HashSet<(String, String)> = existing_rows
+        .iter()
+        .map(|r| {
+            let n: String = r.try_get("name_lower").unwrap_or_default();
+            let c: String = r.try_get("cat_lower").unwrap_or_default();
+            (n, c)
+        })
+        .collect();
+
     let mut created_dishes = Vec::new();
 
     for item in &req.dishes {
+        let key = (
+            item.name.to_lowercase(),
+            item.category.as_deref().unwrap_or("").to_lowercase(),
+        );
+        if !seen.insert(key) {
+            // Duplicate within the restaurant (DB or earlier in this batch) — skip silently
+            continue;
+        }
+
         let dish_id = Uuid::new_v4();
 
         sqlx::query(
@@ -146,6 +177,7 @@ async fn batch_create_dishes(
 async fn get_dish(
     State(state): State<AppState>,
     Path(dish_id): Path<Uuid>,
+    user: Option<AuthUser>,
 ) -> AppResult<Json<DishDetailResponse>> {
     let row = sqlx::query(
         r#"
@@ -194,6 +226,19 @@ async fn get_dish(
         None
     };
 
+    let is_want_to_try = if let Some(ref u) = user {
+        sqlx::query(
+            "SELECT 1 FROM dish_intents WHERE user_id = $1 AND dish_id = $2",
+        )
+        .bind(u.id)
+        .bind(dish_id)
+        .fetch_optional(&state.db)
+        .await?
+        .is_some()
+    } else {
+        false
+    };
+
     Ok(Json(DishDetailResponse {
         id: row.try_get("id")?,
         restaurant_id: row.try_get("restaurant_id")?,
@@ -204,6 +249,7 @@ async fn get_dish(
         community_score: row.try_get("community_score")?,
         vote_count: row.try_get("vote_count")?,
         attribute_priors,
+        is_want_to_try,
         created_at: row.try_get("created_at")?,
     }))
 }
@@ -281,6 +327,13 @@ async fn upsert_reaction(
     .await?;
 
     tx.commit().await?;
+
+    // Auto-remove "Want to Try" intent when user reacts to a dish
+    sqlx::query("DELETE FROM dish_intents WHERE user_id = $1 AND dish_id = $2")
+        .bind(user.id)
+        .bind(dish_id)
+        .execute(&state.db)
+        .await?;
 
     // Anomaly detection: flag reaction spam (>20 reactions in 5 min) — non-blocking
     let spam_db = state.db.clone();
@@ -772,6 +825,39 @@ async fn get_compatibility(
         score: Some(score),
         reason: None,
     }))
+}
+
+async fn toggle_intent(
+    State(state): State<AppState>,
+    Path(dish_id): Path<Uuid>,
+    user: AuthUser,
+) -> AppResult<Json<IntentToggleResponse>> {
+    let existing = sqlx::query(
+        "SELECT id FROM dish_intents WHERE user_id = $1 AND dish_id = $2",
+    )
+    .bind(user.id)
+    .bind(dish_id)
+    .fetch_optional(&state.db)
+    .await?;
+
+    if existing.is_some() {
+        sqlx::query("DELETE FROM dish_intents WHERE user_id = $1 AND dish_id = $2")
+            .bind(user.id)
+            .bind(dish_id)
+            .execute(&state.db)
+            .await?;
+        Ok(Json(IntentToggleResponse { active: false }))
+    } else {
+        sqlx::query(
+            "INSERT INTO dish_intents (id, user_id, dish_id) VALUES ($1, $2, $3) ON CONFLICT (user_id, dish_id) DO NOTHING",
+        )
+        .bind(Uuid::new_v4())
+        .bind(user.id)
+        .bind(dish_id)
+        .execute(&state.db)
+        .await?;
+        Ok(Json(IntentToggleResponse { active: true }))
+    }
 }
 
 // ─────────────────────────────────────────────

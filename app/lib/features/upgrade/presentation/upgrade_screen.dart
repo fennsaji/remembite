@@ -24,10 +24,9 @@ class UpgradeScreen extends ConsumerWidget {
         ),
         title: Text(
           'Unlock Pro',
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(color: AppColors.primaryText),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: AppColors.primaryText),
         ),
       ),
       body: ListView(
@@ -36,19 +35,18 @@ class UpgradeScreen extends ConsumerWidget {
           Text(
             'UNLOCK PRO',
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  fontFamily: 'Fraunces',
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
+              fontFamily: 'Fraunces',
+              color: AppColors.accent,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Intelligence behind every bite.',
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(color: AppColors.secondaryText),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
           ),
           const SizedBox(height: 32),
           ..._features.map(
@@ -91,10 +89,9 @@ class UpgradeScreen extends ConsumerWidget {
           Text(
             'Subscriptions renew automatically. Cancel anytime in the Play Store.',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: AppColors.mutedText),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
           ),
         ],
       ),
@@ -112,16 +109,8 @@ class UpgradeScreen extends ConsumerWidget {
       'Advanced Taste Insights',
       'Deep analysis of your flavor preferences',
     ),
-    (
-      Icons.sync_outlined,
-      'Cloud Sync',
-      'Access your data across all devices',
-    ),
-    (
-      Icons.download_outlined,
-      'Data Export',
-      'Export your full dining history',
-    ),
+    (Icons.sync_outlined, 'Cloud Sync', 'Access your data across all devices'),
+    (Icons.download_outlined, 'Data Export', 'Export your full dining history'),
   ];
 }
 
@@ -163,18 +152,16 @@ class _FeatureRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(color: AppColors.primaryText),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.primaryText,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: AppColors.secondaryText),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.secondaryText,
+                  ),
                 ),
               ],
             ),
@@ -230,16 +217,17 @@ class _PlanCard extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(color: AppColors.primaryText),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(color: AppColors.primaryText),
               ),
               if (badge != null) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.accent,
                     borderRadius: BorderRadius.circular(8),
@@ -247,9 +235,9 @@ class _PlanCard extends StatelessWidget {
                   child: Text(
                     badge!,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.background,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: AppColors.background,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -258,10 +246,10 @@ class _PlanCard extends StatelessWidget {
                 Text(
                   'RECOMMENDED',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.accent,
-                        fontSize: 9,
-                        letterSpacing: 0.5,
-                      ),
+                    color: AppColors.accent,
+                    fontSize: 9,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ],
             ],
@@ -273,18 +261,17 @@ class _PlanCard extends StatelessWidget {
               Text(
                 price,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: AppColors.primaryText,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  color: AppColors.primaryText,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 3),
                 child: Text(
                   period,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: AppColors.secondaryText),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.secondaryText,
+                  ),
                 ),
               ),
             ],
@@ -295,10 +282,12 @@ class _PlanCard extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onSubscribe,
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    recommended ? AppColors.accent : AppColors.elevated,
-                foregroundColor:
-                    recommended ? AppColors.background : AppColors.primaryText,
+                backgroundColor: recommended
+                    ? AppColors.accent
+                    : AppColors.elevated,
+                foregroundColor: recommended
+                    ? AppColors.background
+                    : AppColors.primaryText,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
