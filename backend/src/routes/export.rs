@@ -145,3 +145,7 @@ async fn export_user_data(
 
     Ok(Json(ExportResponse { reactions, ratings, notes, favorites, restaurants }))
 }
+
+#[cfg(test)]
+#[path = "access_control_tests.rs"]
+mod access_control_tests;

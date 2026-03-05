@@ -791,3 +791,8 @@ async fn admin_recompute_taste_vectors(
         "message": "Recompute job enqueued"
     })))
 }
+
+
+#[cfg(test)]
+#[path = "dish_tests.rs"]
+mod dish_tests;

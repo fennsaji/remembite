@@ -658,8 +658,8 @@ This is not a phase in the product build. Infrastructure scaling happens post-la
 
 ## Scale-Up Steps (in order)
 
-1. **Add Hetzner Load Balancer (LB11, ~€5.99/mo)** — routes traffic across backend instances
-2. **Add second Hetzner CX21 VPS** — stateless backend, identical config, Docker deployment
+1. **Enable Cloudflare Load Balancing (~$5/mo)** — already in request path (DNS + R2); just enable the add-on, point two origins at both VPS IPs, configure health checks
+2. **Add second Host.co.in SM-V1 (~₹299/mo)** — stateless backend, identical Docker config; if reliability is a concern at scale, switch to Contabo VPS 10 Navi Mumbai (~€6.65/mo). Cloudflare LB is provider-agnostic.
 3. **Upgrade Neon to Launch plan** — no migration required, same connection string
 4. **Migrate job queue to Redis** — `LlmProvider` and job queue traits are already abstracted; swap implementation only
 5. **Add read replicas on Neon** (Scale plan) — for analytics and reporting queries

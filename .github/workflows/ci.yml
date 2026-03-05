@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Backend ────────────────────────────────────────────────────────────────
+  backend:
+    name: Backend (Rust)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: remembite_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+
+      - name: Cache sqlx-cli binary
+        uses: actions/cache@v4
+        id: sqlx-cache
+        with:
+          path: ~/.cargo/bin/sqlx
+          key: sqlx-cli-${{ runner.os }}-0.8.6
+
+      - name: Install sqlx-cli
+        if: steps.sqlx-cache.outputs.cache-hit != 'true'
+        run: cargo install sqlx-cli --no-default-features --features postgres --version 0.8.6
+
+      - name: Run migrations
+        run: sqlx migrate run --database-url postgres://postgres:postgres@localhost:5432/remembite_test
+        working-directory: backend
+
+      - name: cargo check
+        run: cargo check
+        working-directory: backend
+
+      - name: cargo clippy
+        run: cargo clippy -- -D warnings
+        working-directory: backend
+
+      - name: cargo test (all tests including DB-backed)
+        run: cargo test -- --include-ignored
+        working-directory: backend
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/remembite_test
+
+  # ── Flutter ────────────────────────────────────────────────────────────────
+  flutter:
+    name: Flutter (Dart)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.6"
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+        working-directory: app
+
+      - name: Generate .g.dart files (build_runner)
+        run: dart run build_runner build --delete-conflicting-outputs
+        working-directory: app
+
+      - name: flutter analyze
+        run: flutter analyze
+        working-directory: app
+
+      - name: flutter test
+        run: flutter test
+        working-directory: app

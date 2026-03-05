@@ -134,7 +134,7 @@ Infrastructure costs at MVP scale are low (single VPS, object storage, LLM API c
 
 | Cost Item | Monthly Estimate |
 |---|---|
-| Hetzner VPS (Rust backend + Nginx) | ₹340–400 (~€3.79/mo) |
+| Host.co.in SM-V1 India (Rust backend + Nginx) | ₹353/mo effective (₹4,234/year incl. 18% GST, annual plan) |
 | Neon PostgreSQL | ₹0 (free tier through early scale; ~₹1,350/mo on Launch plan if needed) |
 | Cloudflare R2 (images, CDN) | ₹0 (free tier: 10GB, zero egress) |
 | LLM API — Gemini 2.0 Flash | ₹0 (free tier covers early scale; ~₹0.01–0.03/dish beyond) |
@@ -152,17 +152,17 @@ Google Play and Apple App Store take 15% of all subscription revenue. All revenu
 
 ### Break-Even MRR
 
-At ₹500/month infrastructure cost:
+At ~₹353/month infrastructure cost (Host.co.in SM-V1, annual plan incl. GST):
 
 ```
-Break-even = ₹500 / net blended revenue per subscriber per month
+Break-even = ₹353 / net blended revenue per subscriber per month
 Net blended monthly revenue per Pro user = 0.6 × ₹28.05 + 0.4 × ₹41.65 = ₹33.49
-Break-even subscribers = ₹500 / ₹33.49 ≈ 15 Pro subscribers
+Break-even subscribers = ₹353 / ₹33.49 ≈ 11 Pro subscribers
 ```
 
-**15 paying Pro users covers infrastructure costs.** (Infrastructure is extremely lean at MVP scale.)
+**11 paying Pro users covers infrastructure costs.** (Infrastructure is extremely lean at MVP scale.)
 
-At 4% conversion, this requires ~375 monthly active users — achievable in closed beta.
+At 4% conversion, this requires ~275 monthly active users — achievable in closed beta.
 
 Note: The platform fee (15%) is a revenue share, not a fixed cost — it scales proportionally with revenue and does not affect break-even at the infrastructure level.
 

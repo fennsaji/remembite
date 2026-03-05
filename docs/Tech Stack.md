@@ -176,7 +176,7 @@ Implementations:
 ### Hosting
 | Choice | Rationale |
 |---|---|
-| **Hetzner VPS** (CX21) | Runs Rust backend + Nginx only. Database offloaded to Neon, so a smaller/cheaper instance suffices. ~€3.79/mo (≈ ₹340/mo). |
+| **Host.co.in SM-V1** (India) | Runs Rust backend + Nginx only. Database offloaded to Neon. 2 vCPU, 4 GB DDR5, 75 GB NVMe, 1 TB BW, AMD EPYC 4th Gen. ₹299/mo on annual plan (₹353/mo effective incl. 18% GST). ~10–40ms latency from India. Fallback: Contabo VPS 10 Navi Mumbai (~$7.59/mo) if reliability issues arise. |
 
 ### Reverse Proxy
 | Choice | Rationale |
@@ -306,7 +306,7 @@ Google and Apple require their own billing systems for digital goods sold inside
 |---|---|
 | Firebase Firestore / Realtime DB | Avoid lock-in; PostgreSQL + Rust gives full control |
 | GraphQL | REST is sufficient for this API surface; no client-defined query needs |
-| Kubernetes | Overkill at current scale; single VPS with Docker Compose suffices until load demands horizontal scaling |
+| Kubernetes | Overkill at current scale; single VPS with Docker Compose suffices until load demands horizontal scaling. Contabo has no auto-scaling — scale manually via Cloudflare LB + second VPS when CPU >70% sustained. |
 | Next.js / web frontend | Mobile-only product at launch; no web app planned until Year 2 |
 | LLM provider lock-in | `LlmProvider` trait abstracts all calls — provider is swappable via config, not code changes |
 | Razorpay / third-party payment gateways | Google and Apple mandate their own billing for in-app digital subscriptions; third-party processors are not permitted |

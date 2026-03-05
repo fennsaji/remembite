@@ -56,3 +56,6 @@ pub fn check_ip_limit(limiter: &IpRateLimiter, ip: IpAddr) -> AppResult<()> {
         }
     }
 }
+
+#[cfg(test)]
+mod rate_limit_tests;

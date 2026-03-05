@@ -10,6 +10,9 @@ mod models;
 mod routes;
 mod services;
 
+#[cfg(test)]
+mod test_helpers;
+
 use std::sync::Arc;
 
 use axum::{Router, routing::{get, post}};

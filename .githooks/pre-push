@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Pre-push hook — mirrors CI checks so pushes don't fail in GitHub Actions.
+# Skip with: git push --no-verify
+
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+fail() { echo -e "\n${RED}FAILED: $1${NC}\n" >&2; exit 1; }
+step() { echo -e "\n${YELLOW}>> $1${NC}"; }
+
+echo "Running pre-push checks (skip with --no-verify)"
+
+# ── Backend ────────────────────────────────────────────────────────────────
+
+step "cargo check"
+(cd "$ROOT/backend" && cargo check) || fail "cargo check"
+
+step "cargo clippy"
+(cd "$ROOT/backend" && cargo clippy -- -D warnings) || fail "cargo clippy"
+
+step "cargo test"
+(cd "$ROOT/backend" && cargo test) || fail "cargo test"
+
+# ── Flutter ────────────────────────────────────────────────────────────────
+
+step "flutter analyze"
+(cd "$ROOT/app" && flutter analyze) || fail "flutter analyze"
+
+step "flutter test"
+(cd "$ROOT/app" && flutter test) || fail "flutter test"
+
+# ── Done ───────────────────────────────────────────────────────────────────
+
+echo -e "\n${GREEN}All checks passed.${NC}\n"

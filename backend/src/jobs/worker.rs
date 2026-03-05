@@ -270,3 +270,7 @@ async fn get_fcm_access_token(
 
     Ok(token_resp.access_token)
 }
+
+#[cfg(test)]
+#[path = "worker_tests.rs"]
+mod worker_tests;

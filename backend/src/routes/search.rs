@@ -131,3 +131,7 @@ async fn search(
 
     Ok(Json(SearchResultsResponse { restaurants, dishes }))
 }
+
+#[cfg(test)]
+#[path = "search_tests.rs"]
+mod search_tests;

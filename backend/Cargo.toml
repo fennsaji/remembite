@@ -59,3 +59,6 @@ aws-config = { version = "1", default-features = false, features = ["rustls"] }
 
 [dev-dependencies]
 tokio-test = "0.4"
+tower = { version = "0.4", features = ["util"] }
+http-body-util = "0.1"
+urlencoding = "2"

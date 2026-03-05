@@ -36,7 +36,7 @@ pub async fn verify_purchase(
         &state.http,
     )
     .await
-    .map_err(|e| AppError::Internal(e))?;
+    .map_err(AppError::Internal)?;
 
     let expiry_ts = google_play::verify_subscription(
         &state.config.google_play_package_name,
