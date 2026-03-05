@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -107,7 +109,7 @@ class ProfileScreen extends ConsumerWidget {
                                 height: 56,
                                 fit: BoxFit.cover,
                                 errorWidget: (_, __, ___) => Text(
-                                  auth.displayName[0].toUpperCase(),
+                                  auth.displayName.isNotEmpty ? auth.displayName[0].toUpperCase() : 'U',
                                   style: const TextStyle(
                                     color: AppColors.primaryText,
                                     fontSize: 20,
@@ -116,7 +118,7 @@ class ProfileScreen extends ConsumerWidget {
                               ),
                             )
                           : Text(
-                              (auth?.displayName ?? 'U')[0].toUpperCase(),
+                              (auth?.displayName ?? '').isNotEmpty ? auth!.displayName[0].toUpperCase() : 'U',
                               style: const TextStyle(
                                 color: AppColors.primaryText,
                                 fontSize: 20,
@@ -501,7 +503,9 @@ class _ProInfoCard extends StatelessWidget {
             TextButton(
               onPressed: () async {
                 final url = Uri.parse(
-                  'https://play.google.com/store/account/subscriptions',
+                  Platform.isIOS
+                      ? 'https://apps.apple.com/account/subscriptions'
+                      : 'https://play.google.com/store/account/subscriptions',
                 );
                 if (await canLaunchUrl(url)) launchUrl(url);
               },

@@ -227,11 +227,11 @@ async fn list_dish_images(
 
 async fn get_presigned_url(
     State(state): State<AppState>,
-    _user: AuthUser,
+    user: AuthUser,
     Path(image_id): Path<Uuid>,
 ) -> AppResult<Json<serde_json::Value>> {
     let row = sqlx::query(
-        "SELECT r2_key, is_public FROM images WHERE id = $1 AND deleted_at IS NULL",
+        "SELECT r2_key, is_public, uploaded_by FROM images WHERE id = $1 AND deleted_at IS NULL",
     )
     .bind(image_id)
     .fetch_optional(&state.db)
@@ -240,6 +240,12 @@ async fn get_presigned_url(
 
     let r2_key: String = row.try_get("r2_key")?;
     let is_public: bool = row.try_get("is_public")?;
+    let uploaded_by: uuid::Uuid = row.try_get("uploaded_by")?;
+
+    // Private images may only be accessed by their uploader.
+    if !is_public && uploaded_by != user.id {
+        return Err(AppError::Forbidden("Image access denied".to_string()));
+    }
 
     if is_public && !state.config.r2_public_url.is_empty() {
         let cdn_url = format!(

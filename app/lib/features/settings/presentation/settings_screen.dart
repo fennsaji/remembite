@@ -152,7 +152,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.accent,
               ),
               onTap: () => _launchUrl(
-                'https://play.google.com/store/account/subscriptions',
+                Platform.isIOS
+                    ? 'https://apps.apple.com/account/subscriptions'
+                    : 'https://play.google.com/store/account/subscriptions',
               ),
             ),
 

@@ -151,12 +151,15 @@ async fn batch_create_dishes(
         .execute(&state.db)
         .await?;
 
-        // Enqueue LLM classification job
-        state.job_queue.enqueue(Job::ClassifyDish {
+        // Enqueue LLM classification job — non-fatal: dish stays in
+        // `classifying` state but can still receive reactions.
+        if let Err(e) = state.job_queue.enqueue(Job::ClassifyDish {
             dish_id,
             dish_name: item.name.clone(),
             cuisine: cuisine.clone(),
-        }).await?;
+        }).await {
+            tracing::warn!("Failed to enqueue ClassifyDish for {dish_id}: {e}");
+        }
 
         created_dishes.push(DishResponse {
             id: dish_id,
@@ -603,33 +606,35 @@ async fn toggle_favorite(
     Path(dish_id): Path<Uuid>,
     user: AuthUser,
 ) -> AppResult<Json<serde_json::Value>> {
-    // Check if already favorited
+    // Use FOR UPDATE to serialize concurrent toggle calls on the same row.
+    let mut tx = state.db.begin().await?;
+
     let existing = sqlx::query(
-        "SELECT id FROM favorites WHERE user_id = $1 AND dish_id = $2",
+        "SELECT id FROM favorites WHERE user_id = $1 AND dish_id = $2 FOR UPDATE",
     )
     .bind(user.id)
     .bind(dish_id)
-    .fetch_optional(&state.db)
+    .fetch_optional(&mut *tx)
     .await?;
 
     if existing.is_some() {
-        // Remove favorite
         sqlx::query("DELETE FROM favorites WHERE user_id = $1 AND dish_id = $2")
             .bind(user.id)
             .bind(dish_id)
-            .execute(&state.db)
+            .execute(&mut *tx)
             .await?;
+        tx.commit().await?;
         Ok(Json(serde_json::json!({ "favorited": false })))
     } else {
-        // Add favorite
         sqlx::query(
             "INSERT INTO favorites (id, user_id, dish_id) VALUES ($1, $2, $3)",
         )
         .bind(Uuid::new_v4())
         .bind(user.id)
         .bind(dish_id)
-        .execute(&state.db)
+        .execute(&mut *tx)
         .await?;
+        tx.commit().await?;
         Ok(Json(serde_json::json!({ "favorited": true })))
     }
 }

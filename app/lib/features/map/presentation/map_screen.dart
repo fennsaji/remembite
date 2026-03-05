@@ -1261,7 +1261,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                               } finally {
                                 if (mounted) {
                                   setState(() => _addingPlace = false);
-                                  setSheetState(() {});
                                 } else {
                                   _addingPlace = false;
                                 }

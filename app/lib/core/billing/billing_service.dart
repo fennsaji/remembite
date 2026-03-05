@@ -105,7 +105,8 @@ class BillingService extends _$BillingService {
       ref.read(syncWorkerProvider.notifier).syncNow();
     } catch (e) {
       state = BillingState.error;
-      await InAppPurchase.instance.completePurchase(purchase);
+      // Do NOT call completePurchase here — the transaction stays pending
+      // so the store re-delivers it on the next app launch for retry.
     }
   }
 }

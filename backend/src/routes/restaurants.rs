@@ -177,18 +177,20 @@ async fn get_restaurant(
 
     let top_dishes: Vec<DishResponse> = dish_rows
         .into_iter()
-        .map(|r| DishResponse {
-            id: r.try_get("id").unwrap(),
-            restaurant_id: r.try_get("restaurant_id").unwrap(),
-            name: r.try_get("name").unwrap(),
-            category: r.try_get("category").unwrap(),
-            price: r.try_get("price").unwrap(),
-            attribute_state: r.try_get("attribute_state").unwrap(),
-            community_score: r.try_get("community_score").unwrap(),
-            vote_count: r.try_get("vote_count").unwrap(),
-            created_at: r.try_get("created_at").unwrap(),
+        .map(|r| -> Result<DishResponse, sqlx::Error> {
+            Ok(DishResponse {
+                id: r.try_get("id")?,
+                restaurant_id: r.try_get("restaurant_id")?,
+                name: r.try_get("name")?,
+                category: r.try_get("category")?,
+                price: r.try_get("price")?,
+                attribute_state: r.try_get("attribute_state")?,
+                community_score: r.try_get("community_score")?,
+                vote_count: r.try_get("vote_count")?,
+                created_at: r.try_get("created_at")?,
+            })
         })
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
 
     Ok(Json(RestaurantDetailResponse {
         id: restaurant_id,

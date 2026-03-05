@@ -41,17 +41,17 @@ async fn export_user_data(
     .fetch_all(&state.db)
     .await?
     .into_iter()
-    .map(|row| {
-        serde_json::json!({
-            "dish_id": row.get::<String, _>("dish_id"),
-            "dish_name": row.get::<String, _>("dish_name"),
-            "reaction": row.get::<String, _>("reaction"),
-            "restaurant_id": row.get::<String, _>("restaurant_id"),
-            "restaurant_name": row.get::<String, _>("restaurant_name"),
-            "reacted_at": row.get::<chrono::DateTime<chrono::Utc>, _>("updated_at").to_rfc3339(),
-        })
+    .map(|row| -> Result<serde_json::Value, sqlx::Error> {
+        Ok(serde_json::json!({
+            "dish_id": row.try_get::<String, _>("dish_id")?,
+            "dish_name": row.try_get::<String, _>("dish_name")?,
+            "reaction": row.try_get::<String, _>("reaction")?,
+            "restaurant_id": row.try_get::<String, _>("restaurant_id")?,
+            "restaurant_name": row.try_get::<String, _>("restaurant_name")?,
+            "reacted_at": row.try_get::<chrono::DateTime<chrono::Utc>, _>("updated_at")?.to_rfc3339(),
+        }))
     })
-    .collect();
+    .collect::<Result<Vec<_>, _>>()?;
 
     // Ratings
     let ratings: Vec<Value> = sqlx::query(
@@ -68,15 +68,15 @@ async fn export_user_data(
     .fetch_all(&state.db)
     .await?
     .into_iter()
-    .map(|row| {
-        serde_json::json!({
-            "restaurant_id": row.get::<String, _>("restaurant_id"),
-            "restaurant_name": row.get::<String, _>("restaurant_name"),
-            "stars": row.get::<i16, _>("stars"),
-            "rated_at": row.get::<chrono::DateTime<chrono::Utc>, _>("updated_at").to_rfc3339(),
-        })
+    .map(|row| -> Result<serde_json::Value, sqlx::Error> {
+        Ok(serde_json::json!({
+            "restaurant_id": row.try_get::<String, _>("restaurant_id")?,
+            "restaurant_name": row.try_get::<String, _>("restaurant_name")?,
+            "stars": row.try_get::<i16, _>("stars")?,
+            "rated_at": row.try_get::<chrono::DateTime<chrono::Utc>, _>("updated_at")?.to_rfc3339(),
+        }))
     })
-    .collect();
+    .collect::<Result<Vec<_>, _>>()?;
 
     // Notes — table not yet migrated; return empty for forward-compatibility
     let notes: Vec<Value> = vec![];
@@ -98,16 +98,16 @@ async fn export_user_data(
     .fetch_all(&state.db)
     .await?
     .into_iter()
-    .map(|row| {
-        serde_json::json!({
-            "dish_id": row.get::<String, _>("dish_id"),
-            "dish_name": row.get::<String, _>("dish_name"),
-            "restaurant_id": row.get::<String, _>("restaurant_id"),
-            "restaurant_name": row.get::<String, _>("restaurant_name"),
-            "favorited_at": row.get::<chrono::DateTime<chrono::Utc>, _>("created_at").to_rfc3339(),
-        })
+    .map(|row| -> Result<serde_json::Value, sqlx::Error> {
+        Ok(serde_json::json!({
+            "dish_id": row.try_get::<String, _>("dish_id")?,
+            "dish_name": row.try_get::<String, _>("dish_name")?,
+            "restaurant_id": row.try_get::<String, _>("restaurant_id")?,
+            "restaurant_name": row.try_get::<String, _>("restaurant_name")?,
+            "favorited_at": row.try_get::<chrono::DateTime<chrono::Utc>, _>("created_at")?.to_rfc3339(),
+        }))
     })
-    .collect();
+    .collect::<Result<Vec<_>, _>>()?;
 
     // Restaurants (visited = have a reaction or rating from user)
     let restaurants: Vec<Value> = sqlx::query(
@@ -131,17 +131,17 @@ async fn export_user_data(
     .fetch_all(&state.db)
     .await?
     .into_iter()
-    .map(|row| {
-        serde_json::json!({
-            "id": row.get::<String, _>("id"),
-            "name": row.get::<String, _>("name"),
-            "city": row.get::<String, _>("city"),
-            "cuisine_type": row.get::<Option<String>, _>("cuisine_type"),
-            "latitude": row.get::<f64, _>("latitude"),
-            "longitude": row.get::<f64, _>("longitude"),
-        })
+    .map(|row| -> Result<serde_json::Value, sqlx::Error> {
+        Ok(serde_json::json!({
+            "id": row.try_get::<String, _>("id")?,
+            "name": row.try_get::<String, _>("name")?,
+            "city": row.try_get::<String, _>("city")?,
+            "cuisine_type": row.try_get::<Option<String>, _>("cuisine_type")?,
+            "latitude": row.try_get::<f64, _>("latitude")?,
+            "longitude": row.try_get::<f64, _>("longitude")?,
+        }))
     })
-    .collect();
+    .collect::<Result<Vec<_>, _>>()?;
 
     Ok(Json(ExportResponse { reactions, ratings, notes, favorites, restaurants }))
 }

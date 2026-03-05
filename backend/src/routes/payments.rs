@@ -58,6 +58,21 @@ pub async fn verify_purchase(
     let expires_at = DateTime::from_timestamp(expiry_ts, 0)
         .ok_or_else(|| AppError::Internal(anyhow::anyhow!("Invalid expiry timestamp")))?;
 
+    // Reject if this token is already claimed by a different user account.
+    let existing_owner: Option<uuid::Uuid> = sqlx::query_scalar(
+        "SELECT user_id FROM users WHERE purchase_token = $1",
+    )
+    .bind(&req.purchase_token)
+    .fetch_optional(&state.db)
+    .await?;
+    if let Some(owner_id) = existing_owner {
+        if owner_id != auth.id {
+            return Err(AppError::BadRequest(
+                "Purchase token already redeemed by another account".to_string(),
+            ));
+        }
+    }
+
     // Update user pro status and store purchase_token for webhook lookups
     sqlx::query(
         r#"
