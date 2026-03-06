@@ -441,4 +441,47 @@ Note: Payment infrastructure must be implemented before AI predictions ship, so 
 
 ---
 
+## 10. Restaurant Data Seeding & Enrichment
+
+### 10.1 Cold-Start Problem
+
+New users who open Remembite in a city with no seeded data see an empty restaurant list and churn before experiencing value. The crawler solves this by pre-seeding the database before launch.
+
+### 10.2 Crawler Behavior (Backend, No User-Facing UI)
+
+* Monthly background job scans ~1,560 grid points across 18 cities using Google Places **Legacy** Nearby Search only (no Place Details during crawl)
+* Inserts restaurants with: name, coordinates, Google rating, price level, business status
+* Full 18-city coverage after ~4 monthly runs; crawler then cycles to refresh data (ToS compliance)
+* Crawler cost: **$0/month** (Nearby Search within 5,000 free events/month)
+
+### 10.3 Place Details Enrichment + Menu Seeding (User-Triggered, Every 90 Days)
+
+When a user views a restaurant page (`GET /restaurants/:id`):
+* If `enriched_at IS NULL` or `enriched_at < 90 days ago` → fetch Google Places Details in background
+* Stores: `phone_number`, `website`, `opening_hours`; sets `enriched_at = NOW()`
+* If `dish_count = 0` and `website IS NOT NULL` → attempt menu seeding from restaurant's own website; parse with Gemini LLM; insert dishes
+* User gets immediate response with cached data; enriched data appears on next load
+
+### 10.4 Cities Covered
+
+**Metro (8):** Mumbai, Delhi NCR, Bangalore, Hyderabad, Chennai, Kolkata, Pune, Ahmedabad
+
+**Tier-2 (10):** Jaipur, Lucknow, Surat, Indore, Bhopal, Chandigarh, Kochi, Coimbatore, Visakhapatnam, Nagpur
+
+### 10.5 Admin Controls
+
+Admin-only API (no user-facing UI):
+* `POST /admin/crawl` — trigger full crawl for all cities
+* `POST /admin/crawl/:city` — trigger single city crawl
+* `GET /admin/crawl/runs` — view crawl history with status and counts
+
+### 10.6 Success Criteria
+
+* ≥500 restaurants per metro city before launch
+* ≥200 restaurants per Tier-2 city before launch
+* ≥40% of restaurants have ≥5 pre-seeded dishes
+* Google Places API cost: $0/month (within free credit)
+
+---
+
 End of PRD
