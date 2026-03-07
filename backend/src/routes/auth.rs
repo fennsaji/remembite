@@ -1,4 +1,4 @@
-use axum::{Json, extract::State};
+use axum::{Json, Router, extract::State, routing::patch};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -7,9 +7,15 @@ use crate::{
     auth::{
         google::verify_google_id_token,
         jwt::{issue_access_token, issue_refresh_token},
+        middleware::AuthUser,
     },
+    dto::FcmTokenRequest,
     error::{AppError, AppResult},
 };
+
+pub fn router() -> Router<AppState> {
+    Router::new().route("/users/me/fcm-token", patch(update_fcm_token))
+}
 
 #[derive(Deserialize)]
 pub struct GoogleAuthRequest {
@@ -94,4 +100,18 @@ pub async fn google_auth(
             pro_status: user.pro_status,
         },
     }))
+}
+
+async fn update_fcm_token(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Json(req): Json<FcmTokenRequest>,
+) -> AppResult<Json<serde_json::Value>> {
+    sqlx::query("UPDATE users SET fcm_token = $1, updated_at = NOW() WHERE id = $2")
+        .bind(&req.token)
+        .bind(user.id)
+        .execute(&state.db)
+        .await?;
+
+    Ok(Json(serde_json::json!({ "ok": true })))
 }

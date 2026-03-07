@@ -99,7 +99,7 @@ We are building Remembite. Phase 0 is complete: DB schema, Rust scaffold, Flutte
 
 Read CLAUDE.md and docs/PRD.md before starting.
 
-UI must match design/remembite.pen exactly — open the design file in Pencil before building any screen. Use the exact colors, typography, spacing, component names, and layout defined there. Do not invent UI — implement what is designed.
+UI must match design/remembite.pen exactly — open the design file in Pencil before building any screen.(Use Frontend Skill for designing UI) Use the exact colors, typography, spacing, component names, and layout defined there. Do not invent UI — implement what is designed.
 
 Phase 1 deliverables — build backend API + Flutter UI for:
 
@@ -152,9 +152,10 @@ Phase 1 deliverables — build backend API + Flutter UI for:
    - Skip always visible, never blocked
    Backend: bootstrapping uses same POST /dishes/:id/reactions endpoint
 
-Dish detail screen: show reaction, notes input (private), attribute voting UI (spice/sweetness with Skip).
+Dish detail screen: show reaction, notes input (private), attribute voting UI (spice/sweetness with Skip), image upload placeholder button (non-functional until Phase 6 — show disabled "Add Photo" button with "Coming soon" tooltip).
 Notes saved to local Drift DB + synced for Pro users only.
 Restaurant Super Screen: Your Top Bites (sorted by reaction weight, tie-break by recency) + Community Favorites (min 5 votes, weighted score) + Full Menu (collapsed, first 5 visible).
+Taste Profile Completion bar on Profile screen: use local Drift reaction count (accurate for free users, no backend call needed). Text: "React to X more dishes to unlock predictions". Navigates to /upgrade on tap. Note: backend endpoint GET /users/me/taste-profile-status is added in Phase 5 — in Phase 1 use local count only.
 ```
 
 ---
@@ -164,7 +165,7 @@ Restaurant Super Screen: Your Top Bites (sorted by reaction weight, tie-break by
 ```
 We are building Remembite. Phases 0 and 1 are complete.
 
-Read CLAUDE.md before starting. Reference design/remembite.pen for any UI changes or additions — all interaction states (selected, loading, empty, error) must stay consistent with the design.
+Read CLAUDE.md before starting. Reference design/remembite.pen for any UI changes or additions — all interaction states (selected, loading, empty, error) must stay consistent with the design(Use Frontend Skill for designing UI).
 
 Phase 1.5 deliverables — wire up all interaction and sync logic:
 
@@ -208,7 +209,7 @@ Ensure all API endpoints return consistent shape whether data comes from local o
 ```
 We are building Remembite. Phases 0, 1, 1.5 are complete.
 
-Read CLAUDE.md, docs/Tech Stack.md (Payments section), docs/PRD.md (Section 9) before starting. Reference design/remembite.pen screens 6 (Upgrade) and 5 (Profile) for the Pro upgrade UI — match exactly.
+Read CLAUDE.md, docs/Tech Stack.md (Payments section), docs/PRD.md (Section 9) before starting. Reference design/remembite.pen screens 6 (Upgrade) (Use Frontend Skill for designing UI) and 5 (Profile) for the Pro upgrade UI — match exactly.
 
 Phase 2 deliverables:
 
@@ -248,8 +249,8 @@ Phase 2 deliverables:
 6. UPGRADE FLOW UX
    Upgrade Screen: AI Taste Compatibility Predictions → Advanced Taste Insights → Cloud Sync → Data Export.
    Annual plan (₹399/year) displayed first and highlighted as recommended. Monthly (₹49) below it.
-   Taste Profile Completion bar on Profile screen: "React to X more dishes to unlock your taste profile" → tapping navigates to Upgrade Screen.
-   Locked AI signal on Dish Detail (Pro gate): blurred placeholder "🔥 You'll probably love this — unlock predictions" when dish would have a prediction but user is not Pro.
+   Taste Profile Completion bar on Profile screen: already built in Phase 1 using local count. In Phase 2 just ensure it navigates to /upgrade on tap — no backend change needed until Phase 5.
+   Locked AI signal on Dish Detail (Pro gate): blurred placeholder "🔥 You'll probably love this — unlock predictions" when dish would have a prediction but user is not Pro. Note: actual predictions don't exist until Phase 5 — show the locked placeholder UI only.
    Subscription management in Settings: show current plan, expiry date, cancel option (links to Play Store subscription management).
 
 Platform fee: Google Play takes 15% of all revenue. No action needed in code — Play Store handles it.
@@ -277,7 +278,7 @@ Phase 3 deliverables:
    - POST /edit-suggestions — submit suggestion (entity_type, entity_id, field, proposed_value)
    - GET /edit-suggestions?entity_id=&entity_type= — list pending suggestions for an entity
    - POST /edit-suggestions/:id/vote — vote up or down (unique per user per suggestion)
-   - Auto-apply logic: if net_votes (upvotes - downvotes) >= 3 within 7 days → apply edit, mark suggestion approved
+   - Auto-apply logic: build the logic (if net_votes >= 3 within 7 days → apply), but keep it DISABLED by default (config flag auto_apply_edits=false). In early stage admin manually approves via the admin endpoint. Auto-apply activates when user density per city justifies it — controlled by config, not a code change.
    - Expiry job: cron/background task — expire suggestions with no consensus after 7 days (status=expired)
    - Admin endpoints: POST /admin/edit-suggestions/:id/approve and /reject (admin role check)
    Flutter:
@@ -397,12 +398,86 @@ Phase 4 deliverables:
 
 ---
 
+## Phase 4.5 – OCR Scan Flow Fix
+
+```
+We are building Remembite. Phases 0–4 are complete.
+
+Context: The home screen FAB previously navigated to /scan without a restaurant context, causing "scan from a restaurant" error in OcrResultsScreen (which requires restaurantId to save dishes).
+
+Fix (no new UI patterns):
+
+1. HOME SCREEN FAB
+   In app/lib/features/home/presentation/home_screen.dart:
+   - Keep label 'Scan Menu', change icon to Icons.search
+   - onPressed: () => context.push('/search')  — user finds/selects restaurant there
+   - Remove _showRestaurantPicker() method
+   - Remove _RestaurantPickerSheet widget class
+   - Remove import for search_repository.dart if only used by the picker sheet
+
+   Flow: Scan Menu FAB → Search screen → tap restaurant → Restaurant screen → tap Scan (which uses /restaurant/:id/scan)
+
+2. SEARCH SCREEN — ADD RESTAURANT FOOTER
+   In app/lib/features/search/presentation/search_screen.dart:
+   Add a persistent bottomNavigationBar with an "Add New Restaurant" OutlinedButton.
+   onPressed: () => context.push('/restaurant/add')
+   Always visible regardless of search state — user may arrive on Search to add a new restaurant.
+
+3. VERIFY SCAN ROUTES
+   Confirm that no route navigates to /scan without a restaurantId.
+   The restaurant screen already has: context.push('/restaurant/$id/scan')
+   That is the ONLY valid scan entry point.
+
+3. NO OTHER CHANGES
+   Do not add new screens, patterns, or bottom sheets.
+   Do not modify the restaurant screen or OCR screens.
+
+Rule going forward: Scan Menu is always restaurant-contextual. Never navigate to /scan from home without restaurantId.
+```
+
+---
+
+## Phase 4.6 – Core UI Screens (Favorites + Settings)
+
+```
+We are building Remembite. Phases 0–4.5 are complete.
+
+Read CLAUDE.md (design system, AppColors, typography) before starting. Reference design/remembite.pen screens 10 (Favorites) and 13 (Settings).
+
+Phase 4.6 deliverables:
+
+1. FAVORITES SCREEN
+   app/lib/features/favorites/presentation/favorites_screen.dart
+   - List all favorited dishes from local Drift `favorites` table joined with `dishes` and `restaurants`
+   - Filter chips: All | 🔥 | 😋 | 🙂 | 😐 | 🤢 (filter by reaction)
+   - Filter by restaurant: dropdown or chip row
+   - Sort: Most Recent | Highest Reaction Weight
+   - Tap dish → /dish/:id
+   - Empty state: "Tap ♡ on any dish to save it here"
+
+2. SETTINGS SCREEN
+   app/lib/features/settings/presentation/settings_screen.dart
+   Route: /settings (add to ShellRoute in app_router.dart)
+   Rows (grouped):
+   - Account: display name + email (read-only), Sign Out button
+   - Subscription: "Free" or "Pro — Manage" (links to Play Store for Pro users)
+   - Cloud Sync: toggle — disabled with "Pro feature" label for free users; functional in Phase 2
+   - Export Data: "Pro feature" for free users; "Coming soon" for Pro users (functional in Phase 7)
+   - Cloud Sync: toggle — Pro users: on tap triggers POST /sync/full (Phase 2 endpoint); off disables background sync worker. Free users: disabled, tap → /upgrade.
+   - Privacy Policy: opens URL in browser
+   - Help & Support: opens mailto:support@remembite.com
+   All Pro-gated rows show upgrade prompt (navigate to /upgrade) for free users.
+   Add Settings link to Profile screen (gear icon in top-right or row at bottom).
+```
+
+---
+
 ## Phase 5 – Bayesian Blending + Taste Vectors
 
 ```
 We are building Remembite. Phases 0–4 are complete. Dish attribute priors exist in DB.
 
-Read CLAUDE.md (Bayesian formula, taste vector update formula, confidence threshold rules) before starting. Reference design/remembite.pen screen 5 (Profile) for taste profile progress UI and screen 4 (Dish Detail) for the AI compatibility signal.
+Read CLAUDE.md (Bayesian formula, taste vector update formula, confidence threshold rules) before starting. Reference design/remembite.pen screen 5 (Profile)(Use Frontend Skill for designing UI) for taste profile progress UI and screen 4 (Dish Detail) for the AI compatibility signal.
 
 Phase 5 deliverables:
 
@@ -420,6 +495,7 @@ Phase 5 deliverables:
    Maintain user_taste_vectors with: spice_preference, sweetness_preference, cuisine_distribution (JSONB), dish_type_distribution (JSONB), reaction_count.
    Update incrementally on each dish reaction:
      new_pref = old_pref + 0.1 * (dish_final_score - old_pref)   [learning rate = 0.1]
+     dish_final_score = Bayesian blended score from Phase 5 (NOT the raw LLM prior from Phase 4)
      Update cuisine_distribution[cuisine] += reaction_weight / total_weight (normalize to sum=1)
      reaction_weight: so_yummy=5, tasty=4, pretty_good=3, meh=2, never_again=1
    Update runs synchronously in the reaction upsert transaction (fast — pure arithmetic).
@@ -452,12 +528,234 @@ Phase 5 deliverables:
 
 ---
 
+## Phase 5.5 – Map View & Location Picker
+
+```
+We are building Remembite. Phases 0–5 are complete.
+
+Read CLAUDE.md (design system, AppColors). Reference design/remembite.pen screen 14 (Map View).
+
+IMPORTANT: map_screen.dart and location_picker_screen.dart already exist but use flutter_map
+(OpenStreetMap). Both files must be fully replaced as described below.
+
+─────────────────────────────────────────────
+SETUP — Google Maps API Key (do this first)
+─────────────────────────────────────────────
+
+1. Google Cloud Console → APIs & Services → Credentials → Create API key
+   Enable: Maps SDK for Android, Maps SDK for iOS, Places API (New)
+   Store securely — do NOT commit to git.
+
+2. pubspec.yaml:
+   Add:    google_maps_flutter: ^2.9.0
+   Remove: flutter_map, latlong2
+
+3. Android — inject key via gradle:
+   android/local.properties (gitignored, create if missing):
+     MAPS_API_KEY=your_api_key_here
+
+   android/app/build.gradle.kts — inside android {} block, before buildTypes {}:
+     val localProps = java.util.Properties()
+     val localPropsFile = rootProject.file("local.properties")
+     if (localPropsFile.exists()) localPropsFile.inputStream().use { localProps.load(it) }
+     val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY") ?: ""
+
+   Inside defaultConfig {}:
+     manifestPlaceholders["mapsApiKey"] = mapsApiKey
+
+   android/app/src/main/AndroidManifest.xml — inside <application>:
+     <meta-data
+       android:name="com.google.android.geo.API_KEY"
+       android:value="${mapsApiKey}"/>
+
+4. iOS — AppDelegate.swift:
+   Add at top: import GoogleMaps
+   Inside application(_:didFinishLaunchingWithOptions:) before super.application(...):
+     GMSServices.provideAPIKey("YOUR_API_KEY_HERE")
+
+5. Dart — read key for Places API calls:
+   const String _mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
+   Pass at build time in run-app.sh: add --dart-define=MAPS_API_KEY=$MAPS_API_KEY
+
+───────────────────────────
+DELIVERABLE 1 — MAP SCREEN
+───────────────────────────
+
+File: app/lib/features/map/presentation/map_screen.dart (full rewrite)
+Use GoogleMap widget. Import LatLng from google_maps_flutter (not latlong2).
+
+State:
+  GoogleMapController? _mapController
+  LatLng? _currentPosition      // google_maps_flutter LatLng
+  bool _fetchingLocation = false
+  bool _showNearby = false
+
+initState: call _fetchLocation() — GPS permission → getCurrentPosition
+On position: _mapController?.animateCamera(CameraUpdate.newLatLngZoom(pos, 13))
+
+Map widget:
+  GoogleMap(
+    onMapCreated: (c) => setState(() => _mapController = c),
+    initialCameraPosition: CameraPosition(
+      target: _currentPosition ?? const LatLng(19.0760, 72.8777),
+      zoom: 12,
+    ),
+    mapType: MapType.normal,
+    myLocationEnabled: true,
+    myLocationButtonEnabled: false,
+    zoomControlsEnabled: false,
+    markers: _buildMarkers(),
+  )
+
+_buildMarkers():
+  - Reacted restaurants (from reactedRestaurantsOnMapProvider — Drift DB):
+      BitmapDescriptor.defaultMarkerWithHue(30.0)  // orange ≈ accent
+  - Nearby restaurants when _showNearby (from nearbyRestaurantsProvider):
+      BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow)
+  - Each marker: Marker(markerId, position, infoWindow: InfoWindow(title: name),
+      onTap: () => context.push('/restaurant/$id'))
+
+AppBar (AppColors.background, elevation 0):
+  title: Text('Map') in AppColors.primaryText
+  leading: back arrow (IconButton → context.pop())
+  actions: TextButton.icon to toggle _showNearby + GPS re-center IconButton (Icons.my_location)
+
+────────────────────────────────────────────────
+DELIVERABLE 2 — HOME SCREEN NAVIGATION ENTRY POINT
+────────────────────────────────────────────────
+
+File: app/lib/features/home/presentation/home_screen.dart (small change)
+
+/map is in ShellRoute but has no UI entry point. Add a map icon to the SliverAppBar:
+
+  SliverAppBar(
+    floating: true,
+    backgroundColor: AppColors.background,
+    automaticallyImplyLeading: false,
+    titleSpacing: 16,
+    title: _SearchBar(onTap: () => context.push('/search')),
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.map_outlined, color: AppColors.secondaryText),
+        tooltip: 'Map',
+        onPressed: () => context.push('/map'),
+      ),
+      const SizedBox(width: 8),
+    ],
+  ),
+
+───────────────────────────────────────
+DELIVERABLE 3 — LOCATION PICKER SCREEN
+───────────────────────────────────────
+
+File: app/lib/features/restaurant/presentation/location_picker_screen.dart (full rewrite)
+Replace flutter_map with google_maps_flutter. Replace Nominatim with Google Places Autocomplete REST API.
+
+Constructor: LocationPickerScreen({LatLng? initial})
+LatLng is now google_maps_flutter.LatLng everywhere — remove latlong2 import.
+
+State:
+  GoogleMapController? _mapController
+  LatLng? _currentPosition         // google_maps_flutter LatLng
+  LatLng _cameraCenter             // tracks map center for Confirm button
+  bool _fetchingGps
+  final _searchController = TextEditingController()
+  Timer? _searchDebounce
+  List<_PlaceResult> _searchResults
+  bool _searching
+
+initState:
+  If widget.initial != null → _currentPosition = _cameraCenter = widget.initial (no GPS needed)
+  Else → _fetchGps()
+
+_fetchGps():
+  isLocationServiceEnabled → checkPermission/requestPermission → getCurrentPosition.timeout(10s)
+  On success: setState _currentPosition = _cameraCenter = LatLng(pos.latitude, pos.longitude)
+              _mapController?.animateCamera(CameraUpdate.newLatLngZoom(_currentPosition!, 15))
+  On denial: setState _currentPosition = _cameraCenter = const LatLng(19.0760, 72.8777) (Mumbai fallback)
+             Show SnackBar("Location access denied. Using Mumbai as default.")
+  On error: same fallback + SnackBar
+
+Map widget:
+  GoogleMap(
+    onMapCreated: (c) => setState(() => _mapController = c),
+    initialCameraPosition: CameraPosition(target: _currentPosition!, zoom: 15),
+    onCameraMove: (pos) => _cameraCenter = pos.target,  // track camera center for Confirm
+    mapType: MapType.normal,
+    myLocationEnabled: false,
+    zoomControlsEnabled: false,
+    markers: const {},  // no markers — crosshair is the pin
+  )
+
+Crosshair: unchanged _Crosshair + _CrosshairPainter (CustomPaint, 32×32, AppColors.accent lines + dot)
+
+Confirm button:
+  onPressed: () => context.pop(_cameraCenter)   // returns google_maps_flutter LatLng
+
+Search — Google Places Autocomplete API (via http package):
+  const String _mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
+
+  Autocomplete endpoint:
+    GET https://maps.googleapis.com/maps/api/place/autocomplete/json
+      ?input={query}&key={_mapsApiKey}&language=en&components=country:in&types=geocode
+
+  _PlaceResult class:
+    final String placeId
+    final String mainText        // structured_formatting.main_text
+    final String secondaryText   // structured_formatting.secondary_text
+    factory fromJson(Map<String, dynamic> json) — parse from predictions array item
+
+  On result tap → _selectResult(result):
+    GET https://maps.googleapis.com/maps/api/place/details/json
+      ?place_id={result.placeId}&fields=geometry&key={_mapsApiKey}
+    lat = (json['result']['geometry']['location']['lat'] as num).toDouble()
+    lng = (json['result']['geometry']['location']['lng'] as num).toDouble()
+    _cameraCenter = LatLng(lat, lng)
+    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(_cameraCenter, 16))
+    _searchController.text = result.mainText
+    setState(() => _searchResults = [])
+
+Layout: Column → [search field, dropdown (ConstrainedBox maxHeight:220), Expanded(Stack(map + crosshair + bottom row))]
+
+────────────────────────────────────
+DELIVERABLE 4 — ROUTER UPDATE
+────────────────────────────────────
+
+File: app/lib/core/router/app_router.dart (small change)
+
+Replace: import 'package:latlong2/latlong.dart';
+With:    import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+/location-picker GoRoute — same logic, just uses new LatLng type:
+  GoRoute(
+    path: '/location-picker',
+    builder: (context, state) => LocationPickerScreen(
+      initial: state.extra is LatLng ? state.extra as LatLng : null,
+    ),
+  ),
+
+No change to /map route.
+
+────────────────────────────
+NO BACKEND CHANGES
+────────────────────────────
+
+Restaurant lat/lng already stored. Use existing nearbyRestaurantsProvider for nearby pins.
+
+Verification:
+  cd app && flutter analyze   → no issues
+  Manual: Home → map icon (AppBar top-right) → Map loads with GPS, reacted pins shown
+  Manual: Add Restaurant → Pick on Map → LocationPickerScreen opens, search finds places, Confirm returns LatLng
+```
+
+---
+
 ## Phase 6 – Image Infrastructure
 
 ```
 We are building Remembite. Phases 0–5 are complete.
 
-Read docs/Tech Stack.md (Storage section) before starting. Reference design/remembite.pen screen 4 (Dish Detail) for image upload placement and screen 3 (Restaurant) for restaurant image treatment.
+Read docs/Tech Stack.md (Storage section) before starting. Reference design/remembite.pen screen 4 (Dish Detail)(Use Frontend Skill for designing UI) for image upload placement and screen 3 (Restaurant) for restaurant image treatment.
 
 Phase 6 deliverables:
 
@@ -492,6 +790,150 @@ Phase 6 deliverables:
    Flutter: long-press on image shows "Report Image" option.
 
 Note: Image upload UI on Dish Detail was visible since Phase 1 but non-functional. This phase makes it functional. No code changes needed in Flutter UI — just wire up the upload API call.
+```
+
+---
+
+## Phase 6.5 – Restaurant Data Enrichment & Smart Map Density
+
+```
+We are building Remembite. Phases 0–6 are complete.
+
+Read CLAUDE.md (design system, AppColors) before starting. Reference docs/RoadMap.md Phase 6.5 for the full spec.
+
+Phase 6.5 has two independent deliverables. Complete them in order.
+
+─────────────────────────────────────────
+DELIVERABLE 1 — RESTAURANT DATA ENRICHMENT
+─────────────────────────────────────────
+
+1. POSTGRESQL MIGRATION
+   Create new migration file: backend/migrations/XXXX_restaurant_enrichment.sql
+   Add columns to restaurants table:
+   - google_place_id    TEXT
+   - google_rating      FLOAT
+   - google_rating_count INT
+   - price_level        SMALLINT    -- 0 = free, 1–4 = ₹ to ₹₹₹₹
+   - business_status    TEXT        -- OPERATIONAL | CLOSED_TEMPORARILY | CLOSED_PERMANENTLY
+   - phone_number       TEXT
+   - website            TEXT
+   - opening_hours      JSONB       -- { "weekday_text": [...7 strings], "open_now": bool }
+
+   All columns are nullable. Existing rows unaffected.
+
+2. BACKEND API UPDATE (backend/src/routes/restaurants.rs)
+   POST /restaurants — extend CreateRestaurantRequest with all 8 new fields (all Option<T>).
+   INSERT statement must include all new columns.
+   GET /restaurants/:id — include all new fields in RestaurantDetail response.
+   GET /restaurants/nearby — include google_rating, open_now (from opening_hours JSONB), price_level in NearbyRestaurant response — useful for future map ranking.
+
+3. FLUTTER — _NearbyPlace MODEL (map_screen.dart)
+   Extend _NearbyPlace to capture fields already returned by Nearby Search:
+   - double? rating           (from 'rating')
+   - int? ratingCount         (from 'user_ratings_total')
+   - int? priceLevel          (from 'price_level')
+   - bool? isOpen             (from 'opening_hours'.'open_now')
+   - String businessStatus    (from 'business_status', default 'OPERATIONAL')
+
+   Update _NearbyPlace.fromJson() to parse all new fields.
+   These are FREE — already returned by the existing Nearby Search API call. No extra API call needed.
+
+4. FLUTTER — PLACE DETAILS API CALL (map_screen.dart)
+   In _showAddPlaceSheet(), before calling createRestaurant, fetch extra detail:
+
+   GET https://maps.googleapis.com/maps/api/place/details/json
+     ?place_id={place.placeId}
+     &fields=formatted_phone_number,website,opening_hours
+     &key={_mapsApiKey}
+
+   Parse: formatted_phone_number → phoneNumber, website, opening_hours.weekday_text → weekdayText list
+   Store in local _PlaceDetail model (private, map_screen only). Fetch in parallel with button loading state.
+
+5. FLUTTER — ENRICHED BOTTOM SHEET (map_screen.dart)
+   Update _showAddPlaceSheet() to display enriched data after fetch:
+   - Rating row: ⭐ 4.2  (1,847 ratings)  — GoogleFonts.dmSans, secondaryText color
+   - Open badge: green "Open now" or red "Closed" chip — from isOpen field
+   - Price level: ₹ symbols matching priceLevel (0 = no badge, 1 = ₹, 2 = ₹₹, 3 = ₹₹₹, 4 = ₹₹₹₹) — accent color
+   - Cuisine badge already exists — keep it
+   Show a loading shimmer row while Place Details API is in flight.
+   If business_status != OPERATIONAL: show "Permanently closed" warning in red; disable "Add to Remembite" button.
+
+6. FLUTTER — DRIFT MIGRATION (app/lib/core/db/app_database.dart)
+   Bump schemaVersion to next number.
+   Add migration callback (MigrationStrategy.onUpgrade) to add new columns to restaurants table.
+   New Drift columns (all nullable): googlePlaceId, googleRating, googleRatingCount, priceLevel,
+   businessStatus, phoneNumber, website, openingHours (TEXT, store as JSON string).
+   Update RestaurantTableData and RestaurantTableCompanion accordingly.
+   Update RestaurantDao.insert() and RestaurantDao.getById() to include new fields.
+
+7. FLUTTER — createRestaurant CALL (restaurant_repository.dart)
+   Extend createRestaurant() method to accept and forward all enriched fields to the backend.
+   Store enriched fields in local Drift DB on successful creation.
+
+──────────────────────────────────────────
+DELIVERABLE 2 — SMART MAP PIN DENSITY
+──────────────────────────────────────────
+
+File: app/lib/features/map/presentation/map_screen.dart
+
+1. ZOOM TRACKING (no setState — same pattern as _cameraCenter)
+   Add state field:
+     double _currentZoom = 14.0;
+   In onCameraMove callback (already exists):
+     _cameraCenter = position.target;
+     _currentZoom  = position.zoom;   // add this line
+
+2. SCORE FUNCTION
+   Add private method to _MapScreenState:
+
+   double _placeScore(_NearbyPlace p) {
+     final rating     = ((p.rating ?? 3.0) / 5.0) * 40;
+     final popularity = (math.log(math.max(1.0, (p.ratingCount ?? 0).toDouble() + 1))
+                         / math.log(1000)) * 30;
+     final openBonus  = (p.isOpen == true) ? 20.0 : 0.0;
+     final opStatus   = (p.businessStatus == 'OPERATIONAL') ? 10.0 : 0.0;
+     return rating + popularity + openBonus + opStatus;
+   }
+
+3. PIN CAP BY ZOOM
+   Add private method:
+
+   int _maxPlacePins(double zoom) {
+     if (zoom < 12) return 8;
+     if (zoom < 13) return 15;
+     if (zoom < 14) return 30;
+     if (zoom < 15) return 60;
+     return _nearbyPlaces.length;   // ≥15: show all
+   }
+
+4. APPLY FILTERING IN _buildMarkers()
+   In the Google Places pins block (places_ markers), before adding to markers:
+
+   final sorted = [..._nearbyPlaces]
+     ..sort((a, b) => _placeScore(b).compareTo(_placeScore(a)));
+   final visible = sorted.take(_maxPlacePins(_currentZoom));
+   for (final place in visible) { ... }   // same marker build logic as before
+
+   Visited pins (reacted_) and nearby Remembite pins (nearby_) are NOT filtered — add them unconditionally.
+
+5. TRIGGER REBUILD ON ZOOM CHANGE
+   In onCameraMove, after updating _currentZoom, call setState only if zoom changed enough to cross a threshold:
+
+   final newZoom = position.zoom;
+   if ((_currentZoom - newZoom).abs() >= 0.5) {
+     setState(() { _currentZoom = newZoom; });
+   } else {
+     _currentZoom = newZoom;
+   }
+
+   This avoids rebuilding at 60fps during a pan but does rebuild when zoom crosses a density threshold.
+
+6. VERIFICATION
+   - flutter analyze → 0 issues
+   - Run on device: at zoom 11 (city view), only 8 highest-scored pins visible
+   - Zoom to 15 (street view): all pins visible
+   - Visited restaurant pins always visible at all zoom levels
+   - Tapping a pin at any zoom level opens the correct sheet or restaurant screen
 ```
 
 ---
@@ -533,6 +975,14 @@ Phase 7 deliverables — optimize search performance and ranking quality:
    Dish search: if same dish name exists at multiple restaurants, group under one result with "Available at 3 restaurants".
    Backend: GROUP BY normalised dish name, return restaurant_ids array.
    Flutter: show grouped dish result with restaurant count, tap expands to list of restaurants.
+
+7. DATA EXPORT (Pro feature)
+   Backend: GET /users/me/export — returns full user data as JSON:
+   { reactions: [...], ratings: [...], notes: [...], favorites: [...], restaurants: [...] }
+   Pro-gated: return 403 for free users.
+   Flutter: "Export Data" row in Settings (activated from Phase 4.6 placeholder).
+   On tap: call API, receive JSON, share via OS share sheet using share_plus package.
+   Show loading indicator while export is generating.
 ```
 
 ---

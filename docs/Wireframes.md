@@ -69,8 +69,8 @@ Note: Bootstrapping reactions count toward ≥10 personal reaction threshold for
 | • Barbeque Nation ⭐4.3                           |     |           |         |
 | • Cafe Delhi Heights ⭐4.0                        |     |           |         |
 | ------------------------------------------------ |     |           |         |
-| [ Scan Menu ]                                    |     |           |         |
-| (Floating Action Button — secondary action)      |     |           |         |
+| [ 🔍 Search Restaurant ]                          |     |           |         |
+| (Floating Action Button — navigates to /search)  |     |           |         |
 | ------------------------------------------------ |     |           |         |
 | Bottom Navigation                                |     |           |         |
 | Home                                             | Map | Favorites | Profile |
@@ -78,7 +78,8 @@ Note: Bootstrapping reactions count toward ≥10 personal reaction threshold for
 ---
 
 Recently Visited is surfaced first — returning users act on existing context, not OCR.
-Scan Menu FAB is available but not the primary CTA.
+Scan Menu FAB navigates to Search → user selects a restaurant → restaurant screen → tap scan from there.
+This enforces that scan always has a restaurant target without adding new UI patterns.
 Search includes fuzzy matching across restaurants & dishes.
 
 ---
@@ -187,6 +188,9 @@ Saved dishes immediately visible with "Classifying..." attribute state until LLM
 
 | Dish Name                                        |
 | ------------------------------------------------ |
+| [ 🔖 Want to Try ]  ← bookmark toggle chip      |
+| (active = accent fill; inactive = ghost border) |
+|                                                  |
 | Your Reaction: 🔥 So Yummy                       |
 |                                                  |
 | [Classifying...] (shown while LLM job pending)  |
@@ -207,6 +211,7 @@ Saved dishes immediately visible with "Classifying..." attribute state until LLM
 | 🍬 Low  🍬🍬 Medium  🍬🍬🍬 High  [Skip]         |
 |                                                  |
 | [ Save Changes ]                                 |
+| Note: Saving a reaction auto-removes Want to Try |
 
 ---
 
@@ -305,12 +310,15 @@ Private to user.
 | Dishes                                           |
 | • Butter Chicken – 3 Restaurants                 |
 | ------------------------------------------------ |
+| [ + Add New Restaurant ]  (always visible)       |
 
 Results prioritized by:
 
 1. Exact match
 2. Partial match
 3. Popularity
+
+"Add New Restaurant" button is always visible at the bottom of the search screen regardless of results — it is the primary entry point for adding a restaurant.
 
 ---
 

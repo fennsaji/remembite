@@ -13,14 +13,17 @@ Components:
 * Search bar (fuzzy match across restaurants & dishes)
 * Nearby Restaurants list (with star rating)
 * Recently Visited list
-* Floating Action Button: Scan Menu (secondary flow — not primary onboarding path)
-* Bottom Navigation: Home | Map | Favorites | Profile
+* Floating Action Button: Search Restaurant (search icon) — navigates to `/search`; scan is only accessible from within a restaurant's context
+* AppBar icon: `Icons.map_outlined` (top-right) — navigates to `/map`
+* Bottom Navigation: Home | Favorites | Timeline | Profile
 
 Behavior:
 
 * Auto-detect nearby restaurants via GPS
-* Manual "Add New" option inside search
+* Manual "Add New Restaurant" button always visible at the bottom of the Search screen — navigates to `/restaurant/add`
 * Default entry point for returning users is the Recently Visited list, not OCR
+* Scan Menu FAB takes user to Search → select restaurant → restaurant screen → scan from there
+* Scan is a restaurant-contextual action — never invoked directly from home without a restaurantId
 
 ---
 
@@ -48,6 +51,7 @@ Must support:
 * Optional spice intensity voting
 * Optional sweetness intensity voting
 * Save changes
+* **"Want to Try" intent toggle** — bookmark-style button; persisted server-side per user per dish; auto-removed when user submits a reaction (tried = implicit from reaction)
 
 ---
 
@@ -87,17 +91,50 @@ Note: In early stages (pre-community scale), admin manually applies edits. Commu
 
 ### 1.6 Map View
 
+Navigation:
+
+* Accessed via `Icons.map_outlined` in Home screen AppBar (not in bottom navigation)
+
 Default:
 
-* Display only visited restaurants
+* Display only visited restaurants (pins from local Drift DB)
+* Auto-fetch nearby restaurants from Google Places Nearby Search on load
 
-Toggle:
+Pin types:
 
-* Show nearby restaurants
+* Orange (accent) — restaurants user has reacted to (from local Drift DB)
+* Yellow — nearby restaurants already in Remembite DB
+* Custom (turmeric circle + restaurant icon + name label) — Google Places results not yet in Remembite
 
 Pin interaction:
 
-* Opens Restaurant Super Screen
+* Tap visited/nearby pin → opens Restaurant Super Screen
+* Tap Google Places pin → bottom sheet: name, address, cuisine, Google rating, open/closed badge, price level → "Add to Remembite" button
+
+Map search:
+
+* Search bar overlay (top) — Google Places Autocomplete; tap result → move camera + show add sheet
+* "Search this area" button (bottom-left) — re-fetch Places for current camera center
+
+Smart pin density:
+
+* Google Places pins (not user's visited restaurants) are filtered by a quality score based on zoom level
+* Score formula: `rating * 0.4 + log(rating_count) * 0.3 + is_open * 0.2 + is_operational * 0.1`
+* Pin caps by zoom: <12 → 8 pins, 12–13 → 15, 13–14 → 30, 14–15 → 60, ≥15 → all
+* Visited restaurant pins (user's own data) always shown at all zoom levels — never filtered
+* Filtering is client-side from the already-fetched list; no extra API calls
+
+Map provider:
+
+* Google Maps (`google_maps_flutter`) — API key required (Maps SDK for Android + iOS)
+
+### 1.6.1 Location Picker (Add Restaurant Flow)
+
+* Full-screen route `/location-picker` — accessible via "Pick on Map →" button in Add Restaurant
+* Fixed crosshair overlay; map pans under it; Confirm captures center coordinates
+* Search powered by Google Places Autocomplete API
+* GPS "Use GPS" button snaps to device location
+* Returns `LatLng` to Add Restaurant, which re-fires duplicate detection on return
 
 ---
 
@@ -401,6 +438,49 @@ Must support:
 Note: Third-party payment providers (Razorpay, Stripe, etc.) cannot be used for in-app subscriptions — Google mandates Play Billing for digital goods. iOS billing (StoreKit 2) added post-Phase 3.
 
 Note: Payment infrastructure must be implemented before AI predictions ship, so the upgrade moment exists when users first see predictions gated.
+
+---
+
+## 10. Restaurant Data Seeding & Enrichment
+
+### 10.1 Cold-Start Problem
+
+New users who open Remembite in a city with no seeded data see an empty restaurant list and churn before experiencing value. The crawler solves this by pre-seeding the database before launch.
+
+### 10.2 Crawler Behavior (Backend, No User-Facing UI)
+
+* Monthly background job scans ~1,560 grid points across 18 cities using Google Places **Legacy** Nearby Search only (no Place Details during crawl)
+* Inserts restaurants with: name, coordinates, Google rating, price level, business status
+* Full 18-city coverage after ~4 monthly runs; crawler then cycles to refresh data (ToS compliance)
+* Crawler cost: **$0/month** (Nearby Search within 5,000 free events/month)
+
+### 10.3 Place Details Enrichment + Menu Seeding (User-Triggered, Every 90 Days)
+
+When a user views a restaurant page (`GET /restaurants/:id`):
+* If `enriched_at IS NULL` or `enriched_at < 90 days ago` → fetch Google Places Details in background
+* Stores: `phone_number`, `website`, `opening_hours`; sets `enriched_at = NOW()`
+* If `dish_count = 0` and `website IS NOT NULL` → attempt menu seeding from restaurant's own website; parse with Gemini LLM; insert dishes
+* User gets immediate response with cached data; enriched data appears on next load
+
+### 10.4 Cities Covered
+
+**Metro (8):** Mumbai, Delhi NCR, Bangalore, Hyderabad, Chennai, Kolkata, Pune, Ahmedabad
+
+**Tier-2 (10):** Jaipur, Lucknow, Surat, Indore, Bhopal, Chandigarh, Kochi, Coimbatore, Visakhapatnam, Nagpur
+
+### 10.5 Admin Controls
+
+Admin-only API (no user-facing UI):
+* `POST /admin/crawl` — trigger full crawl for all cities
+* `POST /admin/crawl/:city` — trigger single city crawl
+* `GET /admin/crawl/runs` — view crawl history with status and counts
+
+### 10.6 Success Criteria
+
+* ≥500 restaurants per metro city before launch
+* ≥200 restaurants per Tier-2 city before launch
+* ≥40% of restaurants have ≥5 pre-seeded dishes
+* Google Places API cost: $0/month (within free credit)
 
 ---
 

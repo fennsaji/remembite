@@ -25,6 +25,7 @@ dependencies:
 
   # Networking
   dio: ^5.7.0
+  http: ^1.2.0
 
   # Auth
   google_sign_in: ^6.2.2
@@ -42,6 +43,23 @@ dependencies:
   # Image handling
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
+  flutter_image_compress: ^2.3.0
+
+  # Location
+  geolocator: ^13.0.2
+
+  # Map
+  google_maps_flutter: ^2.9.0
+  # Needed to switch Android to Virtual Display mode in main.dart
+  # (useAndroidViewSurface = false), which routes all touches through Flutter.
+  google_maps_flutter_android: any
+  google_maps_flutter_platform_interface: any
+
+  # Auth persistence
+  flutter_secure_storage: ^9.2.2
+
+  # Animations
+  shimmer: ^3.0.0
 
   # Utilities
   uuid: ^4.5.1
@@ -50,14 +68,40 @@ dependencies:
 
   # Fonts
   google_fonts: ^6.2.1
+  url_launcher: ^6.3.2
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
   flutter_lints: ^5.0.0
   drift_dev: ^2.22.1
   build_runner: ^2.4.13
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.3
   riverpod_generator: ^2.6.1
+
+flutter_native_splash:
+  color: "#0F0D0B"
+  background_image: assets/images/splash_screen.png
+  fullscreen: true
+  android_12:
+    color: "#0F0D0B"
+    image: assets/images/splash_screen.png
+    icon_background_color: "#0F0D0B"
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  # Android adaptive icon (API 26+)
+  adaptive_icon_background: "#0F0D0B"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  min_sdk_android: 21
+  # Remove old icon files
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true

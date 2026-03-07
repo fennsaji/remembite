@@ -2,4 +2,5 @@ pub mod jwt;
 pub mod middleware;
 pub mod google;
 
-pub use middleware::AuthUser;
+#[cfg(test)]
+mod jwt_tests;

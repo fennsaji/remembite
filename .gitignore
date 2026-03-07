@@ -1,6 +1,25 @@
 # Environment
 .env
 .env.local
+.env.api
+.env.android
+.env.ios
+.env.usb
+.env.prod
+
+
+# Firebase — contain OAuth client IDs, managed outside git
+app/android/app/google-services.json
+app/ios/Runner/GoogleService-Info.plist
+
+# Android local.properties — machine-specific paths + API keys, never commit
+app/android/local.properties
+
+# iOS secrets — API keys injected via xcconfig, never commit
+app/ios/Flutter/Secrets.xcconfig
+
+# Git worktrees
+.worktrees/
 
 # macOS
 .DS_Store

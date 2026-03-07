@@ -1,0 +1,9 @@
+## Copy this file to local.properties and fill in your values.
+## local.properties is gitignored — never commit real keys or machine paths.
+
+sdk.dir=/path/to/Android/sdk
+flutter.sdk=/path/to/flutter
+flutter.buildMode=debug
+flutter.versionName=1.0.0
+flutter.versionCode=1
+MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY_HERE

@@ -20,6 +20,7 @@ pub enum Job {
         restaurant_id: Uuid,
         user_id: Uuid,
     },
+    RecomputeTasteVectors,
 }
 
 /// Abstraction over job queue implementations.

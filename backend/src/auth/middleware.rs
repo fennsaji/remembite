@@ -13,6 +13,7 @@ use crate::{
 
 /// Authenticated user extracted from JWT — injected into handlers via extractor.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct AuthUser {
     pub id: Uuid,
     pub email: String,
@@ -20,6 +21,7 @@ pub struct AuthUser {
     pub admin: bool,
 }
 
+#[allow(dead_code)]
 impl AuthUser {
     /// Returns Err if user is not Pro.
     pub fn require_pro(&self) -> Result<(), AppError> {
@@ -77,4 +79,56 @@ fn extract_bearer(parts: &Parts) -> Result<String, AppError> {
         .strip_prefix("Bearer ")
         .map(|t| t.to_string())
         .ok_or_else(|| AppError::Unauthorized("Invalid Authorization header format".to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_user(pro: bool, admin: bool) -> AuthUser {
+        AuthUser {
+            id: Uuid::new_v4(),
+            email: "test@test.com".to_string(),
+            pro,
+            admin,
+        }
+    }
+
+    #[test]
+    fn non_pro_user_gets_upgrade_required() {
+        let user = make_user(false, false);
+        assert!(matches!(user.require_pro(), Err(AppError::UpgradeRequired)));
+    }
+
+    #[test]
+    fn pro_user_passes_require_pro() {
+        let user = make_user(true, false);
+        assert!(user.require_pro().is_ok());
+    }
+
+    #[test]
+    fn non_admin_gets_forbidden() {
+        let user = make_user(false, false);
+        assert!(matches!(user.require_admin(), Err(AppError::Forbidden(_))));
+    }
+
+    #[test]
+    fn admin_passes_require_admin() {
+        let user = make_user(false, true);
+        assert!(user.require_admin().is_ok());
+    }
+
+    #[test]
+    fn pro_admin_user_passes_both_checks() {
+        let user = make_user(true, true);
+        assert!(user.require_pro().is_ok());
+        assert!(user.require_admin().is_ok());
+    }
+
+    #[test]
+    fn admin_without_pro_fails_pro_check() {
+        // Admin does not automatically grant Pro — they are orthogonal flags.
+        let user = make_user(false, true);
+        assert!(matches!(user.require_pro(), Err(AppError::UpgradeRequired)));
+    }
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/network/api_error.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -30,26 +32,39 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
       // Exchange Google ID token for Remembite JWT
       final dio = ref.read(apiClientProvider);
-      final response = await dio.post('/auth/google', data: {'id_token': idToken});
+      final response = await dio.post(
+        '/auth/google',
+        data: {'id_token': idToken},
+      );
 
       final data = response.data as Map<String, dynamic>;
       final userJson = data['user'] as Map<String, dynamic>;
 
-      await ref.read(authStateProvider.notifier).signIn(AuthUser(
-        id: userJson['id'] as String,
-        email: userJson['email'] as String,
-        displayName: userJson['display_name'] as String,
-        avatarUrl: userJson['avatar_url'] as String?,
-        isPro: userJson['pro_status'] as bool,
-        accessToken: data['access_token'] as String,
-      ));
+      await ref
+          .read(authStateProvider.notifier)
+          .signIn(
+            AuthUser(
+              id: userJson['id'] as String,
+              email: userJson['email'] as String,
+              displayName: userJson['display_name'] as String,
+              avatarUrl: userJson['avatar_url'] as String?,
+              isPro: userJson['pro_status'] as bool,
+              accessToken: data['access_token'] as String,
+            ),
+          );
 
-      if (mounted) context.go('/onboarding');
+      if (mounted) {
+        const storage = FlutterSecureStorage();
+        final bootstrapped = await storage.read(key: 'has_bootstrapped');
+        if (mounted) {
+          context.go(bootstrapped == 'true' ? '/home' : '/onboarding');
+        }
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sign in failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(apiErrorMessage(e))));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -76,9 +91,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               const SizedBox(height: 8),
               Text(
                 'Remember What You Loved.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.secondaryText,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: AppColors.secondaryText),
               ),
               const Spacer(),
               SizedBox(
@@ -89,10 +104,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Icon(Icons.g_mobiledata, size: 24),
-                  label: Text(_loading ? 'Signing in…' : 'Continue with Google'),
+                  label: Text(
+                    _loading ? 'Signing in…' : 'Continue with Google',
+                  ),
                 ),
               ),
               const SizedBox(height: 32),

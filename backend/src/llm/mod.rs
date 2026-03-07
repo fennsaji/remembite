@@ -1,4 +1,7 @@
 pub mod provider;
 pub mod gemini;
 
-pub use provider::{DishAttributes, LlmProvider, ParsedDish};
+#[cfg(test)]
+pub mod mock;
+
+pub use provider::LlmProvider;

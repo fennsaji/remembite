@@ -1,0 +1,123 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      # ── Write .env.api (backend secrets) ───────────────────────────────────
+      # printf '%s\n' safely handles JSON values with quotes / backslashes.
+      - name: Write .env.api
+        env:
+          POSTGRES_PASSWORD:                ${{ secrets.POSTGRES_PASSWORD }}
+          JWT_SECRET:                       ${{ secrets.JWT_SECRET }}
+          GOOGLE_CLIENT_ID:                 ${{ secrets.GOOGLE_CLIENT_ID }}
+          GEMINI_API_KEY:                   ${{ secrets.GEMINI_API_KEY }}
+          R2_ACCOUNT_ID:                    ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID:                 ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY:             ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_PUBLIC_URL:                    ${{ secrets.R2_PUBLIC_URL }}
+          FCM_SERVICE_ACCOUNT_JSON:         ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+          FCM_PROJECT_ID:                   ${{ secrets.FCM_PROJECT_ID }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_PUBSUB_WEBHOOK_TOKEN:      ${{ secrets.GOOGLE_PUBSUB_WEBHOOK_TOKEN }}
+        run: |
+          {
+            printf 'DATABASE_URL=postgres://remembite:%s@postgres:5432/remembite\n' "$POSTGRES_PASSWORD"
+            printf 'JWT_SECRET=%s\n'                        "$JWT_SECRET"
+            printf 'JWT_ACCESS_EXPIRY_HOURS=24\n'
+            printf 'JWT_REFRESH_EXPIRY_DAYS=30\n'
+            printf 'GOOGLE_CLIENT_ID=%s\n'                  "$GOOGLE_CLIENT_ID"
+            printf 'GEMINI_API_KEY=%s\n'                    "$GEMINI_API_KEY"
+            printf 'LLM_PROVIDER=gemini\n'
+            printf 'R2_ACCOUNT_ID=%s\n'                     "$R2_ACCOUNT_ID"
+            printf 'R2_ACCESS_KEY_ID=%s\n'                  "$R2_ACCESS_KEY_ID"
+            printf 'R2_SECRET_ACCESS_KEY=%s\n'              "$R2_SECRET_ACCESS_KEY"
+            printf 'R2_BUCKET=remembite-images\n'
+            printf 'R2_PUBLIC_URL=%s\n'                     "$R2_PUBLIC_URL"
+            printf 'FCM_SERVICE_ACCOUNT_JSON=%s\n'          "$FCM_SERVICE_ACCOUNT_JSON"
+            printf 'FCM_PROJECT_ID=%s\n'                    "$FCM_PROJECT_ID"
+            printf 'GOOGLE_PLAY_PACKAGE_NAME=com.fennsaji.remembite\n'
+            printf 'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=%s\n'  "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"
+            printf 'GOOGLE_PUBSUB_WEBHOOK_TOKEN=%s\n'       "$GOOGLE_PUBSUB_WEBHOOK_TOKEN"
+            printf 'SERVER_HOST=0.0.0.0\n'
+            printf 'SERVER_PORT=8080\n'
+            printf 'APP_ENV=production\n'
+            printf 'RUST_LOG=remembite=info,tower_http=warn\n'
+          } > .env.api
+
+      # ── Write .env (compose variable substitution) ──────────────────────────
+      # docker-compose.prod.yml uses ${POSTGRES_PASSWORD} for the postgres service.
+      - name: Write .env
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: printf 'POSTGRES_PASSWORD=%s\n' "$POSTGRES_PASSWORD" > .env
+
+      # ── Build & push Docker image ───────────────────────────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ghcr.io/fennsaji/remembite-backend:latest
+            ghcr.io/fennsaji/remembite-backend:${{ github.event.workflow_run.head_sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Copy files to VPS ───────────────────────────────────────────────────
+      - name: Copy compose file, .env.api, and .env to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22221
+          source: "docker-compose.prod.yml,.env.api,.env"
+          target: /opt/remembite/
+
+      # ── Deploy ──────────────────────────────────────────────────────────────
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22221
+          script: |
+            cd /opt/remembite
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker image prune -f
