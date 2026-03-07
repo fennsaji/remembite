@@ -105,7 +105,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22221
-          source: "docker-compose.prod.yml,.env.api,.env"
+          source: "docker-compose.prod.yml,.env.api,.env,Caddyfile"
           target: /opt/remembite/
 
       # ── Deploy ──────────────────────────────────────────────────────────────
