@@ -1,5 +1,6 @@
 # Production compose — runs on the VPS.
 # Postgres runs as a container with a named volume for persistence.
+# Caddy handles HTTPS (auto SSL via Let's Encrypt) and proxies to backend.
 # Secrets come from /opt/remembite/.env.api on the host.
 
 services:
@@ -22,8 +23,6 @@ services:
     image: ghcr.io/fennsaji/remembite-backend:latest
     restart: unless-stopped
     env_file: .env.api
-    ports:
-      - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -34,5 +33,21 @@ services:
       retries: 3
       start_period: 15s
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

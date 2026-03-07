@@ -1,0 +1,3 @@
+api.remembite.fennsaji.com {
+    reverse_proxy backend:8080
+}
