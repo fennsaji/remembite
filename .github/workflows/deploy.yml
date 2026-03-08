@@ -67,11 +67,18 @@ jobs:
           } > .env.api
 
       # ── Write .env (compose variable substitution) ──────────────────────────
-      # docker-compose.prod.yml uses ${POSTGRES_PASSWORD} for the postgres service.
+      # docker-compose.prod.yml uses these for postgres and vector services.
       - name: Write .env
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: printf 'POSTGRES_PASSWORD=%s\n' "$POSTGRES_PASSWORD" > .env
+          AXIOM_API_KEY:     ${{ secrets.AXIOM_API_KEY }}
+          AXIOM_DATASET:     ${{ secrets.AXIOM_DATASET }}
+        run: |
+          {
+            printf 'POSTGRES_PASSWORD=%s\n' "$POSTGRES_PASSWORD"
+            printf 'AXIOM_API_KEY=%s\n'     "$AXIOM_API_KEY"
+            printf 'AXIOM_DATASET=%s\n'     "$AXIOM_DATASET"
+          } > .env
 
       # ── Build & push Docker image ───────────────────────────────────────────
       - name: Set up Docker Buildx
@@ -105,7 +112,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22221
-          source: "docker-compose.prod.yml,.env.api,.env,Caddyfile"
+          source: "docker-compose.prod.yml,.env.api,.env,Caddyfile,vector.toml"
           target: /opt/remembite/
 
       # ── Deploy ──────────────────────────────────────────────────────────────

@@ -1,0 +1,19 @@
+# Vector — ships Docker container logs to Axiom
+
+[sources.docker]
+type = "docker_logs"
+exclude_containers = ["vector"]
+
+[transforms.parse]
+type = "remap"
+inputs = ["docker"]
+source = '''
+.container = .container_name
+del(.container_name)
+'''
+
+[sinks.axiom]
+type = "axiom"
+inputs = ["parse"]
+token = "${AXIOM_API_KEY}"
+dataset = "${AXIOM_DATASET}"
