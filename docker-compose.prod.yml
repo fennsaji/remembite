@@ -47,6 +47,18 @@ services:
     depends_on:
       - backend
 
+  vector:
+    image: timberio/vector:0.43.0-alpine
+    restart: unless-stopped
+    environment:
+      AXIOM_API_KEY: ${AXIOM_API_KEY}
+      AXIOM_DATASET: ${AXIOM_DATASET}
+    volumes:
+      - ./vector.toml:/etc/vector/vector.toml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
   caddy_data:
