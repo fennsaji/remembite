@@ -146,7 +146,6 @@ jobs:
           track: internal
           status: completed
           whatsNewDirectory: distribution/whatsnew
-          mappingFile: app/build/app/outputs/mapping/release/mapping.txt
 
       # ── Cleanup sensitive files ──────────────────────────────────────────────
       - name: Security cleanup
