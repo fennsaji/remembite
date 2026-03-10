@@ -16,7 +16,7 @@ android {
     val localProps = Properties()
     val localPropsFile = rootProject.file("local.properties")
     if (localPropsFile.exists()) localPropsFile.inputStream().use { localProps.load(it) }
-    val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY") ?: ""
+    val mapsApiKey: String = System.getenv("MAPS_API_KEY") ?: localProps.getProperty("MAPS_API_KEY") ?: ""
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

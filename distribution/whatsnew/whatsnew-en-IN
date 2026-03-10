@@ -1,1 +1,1 @@
-First internal release — dish reactions, taste profile, restaurant discovery, and menu scanning.
+Fix Google Maps not loading — map tiles now render correctly in production builds.
