@@ -1,1 +1,1 @@
-Fix Google Sign-In on Android — resolves authentication failure on Play Store builds.
+Fix Google Maps not loading — map tiles now render correctly in production builds.

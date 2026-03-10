@@ -91,12 +91,6 @@ jobs:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/android/upload-keystore.jks
 
-      # ── Inject Maps API key into local.properties (picked up by gradle manifestPlaceholders) ──
-      - name: Inject Maps API key
-        env:
-          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
-        run: printf 'MAPS_API_KEY=%s\n' "$MAPS_API_KEY" >> app/android/local.properties
-
       # ── Google Services ──────────────────────────────────────────────────────
       - name: Write google-services.json
         env:
@@ -112,6 +106,7 @@ jobs:
           KEY_PASSWORD:   ${{ secrets.ANDROID_KEY_PASSWORD }}
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           STORE_FILE:     "../upload-keystore.jks"
+          MAPS_API_KEY:   ${{ secrets.MAPS_API_KEY }}
         run: |
           flutter build appbundle \
             --release \
