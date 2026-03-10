@@ -22,7 +22,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _loading = true);
     try {
-      final googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+      final googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+        serverClientId: const String.fromEnvironment('GOOGLE_WEB_CLIENT_ID'),
+      );
       final account = await googleSignIn.signIn();
       if (account == null) return; // user cancelled
 

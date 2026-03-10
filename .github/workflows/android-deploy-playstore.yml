@@ -117,6 +117,7 @@ jobs:
             --release \
             --dart-define=API_URL=https://api.remembite.fennsaji.com \
             --dart-define=MAPS_API_KEY=${{ secrets.MAPS_API_KEY }} \
+            --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }} \
             --build-number=${{ github.run_number }} \
             --build-name=1.0.${{ github.run_number }}
 
