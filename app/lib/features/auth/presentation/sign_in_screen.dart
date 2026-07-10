@@ -42,28 +42,36 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
       final data = response.data as Map<String, dynamic>;
       final userJson = data['user'] as Map<String, dynamic>;
+      final userId = userJson['id'] as String;
 
       await ref
           .read(authStateProvider.notifier)
           .signIn(
             AuthUser(
-              id: userJson['id'] as String,
+              id: userId,
               email: userJson['email'] as String,
               displayName: userJson['display_name'] as String,
               avatarUrl: userJson['avatar_url'] as String?,
               isPro: userJson['pro_status'] as bool,
               accessToken: data['access_token'] as String,
+              refreshToken: data['refresh_token'] as String,
             ),
           );
 
       if (mounted) {
         const storage = FlutterSecureStorage();
-        final bootstrapped = await storage.read(key: 'has_bootstrapped');
+        // Keyed per-user — a global 'has_bootstrapped' key meant a second
+        // account signing in on the same device skipped taste-calibration
+        // onboarding entirely, starting with an empty taste profile.
+        final bootstrapped = await storage.read(
+          key: 'has_bootstrapped_$userId',
+        );
         if (mounted) {
           context.go(bootstrapped == 'true' ? '/home' : '/onboarding');
         }
       }
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('SIGN_IN_ERROR: $e\n$st');
       if (mounted) {
         ScaffoldMessenger.of(
           context,

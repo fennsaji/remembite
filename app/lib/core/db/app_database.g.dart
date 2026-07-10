@@ -2714,6 +2714,15 @@ class $DishIntentsTable extends DishIntents
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _dishIdMeta = const VerificationMeta('dishId');
   @override
   late final GeneratedColumn<String> dishId = GeneratedColumn<String>(
@@ -2746,7 +2755,7 @@ class $DishIntentsTable extends DishIntents
     defaultValue: currentDateAndTime,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, dishId, intent, createdAt];
+  List<GeneratedColumn> get $columns => [id, userId, dishId, intent, createdAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2763,6 +2772,14 @@ class $DishIntentsTable extends DishIntents
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
     }
     if (data.containsKey('dish_id')) {
       context.handle(
@@ -2797,6 +2814,10 @@ class $DishIntentsTable extends DishIntents
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
       dishId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}dish_id'],
@@ -2820,11 +2841,13 @@ class $DishIntentsTable extends DishIntents
 
 class DishIntent extends DataClass implements Insertable<DishIntent> {
   final String id;
+  final String userId;
   final String dishId;
   final String intent;
   final DateTime createdAt;
   const DishIntent({
     required this.id,
+    required this.userId,
     required this.dishId,
     required this.intent,
     required this.createdAt,
@@ -2833,6 +2856,7 @@ class DishIntent extends DataClass implements Insertable<DishIntent> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
     map['dish_id'] = Variable<String>(dishId);
     map['intent'] = Variable<String>(intent);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -2842,6 +2866,7 @@ class DishIntent extends DataClass implements Insertable<DishIntent> {
   DishIntentsCompanion toCompanion(bool nullToAbsent) {
     return DishIntentsCompanion(
       id: Value(id),
+      userId: Value(userId),
       dishId: Value(dishId),
       intent: Value(intent),
       createdAt: Value(createdAt),
@@ -2855,6 +2880,7 @@ class DishIntent extends DataClass implements Insertable<DishIntent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DishIntent(
       id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
       dishId: serializer.fromJson<String>(json['dishId']),
       intent: serializer.fromJson<String>(json['intent']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -2865,6 +2891,7 @@ class DishIntent extends DataClass implements Insertable<DishIntent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
       'dishId': serializer.toJson<String>(dishId),
       'intent': serializer.toJson<String>(intent),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -2873,11 +2900,13 @@ class DishIntent extends DataClass implements Insertable<DishIntent> {
 
   DishIntent copyWith({
     String? id,
+    String? userId,
     String? dishId,
     String? intent,
     DateTime? createdAt,
   }) => DishIntent(
     id: id ?? this.id,
+    userId: userId ?? this.userId,
     dishId: dishId ?? this.dishId,
     intent: intent ?? this.intent,
     createdAt: createdAt ?? this.createdAt,
@@ -2885,6 +2914,7 @@ class DishIntent extends DataClass implements Insertable<DishIntent> {
   DishIntent copyWithCompanion(DishIntentsCompanion data) {
     return DishIntent(
       id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
       dishId: data.dishId.present ? data.dishId.value : this.dishId,
       intent: data.intent.present ? data.intent.value : this.intent,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -2895,6 +2925,7 @@ class DishIntent extends DataClass implements Insertable<DishIntent> {
   String toString() {
     return (StringBuffer('DishIntent(')
           ..write('id: $id, ')
+          ..write('userId: $userId, ')
           ..write('dishId: $dishId, ')
           ..write('intent: $intent, ')
           ..write('createdAt: $createdAt')
@@ -2903,12 +2934,13 @@ class DishIntent extends DataClass implements Insertable<DishIntent> {
   }
 
   @override
-  int get hashCode => Object.hash(id, dishId, intent, createdAt);
+  int get hashCode => Object.hash(id, userId, dishId, intent, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DishIntent &&
           other.id == this.id &&
+          other.userId == this.userId &&
           other.dishId == this.dishId &&
           other.intent == this.intent &&
           other.createdAt == this.createdAt);
@@ -2916,12 +2948,14 @@ class DishIntent extends DataClass implements Insertable<DishIntent> {
 
 class DishIntentsCompanion extends UpdateCompanion<DishIntent> {
   final Value<String> id;
+  final Value<String> userId;
   final Value<String> dishId;
   final Value<String> intent;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const DishIntentsCompanion({
     this.id = const Value.absent(),
+    this.userId = const Value.absent(),
     this.dishId = const Value.absent(),
     this.intent = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -2929,14 +2963,17 @@ class DishIntentsCompanion extends UpdateCompanion<DishIntent> {
   });
   DishIntentsCompanion.insert({
     required String id,
+    required String userId,
     required String dishId,
     this.intent = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
+       userId = Value(userId),
        dishId = Value(dishId);
   static Insertable<DishIntent> custom({
     Expression<String>? id,
+    Expression<String>? userId,
     Expression<String>? dishId,
     Expression<String>? intent,
     Expression<DateTime>? createdAt,
@@ -2944,6 +2981,7 @@ class DishIntentsCompanion extends UpdateCompanion<DishIntent> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
       if (dishId != null) 'dish_id': dishId,
       if (intent != null) 'intent': intent,
       if (createdAt != null) 'created_at': createdAt,
@@ -2953,6 +2991,7 @@ class DishIntentsCompanion extends UpdateCompanion<DishIntent> {
 
   DishIntentsCompanion copyWith({
     Value<String>? id,
+    Value<String>? userId,
     Value<String>? dishId,
     Value<String>? intent,
     Value<DateTime>? createdAt,
@@ -2960,6 +2999,7 @@ class DishIntentsCompanion extends UpdateCompanion<DishIntent> {
   }) {
     return DishIntentsCompanion(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       dishId: dishId ?? this.dishId,
       intent: intent ?? this.intent,
       createdAt: createdAt ?? this.createdAt,
@@ -2972,6 +3012,9 @@ class DishIntentsCompanion extends UpdateCompanion<DishIntent> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
     }
     if (dishId.present) {
       map['dish_id'] = Variable<String>(dishId.value);
@@ -2992,6 +3035,7 @@ class DishIntentsCompanion extends UpdateCompanion<DishIntent> {
   String toString() {
     return (StringBuffer('DishIntentsCompanion(')
           ..write('id: $id, ')
+          ..write('userId: $userId, ')
           ..write('dishId: $dishId, ')
           ..write('intent: $intent, ')
           ..write('createdAt: $createdAt, ')
@@ -4373,6 +4417,7 @@ typedef $$FavoritesTableProcessedTableManager =
 typedef $$DishIntentsTableCreateCompanionBuilder =
     DishIntentsCompanion Function({
       required String id,
+      required String userId,
       required String dishId,
       Value<String> intent,
       Value<DateTime> createdAt,
@@ -4381,6 +4426,7 @@ typedef $$DishIntentsTableCreateCompanionBuilder =
 typedef $$DishIntentsTableUpdateCompanionBuilder =
     DishIntentsCompanion Function({
       Value<String> id,
+      Value<String> userId,
       Value<String> dishId,
       Value<String> intent,
       Value<DateTime> createdAt,
@@ -4398,6 +4444,11 @@ class $$DishIntentsTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4431,6 +4482,11 @@ class $$DishIntentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get dishId => $composableBuilder(
     column: $table.dishId,
     builder: (column) => ColumnOrderings(column),
@@ -4458,6 +4514,9 @@ class $$DishIntentsTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<String> get dishId =>
       $composableBuilder(column: $table.dishId, builder: (column) => column);
@@ -4501,12 +4560,14 @@ class $$DishIntentsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
                 Value<String> dishId = const Value.absent(),
                 Value<String> intent = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DishIntentsCompanion(
                 id: id,
+                userId: userId,
                 dishId: dishId,
                 intent: intent,
                 createdAt: createdAt,
@@ -4515,12 +4576,14 @@ class $$DishIntentsTableTableManager
           createCompanionCallback:
               ({
                 required String id,
+                required String userId,
                 required String dishId,
                 Value<String> intent = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DishIntentsCompanion.insert(
                 id: id,
+                userId: userId,
                 dishId: dishId,
                 intent: intent,
                 createdAt: createdAt,
@@ -4573,11 +4636,11 @@ class $AppDatabaseManager {
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appDatabaseHash() => r'4db1c5efe1a73afafa926c6e91d12e49a68b1abc';
+String _$appDatabaseHash() => r'59cce38d45eeaba199eddd097d8e149d66f9f3e1';
 
 /// See also [appDatabase].
 @ProviderFor(appDatabase)
-final appDatabaseProvider = AutoDisposeProvider<AppDatabase>.internal(
+final appDatabaseProvider = Provider<AppDatabase>.internal(
   appDatabase,
   name: r'appDatabaseProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -4589,6 +4652,6 @@ final appDatabaseProvider = AutoDisposeProvider<AppDatabase>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef AppDatabaseRef = AutoDisposeProviderRef<AppDatabase>;
+typedef AppDatabaseRef = ProviderRef<AppDatabase>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

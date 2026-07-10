@@ -2,11 +2,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 import 'core/billing/billing_service.dart';
+import 'core/network/auth_state.dart';
 import 'core/router/app_router.dart';
 import 'core/sync/sync_worker.dart';
 import 'core/theme/app_theme.dart';
@@ -57,7 +57,26 @@ void main() async {
     }
   }
 
-  runApp(ProviderScope(child: RemembiteApp(initialLocation: initialLocation)));
+  // Pre-warm auth state before the router's first redirect evaluation.
+  // GoRouter's `redirect` callback reads `authStateProvider` synchronously
+  // (`ref.read(...).value`); if that read happens while the provider is
+  // still in its initial AsyncLoading (the secure-storage read hasn't
+  // completed yet), `.value` is null and a signed-in user gets redirected
+  // to /auth/sign-in on every cold start, then bounced back to /home once
+  // loading resolves — flashing the sign-in screen and destroying the
+  // `initialLocation` deep link set above. Awaiting the future here, then
+  // handing the same container to the widget tree via
+  // UncontrolledProviderScope, means the provider is already AsyncData by
+  // the time anything reads it.
+  final container = ProviderContainer();
+  await container.read(authStateProvider.future);
+
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: RemembiteApp(initialLocation: initialLocation),
+    ),
+  );
 }
 
 class RemembiteApp extends ConsumerStatefulWidget {
@@ -79,11 +98,18 @@ class _RemembiteAppState extends ConsumerState<RemembiteApp> {
       if (message.data['type'] == 'classification_complete') {
         final dishId = message.data['dish_id'];
         if (dishId != null && (dishId as String).isNotEmpty) {
-          // Use GoRouter to navigate. Access via context once the widget tree
-          // is mounted (this listener fires after the app is visible).
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              GoRouter.of(context).push('/dish/$dishId');
+              // GoRouter.of(context) requires an InheritedGoRouter ancestor,
+              // but this State's context sits above MaterialApp.router (the
+              // widget that provides it) — that lookup throws, so this
+              // navigation silently failed. Read the same router instance
+              // build() hands to MaterialApp.router directly via ref instead.
+              ref
+                  .read(
+                    appRouterProvider(initialLocation: widget.initialLocation),
+                  )
+                  .push('/dish/$dishId');
             }
           });
         }
