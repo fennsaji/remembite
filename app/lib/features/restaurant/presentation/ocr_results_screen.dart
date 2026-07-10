@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/network/api_error.dart';
 import '../../../core/theme/app_theme.dart';
@@ -33,7 +34,14 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
     super.initState();
     if (widget.parsedDishes != null && widget.parsedDishes!.isNotEmpty) {
       _dishes = widget.parsedDishes!
-          .map((d) => _DishEntry(name: d.name, selected: true))
+          .map(
+            (d) => _DishEntry(
+              name: d.name,
+              selected: true,
+              priceRupees: d.priceRupees,
+              category: d.category,
+            ),
+          )
           .toList();
     } else {
       _dishes = _parseText(widget.rawText);
@@ -77,7 +85,13 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
           .batchCreateDishes(
             widget.restaurantId!,
             selected
-                .map((d) => <String, dynamic>{'name': d.name.trim()})
+                .map(
+                  (d) => <String, dynamic>{
+                    'name': d.name.trim(),
+                    if (d.category != null) 'category': d.category,
+                    if (d.priceRupees != null) 'price': d.priceRupees,
+                  },
+                )
                 .toList(),
           );
       if (mounted) {
@@ -147,6 +161,14 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
               itemBuilder: (context, i) {
                 final dish = _dishes[i];
                 return _DishRow(
+                  // Keyed by stable dish identity, not list position — a
+                  // TextFormField holds its own initialValue-seeded
+                  // controller internally, so without this key, deleting
+                  // row k reused row k+1's element state for row k's new
+                  // position and every row after the delete displayed the
+                  // wrong dish name while the checkbox/backing model had
+                  // already shifted correctly.
+                  key: ValueKey(dish.id),
                   dish: dish,
                   onToggle: () =>
                       setState(() => dish.selected = !dish.selected),
@@ -173,9 +195,17 @@ class _OcrResultsScreenState extends ConsumerState<OcrResultsScreen> {
 }
 
 class _DishEntry {
+  final String id;
   String name;
   bool selected;
-  _DishEntry({required this.name, required this.selected});
+  final int? priceRupees;
+  final String? category;
+  _DishEntry({
+    required this.name,
+    required this.selected,
+    this.priceRupees,
+    this.category,
+  }) : id = const Uuid().v4();
 }
 
 class _DishRow extends StatelessWidget {
@@ -185,6 +215,7 @@ class _DishRow extends StatelessWidget {
   final VoidCallback onDelete;
 
   const _DishRow({
+    super.key,
     required this.dish,
     required this.onToggle,
     required this.onNameChanged,

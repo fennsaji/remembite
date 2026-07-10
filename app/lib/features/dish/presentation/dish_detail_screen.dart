@@ -69,9 +69,11 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
   String? _selectedSpice;
   String? _selectedSweetness;
   final _notesController = TextEditingController();
+  bool _notesInitialized = false;
   bool _saving = false;
   bool _uploadingPhoto = false;
   bool? _wantToTry;
+  bool? _favorited;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   @override
@@ -93,15 +95,32 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
   }
 
   Future<void> _toggleWantToTry(DishDetail dish) async {
+    final auth = ref.read(authStateProvider).value;
+    if (auth == null) return;
     final prev = _wantToTry ?? dish.isWantToTry;
     setState(() => _wantToTry = !prev);
     try {
       final result = await ref
           .read(dishRepositoryProvider)
-          .toggleWantToTry(dish.id);
+          .toggleWantToTry(auth.id, dish.id);
       if (mounted) setState(() => _wantToTry = result);
     } catch (_) {
       if (mounted) setState(() => _wantToTry = prev);
+    }
+  }
+
+  Future<void> _toggleFavorite(DishDetail dish) async {
+    final auth = ref.read(authStateProvider).value;
+    if (auth == null) return;
+    final prev = _favorited ?? dish.isFavorited;
+    setState(() => _favorited = !prev);
+    try {
+      final result = await ref
+          .read(dishRepositoryProvider)
+          .toggleFavorite(auth.id, dish.id);
+      if (mounted) setState(() => _favorited = result);
+    } catch (_) {
+      if (mounted) setState(() => _favorited = prev);
     }
   }
 
@@ -245,6 +264,20 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
         actions: [
           IconButton(
             icon: Icon(
+              (_favorited ?? dishAsync.value?.isFavorited ?? false)
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+              color: (_favorited ?? dishAsync.value?.isFavorited ?? false)
+                  ? AppColors.error
+                  : AppColors.secondaryText,
+            ),
+            tooltip: 'Favorite',
+            onPressed: dishAsync.value == null
+                ? null
+                : () => _toggleFavorite(dishAsync.value!),
+          ),
+          IconButton(
+            icon: Icon(
               (_wantToTry ?? dishAsync.value?.isWantToTry ?? false)
                   ? Icons.bookmark
                   : Icons.bookmark_border_outlined,
@@ -274,178 +307,192 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
             style: const TextStyle(color: AppColors.secondaryText),
           ),
         ),
-        data: (dish) => ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            // Dish name
-            Text(
-              dish.name,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppColors.primaryText,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            if (dish.category != null) ...[
-              const SizedBox(height: 4),
+        data: (dish) {
+          // Seed the notes field from the server exactly once per screen
+          // load — re-assigning on every rebuild would stomp the user's
+          // in-progress edits whenever an unrelated provider (e.g. the
+          // compatibility signal) triggers a rebuild.
+          if (!_notesInitialized) {
+            _notesInitialized = true;
+            _notesController.text = dish.myNotes ?? '';
+          }
+          return ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              // Dish name
               Text(
-                dish.category!,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
-              ),
-            ],
-            if (dish.price != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                '₹${dish.price}',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.secondaryText,
+                dish.name,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: AppColors.primaryText,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ],
-            const SizedBox(height: 20),
+              if (dish.category != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  dish.category!,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
+                ),
+              ],
+              if (dish.price != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  '₹${dish.price}',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
 
-            // Community reactions
-            _CommunityReactionsSection(dishId: widget.dishId),
-            const SizedBox(height: 8),
+              // Community reactions
+              _CommunityReactionsSection(dishId: widget.dishId),
+              const SizedBox(height: 8),
 
-            // Reaction picker
-            _SectionLabel(label: 'YOUR REACTION'),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: _reactions.map((r) {
-                final (emoji, value, label) = r;
-                final isSelected = _selectedReaction == value;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedReaction = value),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.accent.withValues(alpha: 0.15)
-                          : AppColors.elevated,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? AppColors.accent : AppColors.border,
+              // Reaction picker
+              _SectionLabel(label: 'YOUR REACTION'),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: _reactions.map((r) {
+                  final (emoji, value, label) = r;
+                  final isSelected = _selectedReaction == value;
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedReaction = value),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
                       ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(emoji, style: const TextStyle(fontSize: 24)),
-                        const SizedBox(height: 2),
-                        Text(
-                          label,
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: isSelected
-                                    ? AppColors.accent
-                                    : AppColors.mutedText,
-                                fontSize: 9,
-                              ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.accent.withValues(alpha: 0.15)
+                            : AppColors.elevated,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.accent
+                              : AppColors.border,
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-
-            // Spice vote
-            _SectionLabel(label: 'SPICE LEVEL'),
-            const SizedBox(height: 12),
-            _VoteRow(
-              options: _spiceOptions
-                  .map((s) => (s.$1, s.$2.toString()))
-                  .toList(),
-              selected: _selectedSpice,
-              onSelect: (v) => setState(() => _selectedSpice = v),
-            ),
-            const SizedBox(height: 20),
-
-            // Sweetness vote
-            _SectionLabel(label: 'SWEETNESS'),
-            const SizedBox(height: 12),
-            _VoteRow(
-              options: _sweetnessOptions
-                  .map((s) => (s.$1, s.$2.toString()))
-                  .toList(),
-              selected: _selectedSweetness,
-              onSelect: (v) => setState(() => _selectedSweetness = v),
-            ),
-            const SizedBox(height: 24),
-
-            // AI signal card
-            _buildAiSignalCard(context, dish, isPro, compatAsync.valueOrNull),
-
-            // Private notes
-            _SectionLabel(label: 'PRIVATE NOTES'),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _notesController,
-              maxLines: 3,
-              style: const TextStyle(color: AppColors.primaryText),
-              decoration: const InputDecoration(
-                hintText: 'Only you can see these…',
-                hintStyle: TextStyle(color: AppColors.mutedText),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Dish photos gallery
-            _ImageGallery(dishId: widget.dishId),
-            const SizedBox(height: 8),
-
-            // Add Photo
-            _SectionLabel(label: 'PHOTO'),
-            const SizedBox(height: 12),
-            _uploadingPhoto
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 14),
-                      child: CircularProgressIndicator(
-                        color: AppColors.accent,
-                        strokeWidth: 2,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(emoji, style: const TextStyle(fontSize: 24)),
+                          const SizedBox(height: 2),
+                          Text(
+                            label,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: isSelected
+                                      ? AppColors.accent
+                                      : AppColors.mutedText,
+                                  fontSize: 9,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
-                  )
-                : OutlinedButton.icon(
-                    onPressed: () => _addPhoto(dish.id.toString(), true),
-                    icon: const Icon(
-                      Icons.add_a_photo_outlined,
-                      size: 18,
-                      color: AppColors.accent,
-                    ),
-                    label: const Text(
-                      'Add Photo',
-                      style: TextStyle(color: AppColors.accent),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.accent),
-                      backgroundColor: AppColors.elevated,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      minimumSize: const Size(double.infinity, 0),
-                    ),
-                  ),
-            const SizedBox(height: 32),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
 
-            // Save button
-            ElevatedButton(
-              onPressed:
-                  (_selectedReaction != null || _selectedSpice != null) &&
-                      !_saving
-                  ? () => _save(dish, auth)
-                  : null,
-              child: _saving ? const Text('Saving…') : const Text('Save'),
-            ),
-          ],
-        ),
+              // Spice vote
+              _SectionLabel(label: 'SPICE LEVEL'),
+              const SizedBox(height: 12),
+              _VoteRow(
+                options: _spiceOptions
+                    .map((s) => (s.$1, s.$2.toString()))
+                    .toList(),
+                selected: _selectedSpice,
+                onSelect: (v) => setState(() => _selectedSpice = v),
+              ),
+              const SizedBox(height: 20),
+
+              // Sweetness vote
+              _SectionLabel(label: 'SWEETNESS'),
+              const SizedBox(height: 12),
+              _VoteRow(
+                options: _sweetnessOptions
+                    .map((s) => (s.$1, s.$2.toString()))
+                    .toList(),
+                selected: _selectedSweetness,
+                onSelect: (v) => setState(() => _selectedSweetness = v),
+              ),
+              const SizedBox(height: 24),
+
+              // AI signal card
+              _buildAiSignalCard(context, dish, isPro, compatAsync.valueOrNull),
+
+              // Private notes
+              _SectionLabel(label: 'PRIVATE NOTES'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _notesController,
+                maxLines: 3,
+                style: const TextStyle(color: AppColors.primaryText),
+                decoration: const InputDecoration(
+                  hintText: 'Only you can see these…',
+                  hintStyle: TextStyle(color: AppColors.mutedText),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Dish photos gallery
+              _ImageGallery(dishId: widget.dishId),
+              const SizedBox(height: 8),
+
+              // Add Photo
+              _SectionLabel(label: 'PHOTO'),
+              const SizedBox(height: 12),
+              _uploadingPhoto
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        child: CircularProgressIndicator(
+                          color: AppColors.accent,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                    )
+                  : OutlinedButton.icon(
+                      onPressed: () => _addPhoto(dish.id.toString(), true),
+                      icon: const Icon(
+                        Icons.add_a_photo_outlined,
+                        size: 18,
+                        color: AppColors.accent,
+                      ),
+                      label: const Text(
+                        'Add Photo',
+                        style: TextStyle(color: AppColors.accent),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.accent),
+                        backgroundColor: AppColors.elevated,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        minimumSize: const Size(double.infinity, 0),
+                      ),
+                    ),
+              const SizedBox(height: 32),
+
+              // Save button
+              ElevatedButton(
+                onPressed:
+                    (_selectedReaction != null ||
+                            _selectedSpice != null ||
+                            _selectedSweetness != null) &&
+                        !_saving
+                    ? () => _save(dish, auth)
+                    : null,
+                child: _saving ? const Text('Saving…') : const Text('Save'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -600,6 +647,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
           userId: auth.id,
           dishId: dish.id,
           reaction: _selectedReaction!,
+          notes: _notesController.text.trim(),
         );
         // Notify restaurant session state for passive rating trigger
         ref
@@ -609,8 +657,13 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
         await ref
             .read(appDatabaseProvider)
             .dishIntentsDao
-            .removeOnReaction(dish.id);
+            .removeOnReaction(auth.id, dish.id);
         if (mounted) setState(() => _wantToTry = false);
+        // The quick-react sheet on the restaurant screen already invalidates
+        // this; saving a reaction from the dish detail screen didn't, so
+        // popping back left the restaurant screen's community
+        // count/breakdown stale until some unrelated refetch happened.
+        ref.invalidate(dishReactionSummaryProvider(dish.id));
       }
 
       if (_selectedSpice != null) {
