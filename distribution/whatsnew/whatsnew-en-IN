@@ -1,1 +1,4 @@
-Fix Google Maps not loading — map tiles now render correctly in production builds.
+Fixed a crash that could prevent the app from opening after updating.
+You can now favorite dishes and add private notes that actually save.
+Fixed menu scan sometimes showing the wrong dish name after deleting a row.
+Various stability and bug fixes across sign-in, sync, and the map.
