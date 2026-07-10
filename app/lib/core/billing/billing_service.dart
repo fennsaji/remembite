@@ -17,6 +17,7 @@ enum BillingState { idle, loading, purchasing, error }
 class BillingService extends _$BillingService {
   StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
   List<ProductDetails> _products = [];
+  String? _purchasingProductId;
 
   @override
   BillingState build() {
@@ -26,6 +27,12 @@ class BillingService extends _$BillingService {
   }
 
   List<ProductDetails> get products => _products;
+
+  /// Which product is mid-purchase, if any — lets the UI show "Processing…"
+  /// on the specific card the user tapped instead of every card sharing one
+  /// boolean (previously Monthly's loading state was hardcoded `false`, so
+  /// tapping Monthly showed "Processing…" on the Annual card instead).
+  String? get purchasingProductId => _purchasingProductId;
 
   Future<void> _init() async {
     final available = await InAppPurchase.instance.isAvailable();
@@ -47,14 +54,37 @@ class BillingService extends _$BillingService {
   }
 
   Future<void> purchase(String productId) async {
-    final product = _products.firstWhere(
-      (p) => p.id == productId,
-      orElse: () => throw Exception('Product not found: $productId'),
-    );
+    ProductDetails product;
+    try {
+      // firstWhere throws (not returns null) on no match — this fires if
+      // products haven't finished loading yet (e.g. offline at app start)
+      // or the Play Store product ID is wrong. Previously uncaught, so
+      // tapping Subscribe did nothing: state never left `idle`, no error
+      // shown, no button ever went into "Processing…".
+      product = _products.firstWhere((p) => p.id == productId);
+    } catch (_) {
+      state = BillingState.error;
+      return;
+    }
+
+    _purchasingProductId = productId;
     state = BillingState.purchasing;
-    await InAppPurchase.instance.buyNonConsumable(
-      purchaseParam: PurchaseParam(productDetails: product),
-    );
+    try {
+      final launched = await InAppPurchase.instance.buyNonConsumable(
+        purchaseParam: PurchaseParam(productDetails: product),
+      );
+      if (!launched) {
+        // Store dialog failed to launch (e.g. itemAlreadyOwned, pending
+        // purchase) — purchaseStream never fires for this attempt, so
+        // without this check `state` stayed `purchasing` forever and both
+        // Subscribe buttons stayed disabled until app restart.
+        _purchasingProductId = null;
+        state = BillingState.error;
+      }
+    } catch (_) {
+      _purchasingProductId = null;
+      state = BillingState.error;
+    }
   }
 
   Future<void> _handlePurchaseUpdate(List<PurchaseDetails> purchases) async {
@@ -64,9 +94,11 @@ class BillingService extends _$BillingService {
         case PurchaseStatus.restored:
           await _verifyAndActivate(purchase);
         case PurchaseStatus.error:
+          _purchasingProductId = null;
           state = BillingState.error;
           await InAppPurchase.instance.completePurchase(purchase);
         case PurchaseStatus.canceled:
+          _purchasingProductId = null;
           state = BillingState.idle;
         case PurchaseStatus.pending:
           state = BillingState.purchasing;
@@ -94,16 +126,19 @@ class BillingService extends _$BillingService {
           avatarUrl: currentAuth.avatarUrl,
           isPro: true,
           accessToken: response.data['access_token'] as String,
+          refreshToken: response.data['refresh_token'] as String,
         );
         await ref.read(authStateProvider.notifier).signIn(updatedUser);
       }
 
       await InAppPurchase.instance.completePurchase(purchase);
+      _purchasingProductId = null;
       state = BillingState.idle;
 
       // Trigger immediate cloud sync now that user is Pro
       ref.read(syncWorkerProvider.notifier).syncNow();
     } catch (e) {
+      _purchasingProductId = null;
       state = BillingState.error;
       // Do NOT call completePurchase here — the transaction stays pending
       // so the store re-delivers it on the next app launch for retry.

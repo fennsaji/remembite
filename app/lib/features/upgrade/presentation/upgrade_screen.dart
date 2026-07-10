@@ -13,6 +13,21 @@ class UpgradeScreen extends ConsumerWidget {
     final billingState = ref.watch(billingServiceProvider);
     final billing = ref.read(billingServiceProvider.notifier);
 
+    // `purchasing -> idle` only happens once a purchase completes
+    // successfully (idle is also the initial pre-purchase state, but that
+    // transition can only be reached by way of `purchasing`). Previously a
+    // successful purchase gave no feedback at all — the screen just sat
+    // there with both buttons back to "Subscribe" and no confirmation or
+    // navigation away from the paywall.
+    ref.listen<BillingState>(billingServiceProvider, (previous, next) {
+      if (previous == BillingState.purchasing && next == BillingState.idle) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("You're Pro! Welcome aboard.")),
+        );
+        if (context.canPop()) context.pop();
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -59,7 +74,11 @@ class UpgradeScreen extends ConsumerWidget {
             period: '/year',
             badge: 'Save 32%',
             recommended: true,
-            loading: billingState == BillingState.purchasing,
+            // Keyed to the specific product being purchased — previously
+            // this was `billingState == purchasing` on BOTH cards, so
+            // tapping Monthly showed "Processing…" on the Annual card
+            // instead of the one the user actually tapped.
+            loading: billing.purchasingProductId == 'remembite_pro_annual',
             onSubscribe: billingState == BillingState.purchasing
                 ? null
                 : () => billing.purchase('remembite_pro_annual'),
@@ -70,7 +89,7 @@ class UpgradeScreen extends ConsumerWidget {
             price: '₹49',
             period: '/month',
             recommended: false,
-            loading: false,
+            loading: billing.purchasingProductId == 'remembite_pro_monthly',
             onSubscribe: billingState == BillingState.purchasing
                 ? null
                 : () => billing.purchase('remembite_pro_monthly'),
