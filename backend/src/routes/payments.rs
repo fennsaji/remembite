@@ -47,8 +47,7 @@ pub async fn verify_purchase(
     )
     .await
     .map_err(|e| {
-        let msg = e.to_string();
-        if msg.contains("not active") || msg.contains("no expiry") {
+        if e.to_string().contains("invalid purchase token") {
             AppError::BadRequest("Invalid or expired purchase token".to_string())
         } else {
             AppError::Internal(e)
@@ -58,23 +57,10 @@ pub async fn verify_purchase(
     let expires_at = DateTime::from_timestamp(expiry_ts, 0)
         .ok_or_else(|| AppError::Internal(anyhow::anyhow!("Invalid expiry timestamp")))?;
 
-    // Reject if this token is already claimed by a different user account.
-    let existing_owner: Option<uuid::Uuid> = sqlx::query_scalar(
-        "SELECT user_id FROM users WHERE purchase_token = $1",
-    )
-    .bind(&req.purchase_token)
-    .fetch_optional(&state.db)
-    .await?;
-    if let Some(owner_id) = existing_owner {
-        if owner_id != auth.id {
-            return Err(AppError::BadRequest(
-                "Purchase token already redeemed by another account".to_string(),
-            ));
-        }
-    }
-
-    // Update user pro status and store purchase_token for webhook lookups
-    sqlx::query(
+    // Atomic claim: a unique partial index on purchase_token (migration 0011)
+    // makes a concurrent double-redemption fail this UPDATE with a unique
+    // violation instead of racing a separate SELECT-then-UPDATE check.
+    let update_result = sqlx::query(
         r#"
         UPDATE users
         SET pro_status = true,
@@ -88,7 +74,16 @@ pub async fn verify_purchase(
     .bind(&req.purchase_token)
     .bind(auth.id)
     .execute(&state.db)
-    .await?;
+    .await;
+
+    if let Err(sqlx::Error::Database(db_err)) = &update_result {
+        if db_err.is_unique_violation() {
+            return Err(AppError::Conflict(
+                "Purchase token already redeemed by another account".to_string(),
+            ));
+        }
+    }
+    update_result?;
 
     // Re-issue tokens reflecting pro=true
     let new_access = issue_access_token(

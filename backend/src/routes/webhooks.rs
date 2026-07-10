@@ -39,9 +39,14 @@ struct SubscriptionNotification {
 
 const RECOVERED: i32 = 1;
 const RENEWED: i32 = 2;
+// CANCELED (3) is intentionally unhandled — the user keeps access until the
+// subscription actually lapses (EXPIRED) or Google revokes it (REVOKED).
 const PURCHASED: i32 = 4;
+const ON_HOLD: i32 = 5;
 const GRACE_PERIOD: i32 = 6;
 const RESTARTED: i32 = 7;
+const PAUSED: i32 = 10;
+const REVOKED: i32 = 12;
 const EXPIRED: i32 = 13;
 
 pub async fn google_play_webhook(
@@ -78,7 +83,7 @@ pub async fn google_play_webhook(
         .await
         .map_err(AppError::Internal)?;
 
-        let expiry_ts = google_play::verify_subscription(
+        let expiry_ts = match google_play::verify_subscription(
             &state.config.google_play_package_name,
             &sub_notif.subscription_id,
             &sub_notif.purchase_token,
@@ -86,7 +91,16 @@ pub async fn google_play_webhook(
             &state.http,
         )
         .await
-        .map_err(AppError::Internal)?;
+        {
+            Ok(ts) => ts,
+            Err(e) if e.to_string().contains("invalid purchase token") => {
+                // Permanently bad token (never valid, or already consumed) —
+                // acking without retry avoids Pub/Sub redelivering forever.
+                tracing::warn!("webhook: invalid purchase token, skipping: {e}");
+                return Ok(StatusCode::NO_CONTENT);
+            }
+            Err(e) => return Err(AppError::Internal(e)), // transient — let Pub/Sub retry
+        };
 
         let expires_at = chrono::DateTime::from_timestamp(expiry_ts, 0)
             .ok_or_else(|| AppError::Internal(anyhow::anyhow!("Invalid expiry timestamp")))?;
@@ -104,14 +118,18 @@ pub async fn google_play_webhook(
         .bind(&sub_notif.purchase_token)
         .execute(&state.db)
         .await?;
-    } else if notification_type == EXPIRED {
+    } else if matches!(notification_type, EXPIRED | REVOKED | ON_HOLD | PAUSED) {
+        // Trust Google's notification directly — no local expiry-timestamp gate.
+        // The old `AND pro_expires_at < NOW()` gate meant a single delivery
+        // (Pub/Sub does not redeliver on our 204 ack) could silently no-op if
+        // our stored expiry lagged Google's clock, or if pro_expires_at was
+        // NULL (`NULL < NOW()` is NULL, so the row never matched).
         sqlx::query(
             r#"
             UPDATE users
             SET pro_status = false,
                 updated_at = NOW()
             WHERE purchase_token = $1
-              AND pro_expires_at < NOW()
             "#,
         )
         .bind(&sub_notif.purchase_token)
