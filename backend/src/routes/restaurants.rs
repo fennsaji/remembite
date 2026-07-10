@@ -73,7 +73,7 @@ async fn create_restaurant(
 
     let id = Uuid::new_v4();
 
-    sqlx::query(
+    let insert_result = sqlx::query(
         r#"
         INSERT INTO restaurants (
             id, name, city, latitude, longitude, cuisine_type, created_by,
@@ -99,7 +99,19 @@ async fn create_restaurant(
     .bind(&req.website)
     .bind(req.opening_hours.as_ref())
     .execute(&state.db)
-    .await?;
+    .await;
+
+    // A Google Place picked via the map/autocomplete flow may already have
+    // been inserted by the crawler (place_id unique index, migration 0009) —
+    // surface that as a friendly duplicate message instead of a raw 500.
+    if let Err(sqlx::Error::Database(db_err)) = &insert_result {
+        if db_err.is_unique_violation() {
+            return Err(AppError::Conflict(
+                "This place has already been added to Remembite".to_string(),
+            ));
+        }
+    }
+    insert_result?;
 
     let response = RestaurantDetailResponse {
         id,
@@ -160,6 +172,71 @@ async fn get_restaurant(
     let phone_number: Option<String> = row.try_get("phone_number")?;
     let website: Option<String> = row.try_get("website")?;
     let opening_hours: Option<serde_json::Value> = row.try_get("opening_hours")?;
+
+    // Lazy enrichment: fetch Place Details in the background when stale or missing.
+    // User gets the cached response immediately; enriched data shows on next load.
+    //
+    // Atomic claim: set enriched_at = NOW() up front, gated on the same
+    // staleness predicate, before spawning the expensive work. Without this,
+    // N concurrent viewers of a stale restaurant all read enriched_at as
+    // stale, all spawn Place Details + menu-seed calls, and — worse — two
+    // concurrent seed_dishes() calls both pass the "restaurant has 0 dishes"
+    // check before either commits, duplicating the whole menu. Only the
+    // request whose UPDATE actually changes a row (rows_affected == 1) wins
+    // the claim and proceeds; everyone else no-ops.
+    let claimed = sqlx::query(
+        r#"
+        UPDATE restaurants
+        SET enriched_at = NOW()
+        WHERE id = $1
+          AND (enriched_at IS NULL OR enriched_at < NOW() - INTERVAL '90 days')
+        "#,
+    )
+    .bind(restaurant_id)
+    .execute(&state.db)
+    .await?
+    .rows_affected()
+        > 0;
+
+    if claimed && !state.config.google_places_api_key.is_empty() {
+        if let Some(place_id) = google_place_id.clone() {
+            let crawler = state.crawler.clone();
+            let db = state.db.clone();
+            let rid = restaurant_id;
+
+            tokio::spawn(async move {
+                match crawler.place_details(&place_id).await {
+                    Ok(Some(detail)) => {
+                        let _ = sqlx::query(
+                            r#"UPDATE restaurants SET
+                                phone_number  = COALESCE($1, phone_number),
+                                website       = COALESCE($2, website),
+                                opening_hours = COALESCE($3, opening_hours),
+                                enriched_at   = NOW()
+                               WHERE id = $4"#,
+                        )
+                        .bind(&detail.formatted_phone_number)
+                        .bind(&detail.website)
+                        .bind(&detail.opening_hours)
+                        .bind(rid)
+                        .execute(&db)
+                        .await;
+
+                        if let Err(e) = crawler
+                            .seed_dishes(rid, &detail.name, detail.website.as_deref())
+                            .await
+                        {
+                            tracing::warn!(restaurant_id = %rid, "menu seeding failed: {e}");
+                        }
+                    }
+                    Ok(None) => {}
+                    Err(e) => {
+                        tracing::warn!(restaurant_id = %rid, "place details enrichment failed: {e}");
+                    }
+                }
+            });
+        }
+    }
 
     // Top 5 dishes by community_score
     let dish_rows = sqlx::query(
@@ -401,7 +478,91 @@ async fn merge_restaurant(
 
     let mut tx = state.db.begin().await?;
 
-    // Step 4: Move all dishes from source to merge_into
+    // Step 3b: Same-named dishes in both restaurants would otherwise become
+    // duplicate rows with split reactions once source dishes are re-pointed
+    // to merge_into_id below. Find those pairs first, re-attach each source
+    // dish's reactions/votes/favorites/intents onto the existing target dish
+    // (skipping any a user already has on the target — the UNIQUE
+    // constraints on these tables are per (user_id, dish_id)), then delete
+    // the now-redundant source dish. ON DELETE CASCADE on dish_id cleans up
+    // anything not explicitly re-attached.
+    use sqlx::Row;
+    let duplicate_pairs: Vec<(Uuid, Uuid)> = sqlx::query(
+        r#"
+        SELECT s.id as source_dish_id, t.id as target_dish_id
+        FROM dishes s
+        JOIN dishes t ON t.restaurant_id = $1 AND lower(t.name) = lower(s.name)
+        WHERE s.restaurant_id = $2
+        "#,
+    )
+    .bind(merge_into_id)
+    .bind(source_id)
+    .fetch_all(&mut *tx)
+    .await?
+    .into_iter()
+    .map(|r| Ok::<_, sqlx::Error>((r.try_get("source_dish_id")?, r.try_get("target_dish_id")?)))
+    .collect::<Result<_, _>>()?;
+
+    for (dup_source_dish, target_dish) in duplicate_pairs {
+        sqlx::query(
+            r#"
+            INSERT INTO dish_reactions (id, user_id, dish_id, reaction, synced_at, updated_at)
+            SELECT uuid_generate_v4(), user_id, $2, reaction, synced_at, updated_at
+            FROM dish_reactions WHERE dish_id = $1
+            ON CONFLICT (user_id, dish_id) DO NOTHING
+            "#,
+        )
+        .bind(dup_source_dish)
+        .bind(target_dish)
+        .execute(&mut *tx)
+        .await?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO dish_attribute_votes (id, user_id, dish_id, attribute, value, created_at, updated_at)
+            SELECT uuid_generate_v4(), user_id, $2, attribute, value, created_at, updated_at
+            FROM dish_attribute_votes WHERE dish_id = $1
+            ON CONFLICT (user_id, dish_id, attribute) DO NOTHING
+            "#,
+        )
+        .bind(dup_source_dish)
+        .bind(target_dish)
+        .execute(&mut *tx)
+        .await?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO favorites (id, user_id, dish_id, created_at)
+            SELECT uuid_generate_v4(), user_id, $2, created_at
+            FROM favorites WHERE dish_id = $1
+            ON CONFLICT (user_id, dish_id) DO NOTHING
+            "#,
+        )
+        .bind(dup_source_dish)
+        .bind(target_dish)
+        .execute(&mut *tx)
+        .await?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO dish_intents (id, user_id, dish_id, intent, created_at)
+            SELECT gen_random_uuid(), user_id, $2, intent, created_at
+            FROM dish_intents WHERE dish_id = $1
+            ON CONFLICT (user_id, dish_id) DO NOTHING
+            "#,
+        )
+        .bind(dup_source_dish)
+        .bind(target_dish)
+        .execute(&mut *tx)
+        .await?;
+
+        sqlx::query("DELETE FROM dishes WHERE id = $1")
+            .bind(dup_source_dish)
+            .execute(&mut *tx)
+            .await?;
+    }
+
+    // Step 4: Move remaining (non-duplicate) dishes from source to merge_into
     sqlx::query("UPDATE dishes SET restaurant_id = $1 WHERE restaurant_id = $2")
         .bind(merge_into_id)
         .bind(source_id)
@@ -442,6 +603,26 @@ async fn merge_restaurant(
     .bind(merge_into_id)
     .execute(&mut *tx)
     .await?;
+
+    // Step 7b: images/reports/edit_suggestions reference restaurants
+    // polymorphically (entity_type + entity_id, no FK Postgres can enforce)
+    // — without repointing these, deleting the source restaurant below left
+    // them pointing at a UUID that no longer exists anywhere.
+    sqlx::query("UPDATE images SET entity_id = $1 WHERE entity_type = 'restaurant' AND entity_id = $2")
+        .bind(merge_into_id)
+        .bind(source_id)
+        .execute(&mut *tx)
+        .await?;
+    sqlx::query("UPDATE reports SET entity_id = $1 WHERE entity_type = 'restaurant' AND entity_id = $2")
+        .bind(merge_into_id)
+        .bind(source_id)
+        .execute(&mut *tx)
+        .await?;
+    sqlx::query("UPDATE edit_suggestions SET entity_id = $1 WHERE entity_type = 'restaurant' AND entity_id = $2")
+        .bind(merge_into_id)
+        .bind(source_id)
+        .execute(&mut *tx)
+        .await?;
 
     // Step 8: Delete source restaurant
     sqlx::query("DELETE FROM restaurants WHERE id = $1")
