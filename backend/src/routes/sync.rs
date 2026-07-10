@@ -33,6 +33,8 @@ pub struct SyncUploadResponse {
     pub ratings_upserted: usize,
 }
 
+const VALID_REACTIONS: [&str; 5] = ["so_yummy", "tasty", "pretty_good", "meh", "never_again"];
+
 pub async fn upload_full(
     State(state): State<AppState>,
     auth: AuthUser,
@@ -40,12 +42,38 @@ pub async fn upload_full(
 ) -> AppResult<Json<SyncUploadResponse>> {
     auth.require_pro()?;
 
+    // Validate everything up front so a bad row 400s before any write happens,
+    // rather than mid-batch.
+    for r in &req.reactions {
+        Uuid::parse_str(&r.dish_id)
+            .map_err(|_| AppError::BadRequest(format!("Invalid dish_id UUID: {}", r.dish_id)))?;
+        if !VALID_REACTIONS.contains(&r.reaction.as_str()) {
+            return Err(AppError::BadRequest(format!("Invalid reaction: {}", r.reaction)));
+        }
+    }
+    for r in &req.ratings {
+        Uuid::parse_str(&r.restaurant_id).map_err(|_| {
+            AppError::BadRequest(format!("Invalid restaurant_id UUID: {}", r.restaurant_id))
+        })?;
+        if !(1..=5).contains(&r.stars) {
+            return Err(AppError::BadRequest(format!(
+                "stars must be between 1 and 5, got {}",
+                r.stars
+            )));
+        }
+    }
+
+    // Single transaction: a dish_id/restaurant_id that doesn't exist on the
+    // server (FK violation — e.g. a locally-created row never synced) fails
+    // the whole batch atomically instead of committing everything before it
+    // and silently dropping the rest.
+    let mut tx = state.db.begin().await?;
+
     let mut reactions_upserted = 0usize;
     for r in &req.reactions {
-        let dish_id = Uuid::parse_str(&r.dish_id)
-            .map_err(|_| AppError::BadRequest(format!("Invalid dish_id UUID: {}", r.dish_id)))?;
+        let dish_id = Uuid::parse_str(&r.dish_id).expect("validated above");
 
-        let res = sqlx::query(
+        let insert_result = sqlx::query(
             r#"
             INSERT INTO dish_reactions (id, user_id, dish_id, reaction, synced_at, updated_at)
             VALUES (uuid_generate_v4(), $1, $2, $3::reaction_type, NOW(), $4)
@@ -60,17 +88,18 @@ pub async fn upload_full(
         .bind(dish_id)
         .bind(&r.reaction)
         .bind(r.updated_at)
-        .execute(&state.db)
-        .await?;
+        .execute(&mut *tx)
+        .await;
+
+        let res = map_fk_violation(insert_result, "dish_id does not exist on the server")?;
         reactions_upserted += res.rows_affected() as usize;
     }
 
     let mut ratings_upserted = 0usize;
     for r in &req.ratings {
-        let restaurant_id = Uuid::parse_str(&r.restaurant_id)
-            .map_err(|_| AppError::BadRequest(format!("Invalid restaurant_id UUID: {}", r.restaurant_id)))?;
+        let restaurant_id = Uuid::parse_str(&r.restaurant_id).expect("validated above");
 
-        let res = sqlx::query(
+        let insert_result = sqlx::query(
             r#"
             INSERT INTO restaurant_ratings (id, user_id, restaurant_id, stars, updated_at)
             VALUES (uuid_generate_v4(), $1, $2, $3, $4)
@@ -84,15 +113,33 @@ pub async fn upload_full(
         .bind(restaurant_id)
         .bind(r.stars)
         .bind(r.updated_at)
-        .execute(&state.db)
-        .await?;
+        .execute(&mut *tx)
+        .await;
+
+        let res = map_fk_violation(insert_result, "restaurant_id does not exist on the server")?;
         ratings_upserted += res.rows_affected() as usize;
     }
+
+    tx.commit().await?;
 
     Ok(Json(SyncUploadResponse {
         reactions_upserted,
         ratings_upserted,
     }))
+}
+
+/// FK/check-constraint violations from bad client data are a 400, not a 500 —
+/// everything else (connection errors, etc.) still propagates as-is.
+fn map_fk_violation(
+    result: Result<sqlx::postgres::PgQueryResult, sqlx::Error>,
+    message: &str,
+) -> AppResult<sqlx::postgres::PgQueryResult> {
+    if let Err(sqlx::Error::Database(db_err)) = &result {
+        if db_err.is_foreign_key_violation() || db_err.is_check_violation() {
+            return Err(AppError::BadRequest(message.to_string()));
+        }
+    }
+    Ok(result?)
 }
 
 // ── Download ──────────────────────────────────────────────────────────────────

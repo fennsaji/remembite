@@ -1,17 +1,30 @@
 use std::sync::Arc;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, Semaphore};
 use tokio::time::{sleep, Duration};
 
 use crate::{jobs::queue::Job, AppState};
+
+/// Max jobs processed concurrently. Spawning every received job onto its own
+/// task (the old behavior) meant a 100-dish OCR batch fired 100 concurrent
+/// Gemini calls at once — enough to trip the provider's rate limit, and since
+/// the 1s/4s retry backoff (see classify_dish_with_retry) is unstaggered
+/// across jobs, retries collide too and dishes end up permanently `failed`
+/// despite a healthy API. Capping concurrency smooths the burst instead.
+const MAX_CONCURRENT_JOBS: usize = 8;
 
 /// Background worker — drains the job queue and processes jobs.
 /// Runs as a separate Tokio task spawned at startup.
 pub async fn run_worker(mut receiver: mpsc::Receiver<Job>, state: Arc<AppState>) {
     tracing::info!("Job worker started");
 
+    let semaphore = Arc::new(Semaphore::new(MAX_CONCURRENT_JOBS));
+
     while let Some(job) = receiver.recv().await {
         let state = state.clone();
+        // acquire_owned never fails here — the semaphore is never closed.
+        let permit = semaphore.clone().acquire_owned().await.expect("semaphore not closed");
         tokio::spawn(async move {
+            let _permit = permit; // held until this job finishes
             if let Err(e) = process_job(job, state).await {
                 tracing::error!("Job processing error: {e:#}");
             }

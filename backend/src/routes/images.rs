@@ -104,6 +104,24 @@ async fn upload_image(
     let entity_id = entity_id
         .ok_or_else(|| AppError::BadRequest("Missing 'entity_id' field".to_string()))?;
 
+    // `images.entity_id` is polymorphic (dish or restaurant) so there's no
+    // single FK Postgres can enforce — without this check an image could be
+    // attached to any nonexistent UUID and would never surface anywhere.
+    let entity_exists: bool = match entity_type.as_str() {
+        "dish" => sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM dishes WHERE id = $1)")
+            .bind(entity_id)
+            .fetch_one(&state.db)
+            .await?,
+        "restaurant" => sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM restaurants WHERE id = $1)")
+            .bind(entity_id)
+            .fetch_one(&state.db)
+            .await?,
+        _ => false,
+    };
+    if !entity_exists {
+        return Err(AppError::NotFound(format!("{entity_type} not found")));
+    }
+
     let ext = match mime_type.as_str() {
         "image/png" => "png",
         "image/webp" => "webp",

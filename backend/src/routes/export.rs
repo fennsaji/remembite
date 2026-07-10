@@ -78,8 +78,29 @@ async fn export_user_data(
     })
     .collect::<Result<Vec<_>, _>>()?;
 
-    // Notes — table not yet migrated; return empty for forward-compatibility
-    let notes: Vec<Value> = vec![];
+    // Notes — attached to dish_reactions (migration 0012)
+    let notes: Vec<Value> = sqlx::query(
+        r#"
+        SELECT dr.dish_id::text, d.name as dish_name, dr.notes, dr.updated_at
+        FROM dish_reactions dr
+        JOIN dishes d ON d.id = dr.dish_id
+        WHERE dr.user_id = $1 AND dr.notes IS NOT NULL AND dr.notes != ''
+        ORDER BY dr.updated_at DESC
+        "#,
+    )
+    .bind(user.id)
+    .fetch_all(&state.db)
+    .await?
+    .into_iter()
+    .map(|row| -> Result<serde_json::Value, sqlx::Error> {
+        Ok(serde_json::json!({
+            "dish_id": row.try_get::<String, _>("dish_id")?,
+            "dish_name": row.try_get::<String, _>("dish_name")?,
+            "notes": row.try_get::<Option<String>, _>("notes")?,
+            "updated_at": row.try_get::<chrono::DateTime<chrono::Utc>, _>("updated_at")?.to_rfc3339(),
+        }))
+    })
+    .collect::<Result<Vec<_>, _>>()?;
 
     // Favorites
     let favorites: Vec<Value> = sqlx::query(
