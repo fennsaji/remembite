@@ -21,6 +21,7 @@ services:
 
   backend:
     image: ghcr.io/fennsaji/remembite-backend:latest
+    platform: linux/amd64
     restart: unless-stopped
     env_file: .env.api
     ports:
@@ -37,8 +38,11 @@ services:
 
   vector:
     image: timberio/vector:0.43.0-alpine
+    platform: linux/amd64
     restart: unless-stopped
     user: root
+    command: ["--config", "/etc/vector/vector.toml"]
+    profiles: [logging]
     environment:
       AXIOM_API_KEY: ${AXIOM_API_KEY}
       AXIOM_DATASET: ${AXIOM_DATASET}
