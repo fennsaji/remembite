@@ -22,6 +22,10 @@ pub struct Config {
     pub google_play_service_account_json: String,
     pub google_pubsub_webhook_token: String,
     pub bayesian_prior_weight: f64,  // k constant (default 5.0)
+    pub google_places_api_key: String,
+    pub crawler_enabled: bool,
+    pub crawler_min_rating: f64,
+    pub crawler_grid_step_km: f64,
 }
 
 impl Config {
@@ -50,6 +54,10 @@ impl Config {
             // Dev default — MUST be overridden via GOOGLE_PUBSUB_WEBHOOK_TOKEN in production
             google_pubsub_webhook_token: env_or("GOOGLE_PUBSUB_WEBHOOK_TOKEN", "dev-webhook-token"),
             bayesian_prior_weight: parse_env("BAYESIAN_PRIOR_WEIGHT", 5.0f64)?,
+            google_places_api_key: env_or("GOOGLE_PLACES_API_KEY", ""),
+            crawler_enabled: env_or("CRAWLER_ENABLED", "true") == "true",
+            crawler_min_rating: parse_env("CRAWLER_MIN_RATING", 3.5f64)?,
+            crawler_grid_step_km: parse_env("CRAWLER_GRID_STEP_KM", 2.0f64)?,
         })
     }
 }

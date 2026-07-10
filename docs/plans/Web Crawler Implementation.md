@@ -14,6 +14,18 @@
 
 ---
 
+## Implementation Amendments (2026-07-08, verified against actual code)
+
+The following corrections to the tasks below were required after auditing the real codebase:
+
+1. **System user INSERT (Task 2)**: `users.google_id` and `users.display_name` are `NOT NULL` — the INSERT must include `google_id = 'system-crawler'`.
+2. **Dish upsert (Task 10)**: `dishes` has NO `UNIQUE(restaurant_id, name)` constraint, and adding one in a startup migration could fail on existing duplicate rows in prod (migrations run at boot). Instead of `ON CONFLICT (restaurant_id, name)`, use `INSERT ... SELECT ... WHERE NOT EXISTS (case-insensitive name match)`.
+3. **`Job::ClassifyDish` (Task 10)**: actual variant fields are `{ dish_id, dish_name: String, cuisine: String }` — not `{ name, cuisine: Option }`.
+4. **`dishes.price` (Task 10)**: column is `INTEGER` (rupees) — bind `i32`, not `f64`.
+5. **`google_place_id` UNIQUE index (Task 2)**: prod rows may already contain duplicates (two users adding the same place). Migration must NULL-out later duplicates before creating the partial unique index, or index creation blocks startup.
+6. **Enrichment check (Task 11b)**: `enriched_at` is read in the main `get_restaurant` SELECT (one query) instead of a second round-trip.
+7. **HTTP client (Task 13)**: `main.rs` builds `reqwest::Client::new()` inline in `AppState` — construct once, share between `AppState.http` and `CrawlerService`.
+
 ## Before You Start
 
 ```bash

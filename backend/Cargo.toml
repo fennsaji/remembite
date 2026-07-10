@@ -53,6 +53,9 @@ dashmap = "5"
 # Base64 encoding/decoding (Pub/Sub webhook payload)
 base64 = "0.22"
 
+# HTML parsing (crawler menu scraping)
+scraper = "0.25"
+
 # Cloud storage (Cloudflare R2 via S3-compatible API)
 aws-sdk-s3 = "1"
 aws-config = { version = "1", default-features = false, features = ["rustls"] }

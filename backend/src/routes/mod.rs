@@ -1,3 +1,4 @@
+pub mod admin_crawler;
 pub mod auth;
 pub mod dishes;
 pub mod edit_suggestions;
