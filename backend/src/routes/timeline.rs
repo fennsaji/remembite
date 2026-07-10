@@ -48,9 +48,12 @@ async fn get_timeline(
 
     use sqlx::Row;
 
-    // Group by (restaurant_id, visit_date)
-    // Key: (restaurant_id, visit_date, restaurant_name)
-    let mut groups: BTreeMap<(String, String), (String, Vec<DishReactionItem>)> = BTreeMap::new();
+    // Group by (visit_date, restaurant_id). Date must sort before restaurant_id
+    // in the key tuple — BTreeMap orders lexicographically by the first field,
+    // so keying on (restaurant_id, date) sorted entries by restaurant UUID
+    // first and shuffled the timeline by date.
+    let mut groups: BTreeMap<(String, String), (uuid::Uuid, String, Vec<DishReactionItem>)> =
+        BTreeMap::new();
 
     for row in rows {
         let restaurant_id: uuid::Uuid = row.try_get("restaurant_id")?;
@@ -58,12 +61,12 @@ async fn get_timeline(
         let visit_date: chrono::NaiveDate = row.try_get("visit_date")?;
         let date_str = visit_date.format("%Y-%m-%d").to_string();
 
-        let key = (restaurant_id.to_string(), date_str.clone());
+        let key = (date_str.clone(), restaurant_id.to_string());
         let entry = groups
             .entry(key)
-            .or_insert_with(|| (restaurant_name.clone(), vec![]));
+            .or_insert_with(|| (restaurant_id, restaurant_name.clone(), vec![]));
 
-        entry.1.push(DishReactionItem {
+        entry.2.push(DishReactionItem {
             dish_id: row.try_get("dish_id")?,
             dish_name: row.try_get("dish_name")?,
             reaction: row.try_get("reaction")?,
@@ -71,12 +74,12 @@ async fn get_timeline(
         });
     }
 
-    // Convert to sorted entries (newest first by key — BTreeMap is sorted ascending so reverse)
+    // Newest first by (date, restaurant_id) — BTreeMap is ascending, so reverse.
     let entries: Vec<TimelineEntry> = groups
         .into_iter()
         .rev()
-        .map(|((restaurant_id_str, date), (restaurant_name, reactions))| TimelineEntry {
-            restaurant_id: restaurant_id_str.parse().unwrap(),
+        .map(|((date, _), (restaurant_id, restaurant_name, reactions))| TimelineEntry {
+            restaurant_id,
             restaurant_name,
             date,
             reactions,
@@ -213,12 +216,30 @@ async fn get_taste_profile_status(
     }))
 }
 
+/// Onboarding presents 10-15 dishes (CLAUDE.md taste bootstrapping spec) —
+/// reject anything larger so a crafted request can't fabricate an arbitrary
+/// number of reactions and blow past the ≥10-reaction confidence gate.
+const MAX_BOOTSTRAP_REACTIONS: usize = 15;
+
 async fn post_bootstrap(
     State(state): State<AppState>,
     user: AuthUser,
     Json(req): Json<BootstrapRequest>,
 ) -> AppResult<Json<BootstrapResponse>> {
     use sqlx::Row;
+
+    if req.reactions.len() > MAX_BOOTSTRAP_REACTIONS {
+        return Err(crate::error::AppError::BadRequest(format!(
+            "at most {MAX_BOOTSTRAP_REACTIONS} bootstrap reactions allowed"
+        )));
+    }
+    for item in &req.reactions {
+        if !(0.0..=1.0).contains(&item.spice_score) || !(0.0..=1.0).contains(&item.sweetness_score) {
+            return Err(crate::error::AppError::BadRequest(
+                "spice_score and sweetness_score must be between 0.0 and 1.0".to_string(),
+            ));
+        }
+    }
 
     // Idempotency — if already bootstrapped, no-op
     let row = sqlx::query("SELECT bootstrapped_at FROM users WHERE id = $1")

@@ -20,11 +20,20 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
-CMD="${1:-up}"
+ARG1="${1:-up}"
 
-echo -e "${BLUE}🐳 docker compose --env-file $ENV_FILE $CMD ${*:2}${NC}"
-docker compose --env-file "$ENV_FILE" "$CMD" "${@:2}"
+if [ "$ARG1" = "-d" ]; then
+  CMD="up"
+  EXTRA="-d ${*:2}"
+else
+  CMD="$ARG1"
+  EXTRA="${*:2}"
+fi
 
-if [ "$CMD" = "up" ] || [ "$CMD" = "-d" ]; then
-  echo -e "${GREEN}✅ Backend running at http://localhost:8080${NC}"
+echo -e "${BLUE}🐳 docker compose --env-file $ENV_FILE $CMD $EXTRA${NC}"
+# shellcheck disable=SC2086
+docker compose --env-file "$ENV_FILE" "$CMD" $EXTRA
+
+if [ "$CMD" = "up" ]; then
+  echo -e "${GREEN}✅ Backend running at http://localhost:20080${NC}"
 fi

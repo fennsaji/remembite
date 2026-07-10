@@ -112,8 +112,14 @@ class ReactionDao extends DatabaseAccessor<AppDatabase>
         .watch();
   }
 
-  Future<List<ReactionRow>> getPendingSync() =>
-      (select(reactions)..where((r) => r.syncedAt.isNull())).get();
+  /// Unfiltered by user, this returned every device-local pending row
+  /// regardless of who wrote it — on a shared device, signing in as a
+  /// second (Pro) account would then upload the FIRST account's unsynced
+  /// reactions to the server authenticated as the second account,
+  /// permanently misattributing them.
+  Future<List<ReactionRow>> getPendingSync(String userId) => (select(
+    reactions,
+  )..where((r) => r.userId.equals(userId) & r.syncedAt.isNull())).get();
 
   Future<void> upsert(ReactionsCompanion row) async {
     await (update(reactions)..where(

@@ -52,9 +52,14 @@ pub async fn test_state() -> AppState {
         google_play_service_account_json: "{}".into(),
         google_pubsub_webhook_token: "test-webhook-token".into(),
         bayesian_prior_weight: 5.0,
+        google_places_api_key: "".into(),
+        crawler_enabled: false,
+        crawler_min_rating: 3.5,
+        crawler_grid_step_km: 2.0,
     });
 
-    let llm = Arc::from(build_provider("gemini", "fake-gemini-key"));
+    let llm: Arc<dyn crate::llm::provider::LlmProvider> =
+        Arc::from(build_provider("gemini", "fake-gemini-key"));
 
     let (queue, receiver) = InProcessQueue::new(16);
     let job_queue: Arc<dyn JobQueue> = queue;
@@ -76,17 +81,28 @@ pub async fn test_state() -> AppState {
         .build();
     let s3 = Arc::new(aws_sdk_s3::Client::from_conf(s3_config));
 
+    let http = reqwest::Client::new();
+    let crawler = Arc::new(crate::services::crawler::CrawlerService::new(
+        db.clone(),
+        http.clone(),
+        llm.clone(),
+        config.clone(),
+        job_queue.clone(),
+    ));
+
     AppState {
         db,
         config,
         llm,
         job_queue,
-        http: reqwest::Client::new(),
+        http,
         s3,
+        crawler,
         rl_uploads: new_per_user_limiter(10),
         rl_reactions: new_per_user_limiter(100),
         rl_restaurant_create: new_per_user_limiter(10),
         rl_edit_suggestions: new_per_user_limiter(20),
+        rl_reports: new_per_user_limiter(20),
         rl_global_ip: new_ip_limiter(60),
     }
 }

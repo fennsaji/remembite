@@ -28,6 +28,7 @@ use crate::{
     middleware::rate_limit::{
         IpRateLimiter, UserRateLimiter, new_ip_limiter, new_per_user_limiter,
     },
+    services::crawler::CrawlerService,
 };
 
 /// Shared application state — cloned cheaply per request via Arc.
@@ -39,11 +40,13 @@ pub struct AppState {
     pub job_queue: Arc<dyn JobQueue>,
     pub http: reqwest::Client,
     pub s3: Arc<S3Client>,
+    pub crawler: Arc<CrawlerService>,
     pub rl_uploads: UserRateLimiter,           // 10/hr
     // Rate limiters
     pub rl_reactions: UserRateLimiter,        // 100/hr
     pub rl_restaurant_create: UserRateLimiter, // 10/hr
     pub rl_edit_suggestions: UserRateLimiter,  // 20/hr
+    pub rl_reports: UserRateLimiter,           // 20/hr
     pub rl_global_ip: IpRateLimiter,           // 60/min (search + unauthenticated)
 }
 
@@ -90,18 +93,32 @@ async fn main() -> anyhow::Result<()> {
         .build();
     let s3 = Arc::new(S3Client::from_conf(s3_config));
 
+    // Shared outbound HTTP client (AppState + crawler)
+    let http = reqwest::Client::new();
+
+    // Crawler service (restaurant seeding + lazy Place Details enrichment)
+    let crawler = Arc::new(CrawlerService::new(
+        db.clone(),
+        http.clone(),
+        llm.clone(),
+        config.clone(),
+        job_queue.clone(),
+    ));
+
     // App state
     let state = AppState {
         db,
         config: config.clone(),
         llm,
         job_queue,
-        http: reqwest::Client::new(),
+        http,
         s3,
+        crawler: crawler.clone(),
         rl_uploads: new_per_user_limiter(10),
         rl_reactions: new_per_user_limiter(100),
         rl_restaurant_create: new_per_user_limiter(10),
         rl_edit_suggestions: new_per_user_limiter(20),
+        rl_reports: new_per_user_limiter(20),
         rl_global_ip: new_ip_limiter(60),
     };
 
@@ -112,6 +129,36 @@ async fn main() -> anyhow::Result<()> {
     // Spawn edit suggestion expiry loop
     let expiry_db = state.db.clone();
     tokio::spawn(routes::edit_suggestions::run_expiry_loop(expiry_db));
+
+    // Monthly crawler — DB-backed scheduler. tokio::time::interval would re-fire
+    // on every restart and burn Google Places quota; checking crawl_runs makes
+    // restarts after a recent crawl a no-op.
+    if config.crawler_enabled && !config.google_places_api_key.is_empty() {
+        let crawler_bg = crawler.clone();
+        tokio::spawn(async move {
+            loop {
+                let last_run: Option<chrono::DateTime<chrono::Utc>> = sqlx::query_scalar(
+                    "SELECT MAX(completed_at) FROM crawl_runs WHERE status = 'completed'",
+                )
+                .fetch_optional(&crawler_bg.db)
+                .await
+                .ok()
+                .flatten();
+
+                let should_run = last_run
+                    .map(|t| chrono::Utc::now() - t > chrono::Duration::days(30))
+                    .unwrap_or(true); // no previous run → run on first deploy
+
+                if should_run {
+                    tracing::info!("monthly crawler starting");
+                    crawler_bg.run_all_cities().await;
+                }
+
+                // Re-check hourly; crawl only fires when >30 days have elapsed
+                tokio::time::sleep(std::time::Duration::from_secs(3600)).await;
+            }
+        });
+    }
 
     // Router
     let app = Router::new()
@@ -149,7 +196,8 @@ async fn main() -> anyhow::Result<()> {
             .merge(routes::restaurants::admin_router())
             .merge(routes::reports::admin_router())
             .merge(routes::dishes::admin_router())
-            .merge(routes::images::admin_router()))
+            .merge(routes::images::admin_router())
+            .merge(routes::admin_crawler::router()))
         // Reports
         .nest("/reports", routes::reports::router())
         // Images

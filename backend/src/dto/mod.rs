@@ -131,7 +131,11 @@ pub struct DishDetailResponse {
     pub vote_count: i32,
     pub attribute_priors: Option<AttributePriorResponse>,
     pub is_want_to_try: bool,
+    pub is_favorited: bool,
     pub created_at: DateTime<Utc>,
+    /// Requesting user's own private note on this dish, if any. Never
+    /// exposed for any other user.
+    pub my_notes: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -154,6 +158,10 @@ pub struct AttributePriorResponse {
 pub struct ReactionUpsertRequest {
     /// One of: so_yummy | tasty | pretty_good | meh | never_again
     pub reaction: String,
+    /// Private note attached to this reaction. `None` leaves any existing
+    /// note untouched; `Some("")` explicitly clears it.
+    #[serde(default)]
+    pub notes: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -452,4 +460,19 @@ pub struct ImageResponse {
     /// Full CDN URL for public images; None for private (use /images/{id}/url instead)
     pub cdn_url: Option<String>,
     pub created_at: DateTime<Utc>,
+}
+
+// ─────────────────────────────────────────────
+// Crawler DTOs
+// ─────────────────────────────────────────────
+
+#[derive(Debug, Serialize)]
+pub struct CrawlRunResponse {
+    pub id: Uuid,
+    pub city: String,
+    pub status: String,
+    pub restaurants_found: i32,
+    pub dishes_found: i32,
+    pub started_at: DateTime<Utc>,
+    pub completed_at: Option<DateTime<Utc>>,
 }

@@ -12,6 +12,7 @@ use crate::{
     auth::middleware::AuthUser,
     dto::{ReportActionRequest, ReportActionResponse, ReportCreateRequest, ReportResponse},
     error::{AppError, AppResult},
+    middleware::rate_limit::check_user_limit,
 };
 
 pub fn router() -> Router<AppState> {
@@ -33,6 +34,8 @@ async fn create_report(
     user: AuthUser,
     Json(req): Json<ReportCreateRequest>,
 ) -> AppResult<(StatusCode, Json<ReportResponse>)> {
+    check_user_limit(&state.rl_reports, user.id)?;
+
     if req.entity_type != "restaurant" && req.entity_type != "dish" && req.entity_type != "image" {
         return Err(AppError::BadRequest(
             "entity_type must be 'restaurant', 'dish', or 'image'".to_string(),

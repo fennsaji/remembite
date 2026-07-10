@@ -87,11 +87,18 @@ pub async fn verify_subscription(
         package_name, purchase_token
     );
 
-    let resp: SubscriptionV2 = http
-        .get(&url)
-        .bearer_auth(access_token)
-        .send()
-        .await?
+    let http_resp = http.get(&url).bearer_auth(access_token).send().await?;
+
+    // A malformed/unknown/already-consumed purchase token is client error, not
+    // a transient Google Play outage — tag it so callers can map to 400/skip
+    // instead of 500/retry.
+    if http_resp.status() == reqwest::StatusCode::BAD_REQUEST
+        || http_resp.status() == reqwest::StatusCode::NOT_FOUND
+    {
+        anyhow::bail!("invalid purchase token: Google Play API returned {}", http_resp.status());
+    }
+
+    let resp: SubscriptionV2 = http_resp
         .error_for_status()
         .context("Google Play API returned error")?
         .json()
@@ -105,7 +112,7 @@ pub async fn verify_subscription(
     );
 
     if !active {
-        anyhow::bail!("Subscription state not active: {}", resp.subscription_state);
+        anyhow::bail!("invalid purchase token: subscription state not active: {}", resp.subscription_state);
     }
 
     let expiry_str = resp
@@ -113,7 +120,7 @@ pub async fn verify_subscription(
         .as_deref()
         .and_then(|items| items.first())
         .and_then(|item| item.expiry_time.as_deref())
-        .ok_or_else(|| anyhow::anyhow!("Subscription has no expiry time in line_items"))?;
+        .ok_or_else(|| anyhow::anyhow!("invalid purchase token: subscription has no expiry time in line_items"))?;
 
     let expiry = chrono::DateTime::parse_from_rfc3339(expiry_str)
         .context("Failed to parse expiry time")?

@@ -21,6 +21,17 @@ use crate::{
     middleware::rate_limit::check_user_limit,
 };
 
+/// A foreign-key violation (e.g. dish_id doesn't exist) is a 404, not a 500 —
+/// everything else (connection errors, etc.) still propagates as-is.
+fn map_fk_violation<T>(result: Result<T, sqlx::Error>, message: &str) -> AppResult<T> {
+    match result {
+        Err(sqlx::Error::Database(db_err)) if db_err.is_foreign_key_violation() => {
+            Err(AppError::NotFound(message.to_string()))
+        }
+        other => Ok(other?),
+    }
+}
+
 /// Admin-only routes mounted at /admin
 pub fn admin_router() -> Router<AppState> {
     Router::new()
@@ -242,6 +253,32 @@ async fn get_dish(
         false
     };
 
+    let my_notes: Option<String> = if let Some(ref u) = user {
+        sqlx::query_scalar(
+            "SELECT notes FROM dish_reactions WHERE user_id = $1 AND dish_id = $2",
+        )
+        .bind(u.id)
+        .bind(dish_id)
+        .fetch_optional(&state.db)
+        .await?
+        .flatten()
+    } else {
+        None
+    };
+
+    let is_favorited = if let Some(ref u) = user {
+        sqlx::query(
+            "SELECT 1 FROM favorites WHERE user_id = $1 AND dish_id = $2",
+        )
+        .bind(u.id)
+        .bind(dish_id)
+        .fetch_optional(&state.db)
+        .await?
+        .is_some()
+    } else {
+        false
+    };
+
     Ok(Json(DishDetailResponse {
         id: row.try_get("id")?,
         restaurant_id: row.try_get("restaurant_id")?,
@@ -253,7 +290,9 @@ async fn get_dish(
         vote_count: row.try_get("vote_count")?,
         attribute_priors,
         is_want_to_try,
+        is_favorited,
         created_at: row.try_get("created_at")?,
+        my_notes,
     }))
 }
 
@@ -273,35 +312,41 @@ async fn upsert_reaction(
         )));
     }
 
-    // Check if this is a new reaction (for reaction_count tracking)
-    let is_new_reaction = sqlx::query(
-        "SELECT 1 FROM dish_reactions WHERE user_id = $1 AND dish_id = $2",
-    )
-    .bind(user.id)
-    .bind(dish_id)
-    .fetch_optional(&state.db)
-    .await?
-    .is_none();
-
-    // Upsert reaction + recalculate aggregate inside a single transaction
+    // Upsert reaction + recalculate aggregate inside a single transaction.
+    // is_new_reaction comes from `xmax = 0` on the INSERT itself (Postgres:
+    // true only when this exact statement inserted the row) instead of a
+    // separate SELECT run before the transaction opened — the old sequence
+    // let two concurrent first-time reactions from the same user both read
+    // "no existing row", so both would later increment
+    // user_taste_vectors.reaction_count, permanently double-counting one
+    // reaction against the ≥10-reaction confidence gate (no recompute job
+    // exists to heal the drift after the fact).
     let mut tx = state.db.begin().await?;
 
-    sqlx::query(
+    let upsert_result = sqlx::query(
         r#"
-        INSERT INTO dish_reactions (id, user_id, dish_id, reaction)
-        VALUES ($1, $2, $3, $4::reaction_type)
+        INSERT INTO dish_reactions (id, user_id, dish_id, reaction, notes)
+        VALUES ($1, $2, $3, $4::reaction_type, $5)
         ON CONFLICT (user_id, dish_id) DO UPDATE SET
             reaction = EXCLUDED.reaction,
+            notes = COALESCE(EXCLUDED.notes, dish_reactions.notes),
             updated_at = NOW(),
             synced_at = NOW()
+        RETURNING (xmax = 0) AS is_new_reaction
         "#,
     )
     .bind(Uuid::new_v4())
     .bind(user.id)
     .bind(dish_id)
     .bind(&req.reaction)
-    .execute(&mut *tx)
-    .await?;
+    .bind(&req.notes)
+    .fetch_one(&mut *tx)
+    .await;
+    let upsert_row = map_fk_violation(upsert_result, "Dish not found")?;
+    let is_new_reaction: bool = {
+        use sqlx::Row;
+        upsert_row.try_get("is_new_reaction")?
+    };
 
     // Recalculate community_score and vote_count for the dish
     // Weights: so_yummy=5, tasty=4, pretty_good=3, meh=2, never_again=1
@@ -516,7 +561,7 @@ async fn upsert_attribute_vote(
     // Upsert attribute vote + recompute Bayesian blended scores inside a single transaction
     let mut tx = state.db.begin().await?;
 
-    sqlx::query(
+    let insert_result = sqlx::query(
         r#"
         INSERT INTO dish_attribute_votes (id, user_id, dish_id, attribute, value)
         VALUES ($1, $2, $3, $4::attribute_name, $5)
@@ -531,7 +576,8 @@ async fn upsert_attribute_vote(
     .bind(&req.attribute)
     .bind(req.value)
     .execute(&mut *tx)
-    .await?;
+    .await;
+    map_fk_violation(insert_result, "Dish not found")?;
 
     // Recompute Bayesian blended scores
     // final_score = (k * llm_prior + n * community_avg) / (k + n)
@@ -554,7 +600,8 @@ async fn upsert_attribute_vote(
                 AVG(CASE WHEN attribute = 'spice' THEN value END) as avg_spice,
                 COUNT(CASE WHEN attribute = 'spice' THEN 1 END) as n_spice,
                 AVG(CASE WHEN attribute = 'sweetness' THEN value END) as avg_sweetness,
-                COUNT(CASE WHEN attribute = 'sweetness' THEN 1 END) as n_sweetness
+                COUNT(CASE WHEN attribute = 'sweetness' THEN 1 END) as n_sweetness,
+                COUNT(DISTINCT user_id) as n_distinct_voters
             FROM dish_attribute_votes WHERE dish_id = $1
             "#,
         )
@@ -566,6 +613,7 @@ async fn upsert_attribute_vote(
         let avg_sweetness: Option<f64> = vote_avgs.try_get("avg_sweetness")?;
         let n_spice: i64 = vote_avgs.try_get("n_spice")?;
         let n_sweetness: i64 = vote_avgs.try_get("n_sweetness")?;
+        let n_distinct_voters: i64 = vote_avgs.try_get("n_distinct_voters")?;
 
         let final_spice = avg_spice
             .map(|s| (k * llm_spice + n_spice as f64 * s) / (k + n_spice as f64));
@@ -589,7 +637,10 @@ async fn upsert_attribute_vote(
         )
         .bind(final_spice)
         .bind(final_sweetness)
-        .bind((n_spice + n_sweetness) as i32)
+        // Distinct voters, not n_spice + n_sweetness — a user voting both
+        // attributes previously counted as 2 toward the ≥10 community-votes
+        // compatibility gate (CLAUDE.md §7) instead of 1.
+        .bind(n_distinct_voters as i32)
         .bind(confidence_score)
         .bind(dish_id)
         .execute(&mut *tx)
@@ -606,37 +657,37 @@ async fn toggle_favorite(
     Path(dish_id): Path<Uuid>,
     user: AuthUser,
 ) -> AppResult<Json<serde_json::Value>> {
-    // Use FOR UPDATE to serialize concurrent toggle calls on the same row.
     let mut tx = state.db.begin().await?;
 
-    let existing = sqlx::query(
-        "SELECT id FROM favorites WHERE user_id = $1 AND dish_id = $2 FOR UPDATE",
+    // Insert-first: `FOR UPDATE` on a row that doesn't exist yet locks
+    // nothing, so two concurrent first-time toggles both used to see "no
+    // existing row" and both try to INSERT, and the second hit the
+    // UNIQUE(user_id, dish_id) violation as a raw 500. ON CONFLICT DO
+    // NOTHING makes the INSERT itself the atomic decision point: if it
+    // inserted (rows_affected > 0) we're done; if not, someone already
+    // favorited it, so fall through and remove it.
+    let insert_result = sqlx::query(
+        "INSERT INTO favorites (id, user_id, dish_id) VALUES ($1, $2, $3) ON CONFLICT (user_id, dish_id) DO NOTHING",
     )
+    .bind(Uuid::new_v4())
     .bind(user.id)
     .bind(dish_id)
-    .fetch_optional(&mut *tx)
-    .await?;
+    .execute(&mut *tx)
+    .await;
+    let insert_result = map_fk_violation(insert_result, "Dish not found")?;
 
-    if existing.is_some() {
-        sqlx::query("DELETE FROM favorites WHERE user_id = $1 AND dish_id = $2")
-            .bind(user.id)
-            .bind(dish_id)
-            .execute(&mut *tx)
-            .await?;
+    if insert_result.rows_affected() > 0 {
         tx.commit().await?;
-        Ok(Json(serde_json::json!({ "favorited": false })))
-    } else {
-        sqlx::query(
-            "INSERT INTO favorites (id, user_id, dish_id) VALUES ($1, $2, $3)",
-        )
-        .bind(Uuid::new_v4())
+        return Ok(Json(serde_json::json!({ "favorited": true })));
+    }
+
+    sqlx::query("DELETE FROM favorites WHERE user_id = $1 AND dish_id = $2")
         .bind(user.id)
         .bind(dish_id)
         .execute(&mut *tx)
         .await?;
-        tx.commit().await?;
-        Ok(Json(serde_json::json!({ "favorited": true })))
-    }
+    tx.commit().await?;
+    Ok(Json(serde_json::json!({ "favorited": false })))
 }
 
 async fn get_dish_attributes(
@@ -837,32 +888,33 @@ async fn toggle_intent(
     Path(dish_id): Path<Uuid>,
     user: AuthUser,
 ) -> AppResult<Json<IntentToggleResponse>> {
-    let existing = sqlx::query(
-        "SELECT id FROM dish_intents WHERE user_id = $1 AND dish_id = $2",
+    let mut tx = state.db.begin().await?;
+
+    // Insert-first, same reasoning as toggle_favorite: the atomic INSERT ...
+    // ON CONFLICT DO NOTHING decides new-vs-existing instead of a
+    // SELECT-then-branch race that could double-INSERT under concurrency.
+    let insert_result = sqlx::query(
+        "INSERT INTO dish_intents (id, user_id, dish_id) VALUES ($1, $2, $3) ON CONFLICT (user_id, dish_id) DO NOTHING",
     )
+    .bind(Uuid::new_v4())
     .bind(user.id)
     .bind(dish_id)
-    .fetch_optional(&state.db)
-    .await?;
+    .execute(&mut *tx)
+    .await;
+    let insert_result = map_fk_violation(insert_result, "Dish not found")?;
 
-    if existing.is_some() {
-        sqlx::query("DELETE FROM dish_intents WHERE user_id = $1 AND dish_id = $2")
-            .bind(user.id)
-            .bind(dish_id)
-            .execute(&state.db)
-            .await?;
-        Ok(Json(IntentToggleResponse { active: false }))
-    } else {
-        sqlx::query(
-            "INSERT INTO dish_intents (id, user_id, dish_id) VALUES ($1, $2, $3) ON CONFLICT (user_id, dish_id) DO NOTHING",
-        )
-        .bind(Uuid::new_v4())
+    if insert_result.rows_affected() > 0 {
+        tx.commit().await?;
+        return Ok(Json(IntentToggleResponse { active: true }));
+    }
+
+    sqlx::query("DELETE FROM dish_intents WHERE user_id = $1 AND dish_id = $2")
         .bind(user.id)
         .bind(dish_id)
-        .execute(&state.db)
+        .execute(&mut *tx)
         .await?;
-        Ok(Json(IntentToggleResponse { active: true }))
-    }
+    tx.commit().await?;
+    Ok(Json(IntentToggleResponse { active: false }))
 }
 
 // ─────────────────────────────────────────────

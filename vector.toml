@@ -2,7 +2,7 @@
 
 [sources.docker]
 type = "docker_logs"
-exclude_containers = ["vector"]
+include_containers = ["remembite-backend-1"]
 
 [transforms.parse]
 type = "remap"

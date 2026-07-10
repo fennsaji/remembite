@@ -25,6 +25,8 @@ class DishDetail {
   final int voteCount;
   final AttributePriors? attributePriors;
   final bool isWantToTry;
+  final bool isFavorited;
+  final String? myNotes;
 
   const DishDetail({
     required this.id,
@@ -37,6 +39,8 @@ class DishDetail {
     required this.voteCount,
     this.attributePriors,
     required this.isWantToTry,
+    required this.isFavorited,
+    this.myNotes,
   });
 
   factory DishDetail.fromJson(Map<String, dynamic> json) => DishDetail(
@@ -54,6 +58,8 @@ class DishDetail {
           )
         : null,
     isWantToTry: json['is_want_to_try'] as bool? ?? false,
+    isFavorited: json['is_favorited'] as bool? ?? false,
+    myNotes: json['my_notes'] as String?,
   );
 }
 
@@ -222,6 +228,7 @@ class DishRepository {
     required String userId,
     required String dishId,
     required String reaction,
+    String? notes,
   }) async {
     const uuid = Uuid();
     // Optimistic local write (unsynced)
@@ -240,7 +247,7 @@ class DishRepository {
     try {
       await _dio.post(
         '/dishes/$dishId/reactions',
-        data: {'reaction': reaction},
+        data: {'reaction': reaction, if (notes != null) 'notes': notes},
       );
       final local = await _db.reactionDao.getByUserAndDish(userId, dishId);
       if (local != null) {
@@ -256,15 +263,22 @@ class DishRepository {
     return ReactionSummary.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<bool> toggleFavorite(String dishId) async {
+  /// Toggles server-side favorite state and mirrors it into the local Drift
+  /// `favorites` table — the Favorites screen reads that table directly
+  /// (never the server), so without this write the favorite would "work"
+  /// (server call succeeds) but never appear anywhere in the app.
+  Future<bool> toggleFavorite(String userId, String dishId) async {
     final response = await _dio.post('/dishes/$dishId/favorites');
-    return (response.data as Map<String, dynamic>)['favorited'] as bool;
+    final favorited =
+        (response.data as Map<String, dynamic>)['favorited'] as bool;
+    await _db.favoritesDao.setFavorite(userId, dishId, favorited);
+    return favorited;
   }
 
-  Future<bool> toggleWantToTry(String dishId) async {
+  Future<bool> toggleWantToTry(String userId, String dishId) async {
     final response = await _dio.post('/dishes/$dishId/intent');
     final active = (response.data as Map<String, dynamic>)['active'] as bool;
-    await _db.dishIntentsDao.setWantToTry(dishId, active);
+    await _db.dishIntentsDao.setWantToTry(userId, dishId, active);
     return active;
   }
 

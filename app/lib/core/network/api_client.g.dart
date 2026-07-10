@@ -6,11 +6,11 @@ part of 'api_client.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$apiClientHash() => r'62f79d1703fff8939c66d11e4c2ebee79973dfb8';
+String _$apiClientHash() => r'b0d783b75c235cb7044a5dd9411f2e161577f309';
 
 /// See also [apiClient].
 @ProviderFor(apiClient)
-final apiClientProvider = AutoDisposeProvider<Dio>.internal(
+final apiClientProvider = Provider<Dio>.internal(
   apiClient,
   name: r'apiClientProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -22,6 +22,6 @@ final apiClientProvider = AutoDisposeProvider<Dio>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef ApiClientRef = AutoDisposeProviderRef<Dio>;
+typedef ApiClientRef = ProviderRef<Dio>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

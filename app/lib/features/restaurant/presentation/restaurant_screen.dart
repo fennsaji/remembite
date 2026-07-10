@@ -40,11 +40,16 @@ Stream<List<TopBiteRow>> yourTopBites(Ref ref, String restaurantId) async* {
 
 @riverpod
 Stream<List<DishItem>> wantToTryDishes(Ref ref, String restaurantId) async* {
+  final auth = ref.watch(authStateProvider).value;
+  if (auth == null) {
+    yield [];
+    return;
+  }
   final allDishes = await ref.watch(
     restaurantDishesProvider(restaurantId).future,
   );
   final db = ref.watch(appDatabaseProvider);
-  yield* db.dishIntentsDao.watchAllDishIds().map((ids) {
+  yield* db.dishIntentsDao.watchAllDishIds(auth.id).map((ids) {
     final idSet = ids.toSet();
     return allDishes.where((d) => idSet.contains(d.id)).toList();
   });
@@ -1014,7 +1019,7 @@ class _QuickReactSheetState extends ConsumerState<_QuickReactSheet> {
       await ref
           .read(appDatabaseProvider)
           .dishIntentsDao
-          .removeOnReaction(widget.dish.id);
+          .removeOnReaction(auth.id, widget.dish.id);
       ref
           .read(
             restaurantSessionStateProvider(widget.dish.restaurantId).notifier,
@@ -1175,8 +1180,24 @@ class _RatingBottomSheetState extends ConsumerState<_RatingBottomSheet> {
           .read(restaurantRepositoryProvider)
           .upsertRating(widget.restaurantId, _stars);
       if (mounted) Navigator.of(context).pop();
-    } catch (_) {
-      if (mounted) setState(() => _submitted = false);
+    } catch (e) {
+      // Previously this just reset the button with no explanation — an
+      // offline user tapping "Submit Rating" saw nothing happen at all.
+      if (mounted) {
+        setState(() => _submitted = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              apiErrorMessage(e),
+              style: const TextStyle(
+                fontFamily: 'DM Sans',
+                color: AppColors.primaryText,
+              ),
+            ),
+            backgroundColor: AppColors.elevated,
+          ),
+        );
+      }
     }
   }
 }

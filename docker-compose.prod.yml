@@ -1,6 +1,6 @@
 # Production compose — runs on the VPS.
+# Caddy runs on the host (not Docker) and proxies to this backend via localhost:8080.
 # Postgres runs as a container with a named volume for persistence.
-# Caddy handles HTTPS (auto SSL via Let's Encrypt) and proxies to backend.
 # Secrets come from /opt/remembite/.env.api on the host.
 
 services:
@@ -21,8 +21,11 @@ services:
 
   backend:
     image: ghcr.io/fennsaji/remembite-backend:latest
+    platform: linux/amd64
     restart: unless-stopped
     env_file: .env.api
+    ports:
+      - "127.0.0.1:20080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -33,24 +36,13 @@ services:
       retries: 3
       start_period: 15s
 
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - backend
-
   vector:
     image: timberio/vector:0.43.0-alpine
+    platform: linux/amd64
     restart: unless-stopped
     user: root
+    command: ["--config", "/etc/vector/vector.toml"]
+    profiles: [logging]
     environment:
       AXIOM_API_KEY: ${AXIOM_API_KEY}
       AXIOM_DATASET: ${AXIOM_DATASET}
@@ -62,5 +54,3 @@ services:
 
 volumes:
   postgres_data:
-  caddy_data:
-  caddy_config:

@@ -62,18 +62,29 @@ class SyncWorker extends _$SyncWorker {
     try {
       final auth = ref.read(authStateProvider).value;
       if (auth == null) return;
-      if (!auth.isPro) return; // free users: local only
 
       final db = ref.read(appDatabaseProvider);
       final dio = ref.read(apiClientProvider);
 
-      // Cross-device pull: if no local reactions, fetch from cloud
-      final localCount = await db.reactionDao.getTotalReactionCount(auth.id);
-      if (localCount == 0) {
-        await _pullFromCloud(db, dio, auth);
+      if (auth.isPro) {
+        // Cross-device restore is a Pro feature — if no local reactions,
+        // fetch the user's full history from the cloud.
+        final localCount = await db.reactionDao.getTotalReactionCount(
+          auth.id,
+        );
+        if (localCount == 0) {
+          await _pullFromCloud(db, dio, auth);
+        }
       }
 
-      final pending = await db.reactionDao.getPendingSync();
+      // Retry uploading THIS device's own unsynced reactions for every user,
+      // Pro or free. This isn't the cross-device "cloud sync" feature above
+      // (still Pro-gated) — it's just making sure a reaction that failed to
+      // reach the server (submitted while offline) eventually does. Without
+      // this, a free user's offline reaction stayed correct locally forever
+      // but never reached the server, permanently missing from community
+      // counts and their own taste-profile progress (both server-computed).
+      final pending = await db.reactionDao.getPendingSync(auth.id);
       if (pending.isEmpty) {
         if (state == SyncStatus.error && !_disposed) state = SyncStatus.idle;
         return;

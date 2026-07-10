@@ -105,7 +105,7 @@ else
         printf "${RED}❌ No USB device found. Enable USB debugging and reconnect.${NC}\n"
         exit 1
       fi
-      adb -s "$USB_DEVICE" reverse tcp:8080 tcp:8080
+      adb -s "$USB_DEVICE" reverse tcp:20080 tcp:20080
       printf "${GREEN}✅ USB device ready: %s (adb reverse active)${NC}\n" "$USB_DEVICE"
       DEVICE_FLAG="-d $USB_DEVICE"
       ;;
@@ -125,6 +125,7 @@ printf "  r  hot reload    R  hot restart    q  quit\n\n"
 # shellcheck disable=SC2086
 flutter run $DEVICE_FLAG \
   --dart-define=API_URL="$API_URL" \
-  --dart-define=MAPS_API_KEY="${MAPS_API_KEY:-YOUR_MAPS_API_KEY_HERE}"
+  --dart-define=MAPS_API_KEY="${MAPS_API_KEY:-}" \
+  --dart-define=GOOGLE_WEB_CLIENT_ID="${GOOGLE_WEB_CLIENT_ID:-}"
 
 printf "${GREEN}✅ Session ended.${NC}\n"

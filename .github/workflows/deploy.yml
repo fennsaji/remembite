@@ -125,6 +125,6 @@ jobs:
           port: 22221
           script: |
             cd /opt/remembite
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml --profile logging pull
+            docker compose -f docker-compose.prod.yml --profile logging up -d --remove-orphans
             docker image prune -f

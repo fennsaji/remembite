@@ -390,7 +390,7 @@ class _YourTopBitesProviderElement
   String get restaurantId => (origin as YourTopBitesProvider).restaurantId;
 }
 
-String _$wantToTryDishesHash() => r'c545092f080f69d42ef1a9860896a602d4319622';
+String _$wantToTryDishesHash() => r'a2c6447a47c75c5fa4268500abefab01ba8f429e';
 
 /// See also [wantToTryDishes].
 @ProviderFor(wantToTryDishes)

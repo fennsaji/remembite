@@ -222,7 +222,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   // Places fetch
   bool _fetchingPlaces = false;
-  List<_NearbyPlace> _nearbyPlaces = [];
+  // Keyed by placeId — accumulated across panning, pruned when far out of view.
+  final Map<String, _NearbyPlace> _nearbyPlaces = {};
   bool _addingPlace = false;
   final Map<String, BitmapDescriptor> _markerIcons = {};
   // Tracks in-progress async icon builds to avoid duplicate work
@@ -487,11 +488,29 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               setState(() => _selectedPlace = null);
             }
           }
+        } else {
+          _showSearchSelectError();
         }
+      } else {
+        _showSearchSelectError();
       }
     } catch (e) {
       debugPrint('[MapScreen] place details error: $e');
+      _showSearchSelectError();
     }
+  }
+
+  // Previously both the non-200/non-OK response path and the catch block
+  // just debugPrint'd — the user taps a search result, the dropdown clears,
+  // and then nothing happens with no explanation at all.
+  void _showSearchSelectError() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Couldn't load that place. Try again."),
+        backgroundColor: AppColors.elevated,
+      ),
+    );
   }
 
   // ── Custom marker icon ─────────────────────────────────────────────────
@@ -694,7 +713,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (pos == null) return;
     if (!mounted) return;
 
-    setState(() => _fetchingPlaces = true);
+    // For manual button taps show the spinner immediately.
+    // For auto-refresh (camera idle) skip the initial setState to avoid a
+    // blink — we'll update state once in a single batch at the end.
+    _fetchingPlaces = true;
+    if (fromButton) setState(() {});
 
     final radius = _fetchRadiusForZoom(_currentZoom);
     final allPlaces = <_NearbyPlace>[];
@@ -748,14 +771,34 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         }),
       );
 
-      if (mounted) setState(() => _nearbyPlaces = allPlaces);
+      if (mounted) {
+        // Single setState: merge data + clear spinner in one pass → no blink.
+        setState(() {
+          // Merge new results — don't replace existing places.
+          for (final p in allPlaces) {
+            _nearbyPlaces[p.placeId] = p;
+          }
+          // Prune places that have drifted well outside the current view.
+          final pruneRadius = radius * 2.5;
+          _nearbyPlaces.removeWhere(
+            (_, p) =>
+                _distanceMeters(pos.latitude, pos.longitude, p.lat, p.lng) >
+                pruneRadius,
+          );
+          _fetchingPlaces = false;
+        });
+        return; // already cleared _fetchingPlaces inside setState
+      }
     } catch (e) {
       debugPrint('[MapScreen] _fetchPlaces: $e');
     } finally {
-      if (mounted) {
-        setState(() => _fetchingPlaces = false);
-      } else {
-        _fetchingPlaces = false;
+      // Reached only on error or if !mounted during the try block.
+      if (_fetchingPlaces) {
+        if (mounted) {
+          setState(() => _fetchingPlaces = false);
+        } else {
+          _fetchingPlaces = false;
+        }
       }
     }
   }
@@ -818,7 +861,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (zoom < 13) return 15;
     if (zoom < 14) return 30;
     if (zoom < 15) return 60;
-    return _nearbyPlaces.length;
+    return _nearbyPlaces
+        .length; // accumulated pool, density filtered in _buildMarkers
   }
 
   // Minimum metres between two visible Google Places pins at a given zoom.
@@ -895,12 +939,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       );
     }
 
-    // ── Google Places pins — only rendered after DB fetch completes ──
-    // Giving DB restaurants precedence: Places pins are suppressed while
-    // nearbyAsync is still loading so deduplication runs on fresh DB data.
-    if (nearbyAsync.isLoading) return markers;
+    // ── Google Places pins ────────────────────────────────────────────
+    // Use valueOrNull (last known value) for deduplication — this keeps
+    // Places pins visible during a DB reload so they don't blink out.
 
-    final sortedPlaces = [..._nearbyPlaces]
+    final sortedPlaces = [..._nearbyPlaces.values]
       ..sort((a, b) => _placeScore(b).compareTo(_placeScore(a)));
     final minSpacing = _minPinSpacingMeters(_currentZoom);
     final placedLatLngs = <(double, double)>[];
@@ -1243,7 +1286,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                 // its Places pin automatically.
                                 ref.invalidate(mapNearbyRestaurantsProvider);
                                 ref.invalidate(reactedRestaurantsOnMapProvider);
-                                nav.pop();
+                                // The sheet is dismissible — if the user swiped
+                                // it away while createRestaurant() was in
+                                // flight, `nav` (captured before the await)
+                                // now points at a Navigator whose sheet route
+                                // is already gone; calling pop() on it popped
+                                // whatever was actually on top instead —
+                                // typically the MapScreen itself. Only pop if
+                                // the sheet is still showing.
+                                if (sheetContext.mounted) nav.pop();
                                 router.push('/restaurant/${detail.id}');
                               } catch (e) {
                                 if (!mounted) return;

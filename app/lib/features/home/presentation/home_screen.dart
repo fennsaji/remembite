@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/db/app_database.dart';
 import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../restaurant/data/restaurant_repository.dart';
@@ -37,6 +38,12 @@ Future<List<RestaurantSummary>> nearbyRestaurants(Ref ref) async {
   } catch (_) {
     return [];
   }
+}
+
+@riverpod
+Future<List<RestaurantRow>> recentlyVisited(Ref ref, String userId) {
+  final repo = ref.watch(restaurantRepositoryProvider);
+  return repo.getRecentlyVisited(userId);
 }
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -260,85 +267,92 @@ class _RecentlyVisitedSection extends ConsumerWidget {
     final auth = ref.watch(authStateProvider).value;
     if (auth == null) return const SizedBox.shrink();
 
-    return FutureBuilder(
-      future: ref
-          .read(restaurantRepositoryProvider)
-          .getRecentlyVisited(auth.id),
-      builder: (context, snapshot) {
-        final rows = snapshot.data ?? [];
-        if (rows.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.add_location_alt_outlined,
-                  color: AppColors.accent,
-                  size: 16,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Add a restaurant and react to dishes to see your history here.',
-                    style: TextStyle(
-                      color: AppColors.secondaryText,
-                      fontSize: 13,
+    // A Riverpod provider (vs. the previous inline `FutureBuilder(future:
+    // repo.getRecentlyVisited(...))`) is cached per userId — the old inline
+    // future was a brand-new Future on every rebuild of this widget
+    // (auth re-emitting, an unrelated sibling provider like nearby-restaurants
+    // resolving, etc.), which reset FutureBuilder's snapshot to "no data yet"
+    // each time and flashed the empty state before the new future resolved.
+    return ref
+        .watch(recentlyVisitedProvider(auth.id))
+        .when(
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+          data: (rows) {
+            if (rows.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.add_location_alt_outlined,
+                      color: AppColors.accent,
+                      size: 16,
                     ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        return SizedBox(
-          height: 96,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemCount: rows.length,
-            itemBuilder: (context, i) {
-              final r = rows[i];
-              return GestureDetector(
-                onTap: () => context.push('/restaurant/${r.id}'),
-                child: Container(
-                  width: 130,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        r.name,
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: AppColors.primaryText,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Add a restaurant and react to dishes to see your history here.',
+                        style: TextStyle(
+                          color: AppColors.secondaryText,
+                          fontSize: 13,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        r.cuisineType ?? r.city,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.mutedText,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
-            },
-          ),
+            }
+            return SizedBox(
+              height: 96,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemCount: rows.length,
+                itemBuilder: (context, i) {
+                  final r = rows[i];
+                  return GestureDetector(
+                    onTap: () => context.push('/restaurant/${r.id}'),
+                    child: Container(
+                      width: 130,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            r.name,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(color: AppColors.primaryText),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            r.cuisineType ?? r.city,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.mutedText),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
         );
-      },
-    );
   }
 }
 

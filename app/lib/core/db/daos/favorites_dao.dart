@@ -95,4 +95,30 @@ class FavoritesDao extends DatabaseAccessor<AppDatabase>
       return true;
     }
   }
+
+  /// Sets the local favorite state to exactly [active] — used to mirror a
+  /// server-confirmed result rather than blindly toggling local state,
+  /// which could drift out of sync with the server's own toggle.
+  Future<void> setFavorite(String userId, String dishId, bool active) async {
+    if (active) {
+      final exists =
+          await (select(favorites)..where(
+                (f) => f.userId.equals(userId) & f.dishId.equals(dishId),
+              ))
+              .getSingleOrNull();
+      if (exists == null) {
+        await into(favorites).insert(
+          FavoritesCompanion.insert(
+            userId: userId,
+            dishId: dishId,
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
+    } else {
+      await (delete(
+        favorites,
+      )..where((f) => f.userId.equals(userId) & f.dishId.equals(dishId))).go();
+    }
+  }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 
 // Hardcoded bootstrapping dishes for taste calibration
@@ -278,16 +279,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
       await dio.post('/users/me/bootstrap', data: {'reactions': items});
 
-      const storage = FlutterSecureStorage();
-      await storage.write(key: 'has_bootstrapped', value: 'true');
+      await _markBootstrapped();
     } catch (_) {
       // Network error — still mark done so user isn't stuck in onboarding loop
-      const storage = FlutterSecureStorage();
-      await storage.write(key: 'has_bootstrapped', value: 'true');
+      await _markBootstrapped();
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
     if (mounted) context.go('/home');
+  }
+
+  /// Keyed per-user — a shared 'has_bootstrapped' key meant a second account
+  /// signing in on the same device skipped taste calibration entirely,
+  /// starting with an empty taste profile instead of the intended onboarding.
+  Future<void> _markBootstrapped() async {
+    final userId = ref.read(authStateProvider).value?.id;
+    if (userId == null) return;
+    const storage = FlutterSecureStorage();
+    await storage.write(key: 'has_bootstrapped_$userId', value: 'true');
   }
 }
 
