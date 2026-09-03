@@ -520,6 +520,67 @@ docker save remembite-backend:latest | ssh root@<server-ip> docker load
 ssh root@<server-ip> "cd /opt/remembite && docker compose -f docker-compose.prod.yml up -d --no-deps backend"
 ```
 
+### 9.5 Database Backups
+
+Postgres runs in a container with a named volume — without this job a disk
+failure or an accidental `docker volume rm` is unrecoverable.
+
+`scripts/backup-postgres.sh` runs `pg_dump -Fc` nightly and uploads the dump to
+a private Cloudflare R2 bucket, reusing the same `R2_*` credentials the backend
+uses for images. Local and remote dumps older than `BACKUP_RETENTION_DAYS`
+(default 30) are pruned each run.
+
+**Enable it:**
+
+```bash
+# 1. Create a private R2 bucket (e.g. remembite-backups) and make sure the
+#    existing R2 API token has Object Read & Write on it.
+# 2. Add to /opt/remembite/.env.api (see .env.example):
+#      R2_BACKUP_BUCKET=remembite-backups
+#      BACKUP_RETENTION_DAYS=30
+#      BACKUP_SCHEDULE_SECONDS=86400
+#    POSTGRES_PASSWORD and the R2_* vars must be present in the same env file
+#    that docker compose is invoked with.
+# 3. Start the service — the backup profile must be named explicitly:
+cd /opt/remembite
+docker compose -f docker-compose.prod.yml --profile backup up -d backup
+
+# Watch a run
+docker compose -f docker-compose.prod.yml logs -f backup
+
+# Force a run now
+docker compose -f docker-compose.prod.yml exec backup bash /usr/local/bin/backup-postgres.sh
+```
+
+Any deploy command that should keep the backup service running must pass
+`--profile backup` (the same way log shipping passes `--profile logging`);
+without it, `docker compose up -d` leaves the service stopped.
+
+**Restore:**
+
+```bash
+# List available dumps
+aws s3 ls s3://remembite-backups/postgres/ \
+  --endpoint-url https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com
+
+# Download one
+aws s3 cp s3://remembite-backups/postgres/remembite-20260101T030000Z.dump ./restore.dump \
+  --endpoint-url https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com
+
+# Copy into the postgres container and restore.
+# --clean --if-exists drops existing objects first; take the backend down so
+# nothing writes mid-restore.
+docker compose -f docker-compose.prod.yml stop backend
+docker cp ./restore.dump "$(docker compose -f docker-compose.prod.yml ps -q postgres)":/tmp/restore.dump
+docker compose -f docker-compose.prod.yml exec postgres \
+  pg_restore -U remembite -d remembite --clean --if-exists --no-owner --no-privileges /tmp/restore.dump
+docker compose -f docker-compose.prod.yml start backend
+```
+
+To restore into a fresh empty database instead, drop `--clean --if-exists` and
+use `pg_restore -U remembite -d remembite --no-owner --no-privileges`. Verify a
+restore on a scratch database at least once — an untested backup is not a backup.
+
 ---
 
 ## 10. Flutter App Release Build (Android)

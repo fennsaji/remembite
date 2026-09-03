@@ -73,7 +73,7 @@ Note: Bootstrapping reactions count toward ≥10 personal reaction threshold for
 | (Floating Action Button — navigates to /search)  |     |           |         |
 | ------------------------------------------------ |     |           |         |
 | Bottom Navigation                                |     |           |         |
-| Home                                             | Map | Favorites | Profile |
+| Home                                             | Map | Timeline  | Profile |
 
 ---
 
@@ -84,9 +84,39 @@ Search includes fuzzy matching across restaurants & dishes.
 
 ---
 
-## 3. Add Restaurant Screen
+## 3. Add Restaurant (Map flow)
+
+Superseded: the standalone form below was never shipped. `/restaurant/add`
+redirects to `/map?mode=add` — restaurants are added by tapping a Google Places
+pin on the map. Place details come from the Places record, so there are no
+free-text fields and no client-side duplicate prompt.
 
 ---
+
+| Map — add mode                                  |
+| ----------------------------------------------- |
+| [ 🔍 Search for a place________ ]               |
+| "Tap any restaurant pin to add it to Remembite" |
+|                                                 |
+|            📍  📍   📍  (Places pins)            |
+|                                                 |
+| [ Search this area ]                            |
+
+---
+
+## Tapping a pin → bottom sheet:
+
+| Restaurant Name                                |
+| 123 Some Road · Cuisine                        |
+| ⭐ 4.3 (1.2k) · Open now · ₹₹                   |
+|                                                |
+| [ Add to Remembite ]                           |
+-------------------------------------------------
+
+---
+
+<details>
+<summary>Superseded design — original Add Restaurant form (not implemented)</summary>
 
 | Add Restaurant                      |
 | ----------------------------------- |
@@ -96,13 +126,13 @@ Search includes fuzzy matching across restaurants & dishes.
 |                                     |
 | [ Save ]                            |
 
----
-
 ## If potential duplicate detected:
 
 | Similar restaurant found nearby                |
 | [ View Existing ] [ Create Anyway ]           |
 -------------------------------------------------
+
+</details>
 
 ---
 
