@@ -27,6 +27,7 @@ class DishDetail {
   final bool isWantToTry;
   final bool isFavorited;
   final String? myNotes;
+  final String? myReaction;
 
   const DishDetail({
     required this.id,
@@ -41,6 +42,7 @@ class DishDetail {
     required this.isWantToTry,
     required this.isFavorited,
     this.myNotes,
+    this.myReaction,
   });
 
   factory DishDetail.fromJson(Map<String, dynamic> json) => DishDetail(
@@ -60,6 +62,7 @@ class DishDetail {
     isWantToTry: json['is_want_to_try'] as bool? ?? false,
     isFavorited: json['is_favorited'] as bool? ?? false,
     myNotes: json['my_notes'] as String?,
+    myReaction: json['my_reaction'] as String?,
   );
 }
 
@@ -238,6 +241,7 @@ class DishRepository {
         userId: Value(userId),
         dishId: Value(dishId),
         reaction: Value(reaction),
+        notes: Value(notes),
         createdAt: Value(DateTime.now()),
         syncedAt: const Value(null),
       ),

@@ -6,7 +6,7 @@ part of 'sync_worker.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$syncWorkerHash() => r'abac57826ecbad965e04cecc439d62b728bffb3e';
+String _$syncWorkerHash() => r'e16ada25a723f68a2aa54252c89d2c7995f899a2';
 
 /// See also [SyncWorker].
 @ProviderFor(SyncWorker)

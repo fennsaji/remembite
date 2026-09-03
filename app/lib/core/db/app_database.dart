@@ -29,7 +29,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -79,6 +79,13 @@ class AppDatabase extends _$AppDatabase {
         // `from < 4` branch above, so this only needs to run for from == 4.)
         await m.deleteTable('dish_intents');
         await m.createTable(dishIntents);
+      }
+      if (from < 6) {
+        // Private notes were POSTed to the server but never stored locally,
+        // so an offline (or failed) write lost the note for good and the
+        // background sync had nothing to retry. Nullable, no default —
+        // plain addColumn is safe here.
+        await m.addColumn(reactions, reactions.notes);
       }
     },
   );

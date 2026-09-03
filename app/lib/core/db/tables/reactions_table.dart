@@ -8,6 +8,9 @@ class Reactions extends Table {
   TextColumn get userId => text()();
   TextColumn get dishId => text()();
   TextColumn get reaction => text()();
+  /// Private note attached to the reaction; null = no note. Mirrors
+  /// dish_reactions.notes on the server.
+  TextColumn get notes => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get syncedAt => dateTime().nullable()();
