@@ -920,27 +920,31 @@ class _ReportDishSheetState extends ConsumerState<_ReportDishSheet> {
             ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
           ),
           const SizedBox(height: 16),
-          // Newer Flutter deprecates per-tile groupValue/onChanged in favour
-          // of a RadioGroup ancestor, but RadioGroup does not exist in the
-          // 3.32.6 the CI pins. Keep this until that pin moves.
-          ..._reportReasons.map(
-            (reason) => RadioListTile<String>(
-              value: reason,
-              // ignore: deprecated_member_use
-              groupValue: _selectedReason,
-              // ignore: deprecated_member_use
-              onChanged: (v) {
-                if (v != null) setState(() => _selectedReason = v);
-              },
-              title: Text(
-                reason,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: AppColors.primaryText),
-              ),
-              activeColor: AppColors.accent,
-              contentPadding: EdgeInsets.zero,
-              dense: true,
+          // A RadioGroup ancestor replaces the per-tile groupValue/onChanged
+          // pair, which Flutter deprecated after 3.32.
+          RadioGroup<String>(
+            groupValue: _selectedReason,
+            onChanged: (v) {
+              if (v != null) setState(() => _selectedReason = v);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _reportReasons
+                  .map(
+                    (reason) => RadioListTile<String>(
+                      value: reason,
+                      title: Text(
+                        reason,
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(color: AppColors.primaryText),
+                      ),
+                      activeColor: AppColors.accent,
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  )
+                  .toList(),
             ),
           ),
           const SizedBox(height: 16),

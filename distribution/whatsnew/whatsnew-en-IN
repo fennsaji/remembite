@@ -2,6 +2,6 @@ Private notes now save on their own, even offline - no need to re-tap a reaction
 Subscription prices now match your region, and pending payments explain themselves instead of looking stuck.
 Menus load faster, and dish scores refresh right after you react or rate.
 Clearer message when location is off, instead of an empty "nothing nearby" list.
-Search no longer flashes older results over newer ones.
+Search no longer shows stale results.
 Signing out now properly ends your session.
-Plus stability fixes throughout.
+Updated billing, plus stability fixes.

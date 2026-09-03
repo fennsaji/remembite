@@ -187,11 +187,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               subtitle: 'Syncs your data across devices',
               trailing: Switch(
                 value: _syncEnabled,
-                // `activeColor` is deprecated on newer Flutter, but its
-                // replacement `activeThumbColor` does not exist in the 3.32.6
-                // the CI pins. Keep this until that pin moves.
-                // ignore: deprecated_member_use
-                activeColor: AppColors.accent,
+                activeThumbColor: AppColors.accent,
                 onChanged: (value) {
                   setState(() => _syncEnabled = value);
                   if (value) {
