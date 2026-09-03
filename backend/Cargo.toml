@@ -53,6 +53,15 @@ dashmap = "5"
 # Base64 encoding/decoding (Pub/Sub webhook payload)
 base64 = "0.22"
 
+# Constant-time comparison (webhook token check)
+subtle = "2"
+
+# Hashing (refresh-token session lookup — we store hashes, never raw tokens)
+sha2 = "0.10"
+
+# URL parsing (crawler SSRF guard)
+url = "2"
+
 # HTML parsing (crawler menu scraping)
 scraper = "0.25"
 

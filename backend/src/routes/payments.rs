@@ -1,12 +1,13 @@
-use axum::{Json, extract::State};
+use axum::{Json, extract::State, http::HeaderMap};
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     AppState,
     auth::{
-        jwt::{issue_access_token, issue_refresh_token},
+        jwt::{issue_access_token, issue_refresh_token_with_jti},
         middleware::AuthUser,
+        session,
     },
     error::{AppError, AppResult},
     services::google_play,
@@ -29,6 +30,7 @@ pub struct VerifyResponse {
 pub async fn verify_purchase(
     State(state): State<AppState>,
     auth: AuthUser,
+    headers: HeaderMap,
     Json(req): Json<VerifyRequest>,
 ) -> AppResult<Json<VerifyResponse>> {
     let gp_access_token = google_play::get_access_token(
@@ -95,7 +97,11 @@ pub async fn verify_purchase(
         state.config.jwt_access_expiry_hours,
     )?;
 
-    let new_refresh = issue_refresh_token(
+    // Refresh tokens are only accepted by /auth/refresh if a matching
+    // refresh_sessions row exists, so this re-issued token must be recorded
+    // too — otherwise upgrading to Pro would hand the client a token that
+    // fails on its next refresh.
+    let (new_refresh, _jti, refresh_expires_at) = issue_refresh_token_with_jti(
         auth.id,
         &auth.email,
         true,
@@ -103,6 +109,17 @@ pub async fn verify_purchase(
         &state.config.jwt_secret,
         state.config.jwt_refresh_expiry_days,
     )?;
+    let user_agent = headers
+        .get(axum::http::header::USER_AGENT)
+        .and_then(|v| v.to_str().ok());
+    session::insert_session(
+        &state.db,
+        auth.id,
+        &new_refresh,
+        refresh_expires_at,
+        user_agent,
+    )
+    .await?;
 
     Ok(Json(VerifyResponse {
         access_token: new_access,
