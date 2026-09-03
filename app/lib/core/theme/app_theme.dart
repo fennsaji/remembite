@@ -14,7 +14,11 @@ class AppColorsDark {
 
   static const primaryText = Color(0xFFF5EEE4); // Cream
   static const secondaryText = Color(0xFFB89F87); // Parchment
-  static const mutedText = Color(0xFF8E7868); // Ash — 4.7:1 on Abyss
+  // Ash. Lightened from #8E7868, which passed on Abyss (4.65:1) but failed
+  // AA on the surfaces it is actually used on — cards, search fields and
+  // stat tiles (4.31:1 on Embers, 3.95:1 on Char, 3.80:1 on Gilded).
+  // Now >= 4.5:1 on all four.
+  static const mutedText = Color(0xFF9D8573); // Ash — 4.55:1 worst case
 
   static const accent = Color(0xFFE6A830); // Turmeric
   static const accentPress = Color(0xFFC98A1A); // Saffron
@@ -102,7 +106,10 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColorsDark.accent,
-          foregroundColor: AppColorsDark.primaryText,
+          // Cream on Turmeric measures 1.82:1 — far under the 4.5:1 AA needs.
+          // The dark ground gives 9.24:1, and is what the FAB, the Subscribe
+          // buttons and the map's add button already override to.
+          foregroundColor: AppColorsDark.background,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),
@@ -189,7 +196,8 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColorsLight.accent,
-          foregroundColor: Colors.white,
+          // White on the light accent is only 3.31:1; Espresso is 5.48:1.
+          foregroundColor: AppColorsLight.primaryText,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),

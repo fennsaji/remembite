@@ -151,7 +151,7 @@ Exception: the standalone **Add Restaurant** form in `design/remembite.pen` (`cI
 | Border | Dusk | `#2E2520` |
 | Primary text | Cream | `#F5EEE4` |
 | Secondary text | Parchment | `#B89F87` |
-| Muted text | Ash | `#8E7868` |
+| Muted text | Ash | `#9D8573` |
 | Accent | Turmeric | `#E6A830` |
 | Accent pressed | Saffron | `#C98A1A` |
 | Error | Chili | `#D95F3B` |
