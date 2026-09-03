@@ -1,4 +1,7 @@
-Fixed a crash that could prevent the app from opening after updating.
-You can now favorite dishes and add private notes that actually save.
-Fixed menu scan sometimes showing the wrong dish name after deleting a row.
-Various stability and bug fixes across sign-in, sync, and the map.
+Private notes now save on their own, even offline - no need to re-tap a reaction first.
+Subscription prices now match your region, and pending payments explain themselves instead of looking stuck.
+Menus load faster, and dish scores refresh right after you react or rate.
+Clearer message when location is off, instead of an empty "nothing nearby" list.
+Search no longer flashes older results over newer ones.
+Signing out now properly ends your session.
+Plus stability fixes throughout.
