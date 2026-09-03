@@ -266,15 +266,30 @@ impl CrawlerService {
     }
 
     /// Fetch a URL and return the HTML body. Returns Err on non-200 or timeout.
+    ///
+    /// SSRF guard: the URL must be http(s) to a public host (checked both as
+    /// written and after DNS resolution), and redirects are not followed —
+    /// a 3xx is treated as a failure so a public host can't bounce us onto
+    /// an internal address.
     async fn fetch_html(&self, url: &str) -> anyhow::Result<String> {
-        let resp = self
-            .http
-            .get(url)
-            .header("User-Agent", "Mozilla/5.0 (compatible; Remembite-Crawler/1.0)")
+        let parsed = parse_safe_url(url)?;
+        assert_safe_host(&parsed).await?;
+
+        let client = reqwest::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
             .timeout(std::time::Duration::from_secs(10))
+            .build()?;
+
+        let resp = client
+            .get(parsed)
+            .header("User-Agent", "Mozilla/5.0 (compatible; Remembite-Crawler/1.0)")
             .send()
             .await?;
 
+        if resp.status().is_redirection() {
+            tracing::debug!(url, status = %resp.status(), "crawler: refusing to follow redirect");
+            anyhow::bail!("HTTP {} (redirect not followed) for {url}", resp.status());
+        }
         if !resp.status().is_success() {
             anyhow::bail!("HTTP {} for {url}", resp.status());
         }
@@ -547,6 +562,162 @@ impl CrawlerService {
                 tracing::error!(city = %city, "city crawl failed: {e}");
             }
         }
+    }
+}
+
+// ── SSRF guard ──────────────────────────────────────────────────────────────
+
+/// Hostnames that must never be crawled regardless of what they resolve to.
+const BLOCKED_HOSTNAMES: &[&str] = &["localhost", "metadata.google.internal"];
+
+/// True if `ip` is in a private, loopback, link-local, unspecified, or cloud
+/// metadata range — i.e. anything that isn't a routable public address.
+fn is_private_ip(ip: std::net::IpAddr) -> bool {
+    use std::net::IpAddr;
+    match ip {
+        IpAddr::V4(v4) => {
+            let [a, b, _, _] = v4.octets();
+            v4.is_loopback()            // 127/8
+                || v4.is_private()      // 10/8, 172.16/12, 192.168/16
+                || v4.is_link_local()   // 169.254/16 (incl. 169.254.169.254 metadata)
+                || v4.is_unspecified()  // 0.0.0.0
+                || a == 0               // 0/8
+                || v4.is_broadcast()
+                || (a == 100 && (64..=127).contains(&b)) // 100.64/10 CGNAT
+        }
+        IpAddr::V6(v6) => {
+            // IPv4-mapped (::ffff:a.b.c.d) — apply the v4 rules.
+            if let Some(v4) = v6.to_ipv4_mapped() {
+                return is_private_ip(IpAddr::V4(v4));
+            }
+            let seg0 = v6.segments()[0];
+            v6.is_loopback()                 // ::1
+                || v6.is_unspecified()       // ::
+                || (seg0 & 0xfe00) == 0xfc00 // fc00::/7 unique local
+                || (seg0 & 0xffc0) == 0xfe80 // fe80::/10 link local
+        }
+    }
+}
+
+/// Parse `raw` and reject anything that isn't http(s) to a non-blocked,
+/// non-private host. IP-literal hosts are range-checked here; hostnames are
+/// resolved and checked in [`assert_safe_host`].
+fn parse_safe_url(raw: &str) -> anyhow::Result<url::Url> {
+    let parsed = url::Url::parse(raw)?;
+    if !is_safe_url(&parsed) {
+        anyhow::bail!("unsafe URL rejected by crawler: {raw}");
+    }
+    Ok(parsed)
+}
+
+/// Synchronous part of the SSRF check (scheme + literal host).
+fn is_safe_url(parsed: &url::Url) -> bool {
+    if !matches!(parsed.scheme(), "http" | "https") {
+        return false;
+    }
+    match parsed.host() {
+        None => false,
+        Some(url::Host::Ipv4(v4)) => !is_private_ip(v4.into()),
+        Some(url::Host::Ipv6(v6)) => !is_private_ip(v6.into()),
+        Some(url::Host::Domain(d)) => {
+            let d = d.trim_end_matches('.').to_ascii_lowercase();
+            !BLOCKED_HOSTNAMES.contains(&d.as_str()) && !d.ends_with(".localhost")
+        }
+    }
+}
+
+/// Resolve the URL's host and reject it if *any* resolved address is
+/// private. (Literal IPs were already checked by [`is_safe_url`].)
+async fn assert_safe_host(parsed: &url::Url) -> anyhow::Result<()> {
+    let host = match parsed.host() {
+        Some(url::Host::Domain(d)) => d.to_string(),
+        Some(_) => return Ok(()), // IP literal — already range-checked
+        None => anyhow::bail!("URL has no host"),
+    };
+    let port = parsed.port_or_known_default().unwrap_or(80);
+    let addrs = tokio::net::lookup_host((host.as_str(), port)).await?;
+    let mut any = false;
+    for addr in addrs {
+        any = true;
+        if is_private_ip(addr.ip()) {
+            anyhow::bail!("host {host} resolves to non-public address {}", addr.ip());
+        }
+    }
+    if !any {
+        anyhow::bail!("host {host} did not resolve");
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod ssrf_tests {
+    use super::*;
+
+    fn safe(s: &str) -> bool {
+        url::Url::parse(s).map(|u| is_safe_url(&u)).unwrap_or(false)
+    }
+
+    #[test]
+    fn rejects_non_http_schemes() {
+        assert!(!safe("ftp://example.com/menu"));
+        assert!(!safe("file:///etc/passwd"));
+        assert!(!safe("gopher://example.com"));
+    }
+
+    #[test]
+    fn rejects_private_ipv4_literals() {
+        for u in [
+            "http://127.0.0.1/",
+            "http://10.1.2.3/",
+            "http://172.16.0.1/",
+            "http://172.31.255.255/",
+            "http://192.168.1.1/",
+            "http://169.254.169.254/latest/meta-data/",
+            "http://0.0.0.0/",
+            "http://0.1.2.3/",
+            "http://100.64.0.1/",
+        ] {
+            assert!(!safe(u), "{u} should be rejected");
+        }
+    }
+
+    #[test]
+    fn rejects_private_ipv6_literals() {
+        for u in [
+            "http://[::1]/",
+            "http://[::]/",
+            "http://[fc00::1]/",
+            "http://[fd12:3456::1]/",
+            "http://[fe80::1]/",
+            "http://[::ffff:127.0.0.1]/",
+            "http://[::ffff:10.0.0.1]/",
+        ] {
+            assert!(!safe(u), "{u} should be rejected");
+        }
+    }
+
+    #[test]
+    fn rejects_blocked_hostnames() {
+        assert!(!safe("http://localhost/"));
+        assert!(!safe("http://LOCALHOST:8080/"));
+        assert!(!safe("http://foo.localhost/"));
+        assert!(!safe("http://metadata.google.internal/computeMetadata/v1/"));
+    }
+
+    #[test]
+    fn accepts_public_urls() {
+        assert!(safe("https://example.com/menu"));
+        assert!(safe("http://8.8.8.8/"));
+        assert!(safe("http://172.32.0.1/")); // just outside 172.16/12
+        assert!(safe("http://[2001:4860:4860::8888]/"));
+    }
+
+    #[tokio::test]
+    async fn resolved_loopback_is_rejected() {
+        // "localhost" is blocked by name; use a literal-free path that
+        // resolves to loopback via the system resolver instead.
+        let u = url::Url::parse("http://localhost/").unwrap();
+        assert!(assert_safe_host(&u).await.is_err());
     }
 }
 
