@@ -36,6 +36,8 @@ pub fn admin_router() -> Router<AppState> {
 // Query params for listing suggestions
 // ─────────────────────────────────────────────
 
+const MAX_PROPOSED_VALUE_LEN: usize = 500;
+
 #[derive(Debug, serde::Deserialize)]
 pub struct ListSuggestionsQuery {
     pub entity_id: Option<Uuid>,
@@ -66,6 +68,12 @@ async fn create_suggestion(
 
     if req.proposed_value.trim().is_empty() {
         return Err(AppError::BadRequest("proposed_value is required".to_string()));
+    }
+
+    if req.proposed_value.trim().chars().count() > MAX_PROPOSED_VALUE_LEN {
+        return Err(AppError::BadRequest(format!(
+            "proposed_value must be at most {MAX_PROPOSED_VALUE_LEN} characters"
+        )));
     }
 
     // Validate field is allowed for entity_type
@@ -183,6 +191,8 @@ async fn vote_suggestion(
     user: AuthUser,
     Json(req): Json<EditVoteRequest>,
 ) -> AppResult<Json<EditVoteResponse>> {
+    check_user_limit(&state.rl_edit_suggestions, user.id)?;
+
     if req.vote != "up" && req.vote != "down" {
         return Err(AppError::BadRequest(
             "vote must be 'up' or 'down'".to_string(),
@@ -192,7 +202,7 @@ async fn vote_suggestion(
     // Fetch suggestion — ensure it exists and is still pending within its window
     let row = sqlx::query(
         r#"
-        SELECT id, entity_type::text, entity_id, field, proposed_value, status::text, net_votes, expires_at
+        SELECT id, entity_type::text, entity_id, field, proposed_value, status::text, net_votes, expires_at, suggested_by
         FROM edit_suggestions
         WHERE id = $1
         "#,
@@ -201,6 +211,15 @@ async fn vote_suggestion(
     .fetch_optional(&state.db)
     .await?
     .ok_or_else(|| AppError::NotFound(format!("Suggestion {id} not found")))?;
+
+    // The 3-net-upvote auto-apply gate is meant to be community assent; a
+    // suggestor voting for their own edit supplies a third of it themselves.
+    let suggested_by: Uuid = row.try_get("suggested_by")?;
+    if suggested_by == user.id {
+        return Err(AppError::BadRequest(
+            "You cannot vote on your own suggestion".to_string(),
+        ));
+    }
 
     let status: String = row.try_get("status")?;
     if status != "pending" {

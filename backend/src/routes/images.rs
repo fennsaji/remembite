@@ -191,9 +191,10 @@ async fn upload_image(
 
 async fn list_dish_images(
     State(state): State<AppState>,
-    _user: AuthUser,
+    user: AuthUser,
     Path(dish_id): Path<Uuid>,
 ) -> AppResult<Json<Vec<ImageResponse>>> {
+    // Private images are only visible to their uploader.
     let rows = sqlx::query(
         r#"
         SELECT id, entity_type::text, entity_id, uploaded_by, r2_key, is_public, created_at
@@ -201,11 +202,13 @@ async fn list_dish_images(
         WHERE entity_type = 'dish'::entity_type
           AND entity_id = $1
           AND deleted_at IS NULL
+          AND (is_public = TRUE OR uploaded_by = $2)
         ORDER BY created_at DESC
         LIMIT 20
         "#,
     )
     .bind(dish_id)
+    .bind(user.id)
     .fetch_all(&state.db)
     .await?;
 

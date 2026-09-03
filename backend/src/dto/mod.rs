@@ -136,6 +136,9 @@ pub struct DishDetailResponse {
     /// Requesting user's own private note on this dish, if any. Never
     /// exposed for any other user.
     pub my_notes: Option<String>,
+    /// Requesting user's own reaction on this dish, if any. Lets the client
+    /// pre-select it so a notes-only edit can be saved without re-tapping.
+    pub my_reaction: Option<String>,
 }
 
 #[derive(Debug, Serialize)]

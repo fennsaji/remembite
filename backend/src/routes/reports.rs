@@ -29,6 +29,8 @@ pub fn admin_router() -> Router<AppState> {
 // Handlers
 // ─────────────────────────────────────────────
 
+const MAX_REASON_LEN: usize = 2000;
+
 async fn create_report(
     State(state): State<AppState>,
     user: AuthUser,
@@ -46,13 +48,24 @@ async fn create_report(
         return Err(AppError::BadRequest("reason is required".to_string()));
     }
 
+    if req.reason.trim().chars().count() > MAX_REASON_LEN {
+        return Err(AppError::BadRequest(format!(
+            "reason must be at most {MAX_REASON_LEN} characters"
+        )));
+    }
+
     let id = Uuid::new_v4();
     let now = chrono::Utc::now();
 
-    sqlx::query(
+    // One open report per reporter per entity — without this a single user
+    // could file the same complaint repeatedly and inflate the moderation
+    // queue (and any report-count prioritisation built on it).
+    let inserted = sqlx::query(
         r#"
         INSERT INTO reports (id, entity_type, entity_id, reported_by, reason)
         VALUES ($1, $2::entity_type, $3, $4, $5)
+        ON CONFLICT (reported_by, entity_type, entity_id) WHERE status = 'open'
+        DO NOTHING
         "#,
     )
     .bind(id)
@@ -62,6 +75,12 @@ async fn create_report(
     .bind(&req.reason)
     .execute(&state.db)
     .await?;
+
+    if inserted.rows_affected() == 0 {
+        return Err(AppError::BadRequest(
+            "You already have an open report for this item".to_string(),
+        ));
+    }
 
     Ok((
         StatusCode::CREATED,
