@@ -21,6 +21,9 @@ pub struct Config {
     pub google_play_package_name: String,
     pub google_play_service_account_json: String,
     pub google_pubsub_webhook_token: String,
+    /// Browser origins permitted to call this API. Empty = none (the normal
+    /// case: the mobile clients are not browsers and ignore CORS entirely).
+    pub cors_allowed_origins: Vec<String>,
     pub bayesian_prior_weight: f64,  // k constant (default 5.0)
     pub google_places_api_key: String,
     pub crawler_enabled: bool,
@@ -51,8 +54,20 @@ impl Config {
             google_play_package_name: env_or("GOOGLE_PLAY_PACKAGE_NAME", "com.fennsaji.remembite"),
             // Dev default ("{}") — MUST be set to real service account JSON via GOOGLE_PLAY_SERVICE_ACCOUNT_JSON in production
             google_play_service_account_json: env_or("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "{}"),
-            // Dev default — MUST be overridden via GOOGLE_PUBSUB_WEBHOOK_TOKEN in production
-            google_pubsub_webhook_token: env_or("GOOGLE_PUBSUB_WEBHOOK_TOKEN", "dev-webhook-token"),
+            // Required outside development (APP_ENV != "development"); a
+            // predictable dev default would let anyone forge Play webhooks.
+            google_pubsub_webhook_token: if is_dev_env() {
+                env_or("GOOGLE_PUBSUB_WEBHOOK_TOKEN", "dev-webhook-token")
+            } else {
+                require_env("GOOGLE_PUBSUB_WEBHOOK_TOKEN")?
+            },
+            // Comma-separated, e.g. "https://remembite.app,https://admin.remembite.app".
+            cors_allowed_origins: env_or("CORS_ALLOWED_ORIGINS", "")
+                .split(',')
+                .map(str::trim)
+                .filter(|o| !o.is_empty())
+                .map(str::to_string)
+                .collect(),
             bayesian_prior_weight: parse_env("BAYESIAN_PRIOR_WEIGHT", 5.0f64)?,
             google_places_api_key: env_or("GOOGLE_PLACES_API_KEY", ""),
             crawler_enabled: env_or("CRAWLER_ENABLED", "true") == "true",
@@ -62,8 +77,25 @@ impl Config {
     }
 }
 
+/// `APP_ENV` selects dev-only defaults. Anything other than an explicit
+/// "development"/"dev"/"local" is treated as production so a missing var
+/// fails closed.
+fn is_dev_env() -> bool {
+    matches!(
+        env_or("APP_ENV", "production").trim().to_ascii_lowercase().as_str(),
+        "development" | "dev" | "local"
+    )
+}
+
 fn require_env(key: &str) -> anyhow::Result<String> {
-    std::env::var(key).with_context(|| format!("Missing required env var: {key}"))
+    let v = std::env::var(key).with_context(|| format!("Missing required env var: {key}"))?;
+    // An unset CI secret still writes `KEY=` into .env.api, and `env::var`
+    // returns Ok("") for that — which would silently boot with an empty
+    // secret (an empty webhook token matches an empty `?token=`).
+    if v.trim().is_empty() {
+        anyhow::bail!("Required env var {key} is set but empty");
+    }
+    Ok(v)
 }
 
 fn env_or(key: &str, default: &str) -> String {
