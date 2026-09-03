@@ -97,6 +97,18 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
     );
   }
 
+  void _showAddDishSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _AddDishBottomSheet(restaurantId: widget.restaurantId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final restaurantAsync = ref.watch(
@@ -134,8 +146,26 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
             style: const TextStyle(color: AppColors.secondaryText),
           ),
         ),
-        data: (restaurant) => CustomScrollView(
-          slivers: [
+        data: (restaurant) => RefreshIndicator(
+          color: AppColors.accent,
+          backgroundColor: AppColors.elevated,
+          // Home and Timeline both refresh on pull; this screen did not, even
+          // though it is the one you wait on while dishes finish classifying.
+          onRefresh: () async {
+            ref.invalidate(restaurantDetailProvider(widget.restaurantId));
+            ref.invalidate(restaurantDishesProvider(widget.restaurantId));
+            ref.invalidate(
+              restaurantReactionSummariesProvider(widget.restaurantId),
+            );
+            ref.invalidate(yourTopBitesProvider(widget.restaurantId));
+            ref.invalidate(pendingEditCountProvider(widget.restaurantId));
+            await ref.read(
+              restaurantDetailProvider(widget.restaurantId).future,
+            );
+          },
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
             // Header
             SliverAppBar(
               expandedHeight: 120,
@@ -523,7 +553,27 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
             ),
 
             // Full Menu — grouped by category, all items, lazy via SliverList
-            const SliverToBoxAdapter(child: _SectionHeader(label: 'FULL MENU')),
+            // Scanning a menu was the only way to create a dish, so a
+            // handwritten menu or a failed scan left the whole dish-level
+            // product unreachable. This adds one by hand.
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                label: 'FULL MENU',
+                trailing: TextButton.icon(
+                  onPressed: () => _showAddDishSheet(context),
+                  icon: const Icon(Icons.add, size: 18, color: AppColors.accent),
+                  label: const Text(
+                    'Add dish',
+                    style: TextStyle(color: AppColors.accent),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(0, 36),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ),
+            ),
             dishesAsync.when(
               loading: () => const SliverToBoxAdapter(child: SizedBox()),
               error: (_, __) => const SliverToBoxAdapter(child: SizedBox()),
@@ -586,7 +636,8 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 80)),
-          ],
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -770,7 +821,9 @@ class _StatusChip extends StatelessWidget {
 
 class _SectionHeader extends StatelessWidget {
   final String label;
-  const _SectionHeader({required this.label});
+  /// Optional right-aligned action (e.g. "Add dish" on the menu section).
+  final Widget? trailing;
+  const _SectionHeader({required this.label, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -787,6 +840,7 @@ class _SectionHeader extends StatelessWidget {
               letterSpacing: 0.8,
             ),
           ),
+          if (trailing != null) ...[const Spacer(), trailing!],
         ],
       ),
     );
@@ -1168,7 +1222,10 @@ class _RatingBottomSheetState extends ConsumerState<_RatingBottomSheet> {
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: Icon(
                       filled ? Icons.star_rounded : Icons.star_outline_rounded,
-                      color: filled ? AppColors.accent : AppColors.border,
+                      // Unfilled stars used `border`, which is 1.10:1 on the
+                      // sheet — the row read as empty space, giving no hint
+                      // that there was anything to tap.
+                      color: filled ? AppColors.accent : AppColors.mutedText,
                       size: 40,
                     ),
                   ),
@@ -1266,6 +1323,10 @@ class _SuggestEditBottomSheetState
         },
       );
 
+      // Without this the "community updates pending" banner does not appear
+      // until the provider happens to dispose, so a just-submitted edit left
+      // no visible trace of itself.
+      ref.invalidate(pendingEditCountProvider(widget.restaurantId));
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1391,6 +1452,9 @@ class _SuggestEditBottomSheetState
               hintText: 'Enter corrected value…',
             ),
             textInputAction: TextInputAction.done,
+            // Rebuild so the button's enabled state tracks the field; it used
+            // to stay enabled while empty and _submit() returned silently.
+            onChanged: (_) => setState(() {}),
             onSubmitted: (_) => _submitting ? null : _submit(),
           ),
           const SizedBox(height: 24),
@@ -1399,7 +1463,9 @@ class _SuggestEditBottomSheetState
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _submitting ? null : _submit,
+              onPressed: _submitting || _valueController.text.trim().isEmpty
+                  ? null
+                  : _submit,
               child: _submitting
                   ? const SizedBox(
                       width: 20,
@@ -1410,6 +1476,159 @@ class _SuggestEditBottomSheetState
                       ),
                     )
                   : const Text('Submit Edit'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Add Dish (manual)
+// ─────────────────────────────────────────────
+
+/// Creates a single dish without scanning a menu.
+///
+/// The scan flow is the fast path for a printed menu, but it is not always
+/// available — handwritten boards, a menu the camera cannot read, or simply
+/// wanting to log one dish. This posts through the same batch endpoint the
+/// OCR confirmation screen uses, with a list of one.
+class _AddDishBottomSheet extends ConsumerStatefulWidget {
+  final String restaurantId;
+  const _AddDishBottomSheet({required this.restaurantId});
+
+  @override
+  ConsumerState<_AddDishBottomSheet> createState() =>
+      _AddDishBottomSheetState();
+}
+
+class _AddDishBottomSheetState extends ConsumerState<_AddDishBottomSheet> {
+  final _nameController = TextEditingController();
+  final _categoryController = TextEditingController();
+  final _priceController = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _categoryController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty || _submitting) return;
+    setState(() => _submitting = true);
+
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    try {
+      final category = _categoryController.text.trim();
+      final priceText = _priceController.text.trim();
+      await ref.read(dishRepositoryProvider).batchCreateDishes(
+        widget.restaurantId,
+        [
+          {
+            'name': name,
+            if (category.isNotEmpty) 'category': category,
+            if (priceText.isNotEmpty) 'price': int.tryParse(priceText),
+          },
+        ],
+      );
+      ref.invalidate(restaurantDishesProvider(widget.restaurantId));
+      ref.invalidate(
+        restaurantReactionSummariesProvider(widget.restaurantId),
+      );
+      if (navigator.canPop()) navigator.pop();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Added $name',
+            style: const TextStyle(color: AppColors.primaryText),
+          ),
+          backgroundColor: AppColors.elevated,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            apiErrorMessage(e),
+            style: const TextStyle(color: AppColors.primaryText),
+          ),
+          backgroundColor: AppColors.elevated,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Add a dish',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: AppColors.primaryText,
+              fontFamily: AppFonts.fraunces,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _nameController,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            style: const TextStyle(color: AppColors.primaryText),
+            decoration: const InputDecoration(
+              labelText: 'Dish name',
+              hintText: 'e.g. Butter Chicken',
+            ),
+            onSubmitted: (_) => _submit(),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _categoryController,
+                  textCapitalization: TextCapitalization.words,
+                  style: const TextStyle(color: AppColors.primaryText),
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                    hintText: 'Starters',
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 110,
+                child: TextField(
+                  controller: _priceController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: AppColors.primaryText),
+                  decoration: const InputDecoration(
+                    labelText: '₹',
+                    hintText: '250',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _submitting ? null : _submit,
+              child: Text(_submitting ? 'Adding…' : 'Add dish'),
             ),
           ),
         ],
