@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -133,7 +134,12 @@ class _VisitCard extends StatelessWidget {
     final date = DateTime.parse(entry.date);
     final formattedDate = DateFormat('d MMM').format(date);
 
-    return Container(
+    // The card names a restaurant you visited and already carries its id, but
+    // had no tap handler — the visit history was a dead end.
+    return InkWell(
+      onTap: () => context.push('/restaurant/${entry.restaurantId}'),
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -182,6 +188,7 @@ class _VisitCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

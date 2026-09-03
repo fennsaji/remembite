@@ -241,14 +241,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchLocation();
+    final locating = _fetchLocation();
     _searchController.addListener(_onSearchChanged);
-    // Pre-fill search bar if launched from another screen with a query
+    // Pre-fill search bar if launched from another screen with a query.
+    // The predictions request waits on _fetchLocation: firing it from a
+    // post-frame callback ran it before any position was known, so the
+    // request carried no location bias and a search made in Mumbai came
+    // back led by results in California.
     if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
         _searchController.text = widget.initialQuery!;
         _searchQuery = widget.initialQuery!;
-        _fetchPredictions(widget.initialQuery!);
+        await locating;
+        if (!mounted) return;
+        await _fetchPredictions(widget.initialQuery!);
       });
     }
     if (widget.addMode) {

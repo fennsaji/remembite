@@ -21,8 +21,13 @@ class _MenuScanScreenState extends ConsumerState<MenuScanScreen> {
   bool _finishing = false;
   final List<String> _scannedPages = [];
 
-  Future<void> _runOcr(List<XFile> files) async {
+  /// Returns how many of `files` actually yielded text, so the caller can
+  /// tell the user when a scan found nothing. Previously an empty result was
+  /// dropped silently and the screen returned to its idle state, which is
+  /// indistinguishable from a tap that never registered.
+  Future<int> _runOcr(List<XFile> files) async {
     final recognizer = TextRecognizer();
+    var recognised = 0;
     try {
       for (final file in files) {
         final result = await recognizer.processImage(
@@ -30,11 +35,27 @@ class _MenuScanScreenState extends ConsumerState<MenuScanScreen> {
         );
         if (result.text.trim().isNotEmpty) {
           _scannedPages.add(result.text);
+          recognised++;
         }
       }
     } finally {
       recognizer.close();
     }
+    return recognised;
+  }
+
+  void _showNoTextFound() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          "Couldn't read any text. Try more light, a straighter angle, or "
+          'move closer to the menu.',
+          style: TextStyle(color: AppColors.primaryText),
+        ),
+        backgroundColor: AppColors.elevated,
+      ),
+    );
   }
 
   Future<void> _captureAndScan() async {
@@ -42,8 +63,9 @@ class _MenuScanScreenState extends ConsumerState<MenuScanScreen> {
     try {
       final xfile = await ImagePicker().pickImage(source: ImageSource.camera);
       if (xfile == null) return;
-      await _runOcr([xfile]);
+      final found = await _runOcr([xfile]);
       if (mounted) setState(() {});
+      if (found == 0) _showNoTextFound();
     } catch (e) {
       _showError(e);
     } finally {
@@ -56,8 +78,9 @@ class _MenuScanScreenState extends ConsumerState<MenuScanScreen> {
     try {
       final files = await ImagePicker().pickMultiImage();
       if (files.isEmpty) return;
-      await _runOcr(files);
+      final found = await _runOcr(files);
       if (mounted) setState(() {});
+      if (found == 0) _showNoTextFound();
     } catch (e) {
       _showError(e);
     } finally {
