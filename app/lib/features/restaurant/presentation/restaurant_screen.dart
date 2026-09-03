@@ -284,7 +284,7 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
                                 style: Theme.of(context).textTheme.labelMedium
                                     ?.copyWith(
                                       color: AppColors.accent,
-                                      fontFamily: 'DM Sans',
+                                      fontFamily: AppFonts.dmSans,
                                     ),
                               ),
                               const Spacer(),
@@ -648,7 +648,7 @@ class _OpeningHoursRowState extends State<_OpeningHoursRow> {
                     color: AppColors.error,
                   )
                 else if (isOpen == true)
-                  _StatusChip(label: 'Open Now', color: const Color(0xFF4CAF50))
+                  _StatusChip(label: 'Open Now', color: AppColors.success)
                 else if (isOpen == false)
                   _StatusChip(label: 'Closed Now', color: AppColors.error),
                 if (todayHours != null) ...[
@@ -820,7 +820,7 @@ class _CategoryHeader extends StatelessWidget {
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: AppColors.mutedText,
           letterSpacing: 0.8,
-          fontFamily: 'DM Sans',
+          fontFamily: AppFonts.dmSans,
         ),
       ),
     );
@@ -860,7 +860,13 @@ class _DishTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summaryAsync = ref.watch(dishReactionSummaryProvider(dish.id));
+    // Reaction counts come from one batched request for the whole menu
+    // (keyed by restaurant), not one request per tile.
+    final summaryAsync = ref.watch(
+      restaurantReactionSummariesProvider(
+        dish.restaurantId,
+      ).select((async) => async.whenData((all) => all[dish.id])),
+    );
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
@@ -912,6 +918,7 @@ class _DishTile extends ConsumerWidget {
               loading: () => const SizedBox.shrink(),
               error: (_, __) => const SizedBox.shrink(),
               data: (summary) {
+                if (summary == null) return const SizedBox.shrink();
                 final pairs = _reactionOrder
                     .where((key) => (summary.breakdown[key] ?? 0) > 0)
                     .map(
@@ -932,10 +939,10 @@ class _DishTile extends ConsumerWidget {
                         const SizedBox(width: 2),
                         Text(
                           '${pairs[i].$2}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
                             color: AppColors.mutedText,
-                            fontFamily: 'DM Sans',
+                            fontFamily: AppFonts.dmSans,
                           ),
                         ),
                       ],
@@ -1024,11 +1031,17 @@ class _QuickReactSheetState extends ConsumerState<_QuickReactSheet> {
           .read(
             restaurantSessionStateProvider(widget.dish.restaurantId).notifier,
           )
-          .incrementReaction();
+          .recordReaction(widget.dish.id);
       if (mounted) {
         Navigator.of(context).pop();
         ref.invalidate(dishReactionSummaryProvider(widget.dish.id));
+        ref.invalidate(
+          restaurantReactionSummariesProvider(widget.dish.restaurantId),
+        );
         ref.invalidate(yourTopBitesProvider(widget.dish.restaurantId));
+        // Community score on the menu list is computed server-side from
+        // reactions — refetch so it doesn't stay stale after reacting.
+        ref.invalidate(restaurantDishesProvider(widget.dish.restaurantId));
       }
     } catch (e) {
       if (mounted) {
@@ -1070,7 +1083,7 @@ class _QuickReactSheetState extends ConsumerState<_QuickReactSheet> {
               widget.dish.name,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: AppColors.primaryText,
-                fontFamily: 'Fraunces',
+                fontFamily: AppFonts.fraunces,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -1100,10 +1113,10 @@ class _QuickReactSheetState extends ConsumerState<_QuickReactSheet> {
                         const SizedBox(height: 6),
                         Text(
                           label,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.mutedText,
                             fontSize: 9,
-                            fontFamily: 'DM Sans',
+                            fontFamily: AppFonts.dmSans,
                           ),
                         ),
                       ],
@@ -1179,6 +1192,8 @@ class _RatingBottomSheetState extends ConsumerState<_RatingBottomSheet> {
       await ref
           .read(restaurantRepositoryProvider)
           .upsertRating(widget.restaurantId, _stars);
+      // Refresh avg rating / count in the header.
+      ref.invalidate(restaurantDetailProvider(widget.restaurantId));
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       // Previously this just reset the button with no explanation — an
@@ -1189,8 +1204,8 @@ class _RatingBottomSheetState extends ConsumerState<_RatingBottomSheet> {
           SnackBar(
             content: Text(
               apiErrorMessage(e),
-              style: const TextStyle(
-                fontFamily: 'DM Sans',
+              style: TextStyle(
+                fontFamily: AppFonts.dmSans,
                 color: AppColors.primaryText,
               ),
             ),
@@ -1254,10 +1269,10 @@ class _SuggestEditBottomSheetState
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
               'Edit submitted — thanks!',
-              style: TextStyle(fontFamily: 'DM Sans'),
+              style: TextStyle(fontFamily: AppFonts.dmSans),
             ),
             backgroundColor: AppColors.accentPress,
           ),
@@ -1270,8 +1285,8 @@ class _SuggestEditBottomSheetState
           SnackBar(
             content: Text(
               apiErrorMessage(e),
-              style: const TextStyle(
-                fontFamily: 'DM Sans',
+              style: TextStyle(
+                fontFamily: AppFonts.dmSans,
                 color: AppColors.primaryText,
               ),
             ),
@@ -1297,7 +1312,7 @@ class _SuggestEditBottomSheetState
             'Suggest an Edit',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: AppColors.primaryText,
-              fontFamily: 'Fraunces',
+              fontFamily: AppFonts.fraunces,
             ),
           ),
           const SizedBox(height: 4),
@@ -1305,7 +1320,7 @@ class _SuggestEditBottomSheetState
             'Help keep restaurant info accurate for the community.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.mutedText,
-              fontFamily: 'DM Sans',
+              fontFamily: AppFonts.dmSans,
             ),
           ),
           const SizedBox(height: 24),
@@ -1316,7 +1331,7 @@ class _SuggestEditBottomSheetState
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: AppColors.secondaryText,
               letterSpacing: 0.8,
-              fontFamily: 'DM Sans',
+              fontFamily: AppFonts.dmSans,
             ),
           ),
           const SizedBox(height: 8),
@@ -1335,7 +1350,7 @@ class _SuggestEditBottomSheetState
                 isExpanded: true,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.primaryText,
-                  fontFamily: 'DM Sans',
+                  fontFamily: AppFonts.dmSans,
                 ),
                 items: _fields
                     .map(
@@ -1343,7 +1358,7 @@ class _SuggestEditBottomSheetState
                         value: f.$1,
                         child: Text(
                           f.$2,
-                          style: const TextStyle(fontFamily: 'DM Sans'),
+                          style: TextStyle(fontFamily: AppFonts.dmSans),
                         ),
                       ),
                     )
@@ -1362,15 +1377,15 @@ class _SuggestEditBottomSheetState
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: AppColors.secondaryText,
               letterSpacing: 0.8,
-              fontFamily: 'DM Sans',
+              fontFamily: AppFonts.dmSans,
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _valueController,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.primaryText,
-              fontFamily: 'DM Sans',
+              fontFamily: AppFonts.dmSans,
             ),
             decoration: const InputDecoration(
               hintText: 'Enter corrected value…',

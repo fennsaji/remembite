@@ -121,6 +121,10 @@ class ReactionDao extends DatabaseAccessor<AppDatabase>
     reactions,
   )..where((r) => r.userId.equals(userId) & r.syncedAt.isNull())).get();
 
+  /// On conflict (same user + dish) `notes` is only overwritten when the
+  /// caller actually supplied one — a reaction-only update must not clobber
+  /// an existing note. Mirrors the server's
+  /// `notes = COALESCE(EXCLUDED.notes, dish_reactions.notes)`.
   Future<void> upsert(ReactionsCompanion row) async {
     await (update(reactions)..where(
           (r) =>
@@ -130,6 +134,9 @@ class ReactionDao extends DatabaseAccessor<AppDatabase>
         .write(
           ReactionsCompanion(
             reaction: row.reaction,
+            notes: (row.notes.present && row.notes.value != null)
+                ? row.notes
+                : const Value.absent(),
             syncedAt: row.syncedAt,
             updatedAt: Value(DateTime.now()),
           ),

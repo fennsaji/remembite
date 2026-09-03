@@ -11,17 +11,34 @@ import '../../restaurant/data/restaurant_repository.dart';
 
 part 'home_screen.g.dart';
 
+/// Location could not be read, as distinct from "no restaurants are nearby".
+/// Collapsing the two made a permission prompt the user dismissed look
+/// identical to an empty neighbourhood, with no hint that anything was
+/// fixable.
+class LocationUnavailable implements Exception {
+  final bool serviceDisabled;
+  final bool deniedForever;
+  const LocationUnavailable({
+    this.serviceDisabled = false,
+    this.deniedForever = false,
+  });
+}
+
 @riverpod
 Future<List<RestaurantSummary>> nearbyRestaurants(Ref ref) async {
   final repo = ref.watch(restaurantRepositoryProvider);
   try {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return [];
+    if (!serviceEnabled) {
+      throw const LocationUnavailable(serviceDisabled: true);
+    }
 
     final permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      return [];
+      throw LocationUnavailable(
+        deniedForever: permission == LocationPermission.deniedForever,
+      );
     }
 
     // Try last known position first (instant, works on emulator with mock location)
@@ -35,6 +52,8 @@ Future<List<RestaurantSummary>> nearbyRestaurants(Ref ref) async {
     ).timeout(const Duration(seconds: 10));
 
     return repo.getNearbyRestaurants(pos.latitude, pos.longitude, radius: 5000);
+  } on LocationUnavailable {
+    rethrow;
   } catch (_) {
     return [];
   }
@@ -134,13 +153,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 ),
-                error: (_, __) => const SliverToBoxAdapter(
+                error: (e, __) => SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text(
-                      'Could not load nearby restaurants.',
-                      style: TextStyle(color: AppColors.secondaryText),
-                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: e is LocationUnavailable
+                        ? _LocationPrompt(reason: e)
+                        : const Text(
+                            'Could not load nearby restaurants.',
+                            style: TextStyle(color: AppColors.secondaryText),
+                          ),
                   ),
                 ),
                 data: (restaurants) => restaurants.isEmpty
@@ -396,6 +417,50 @@ class _RestaurantTile extends StatelessWidget {
               ],
             )
           : null,
+    );
+  }
+}
+
+/// Shown in place of the nearby list when location itself is the problem, so
+/// the user knows the fix is a setting rather than an empty neighbourhood.
+class _LocationPrompt extends StatelessWidget {
+  final LocationUnavailable reason;
+  const _LocationPrompt({required this.reason});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.location_off_outlined,
+              color: AppColors.accent,
+              size: 16,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                reason.serviceDisabled
+                    ? 'Location is turned off. Turn it on to see nearby restaurants.'
+                    : 'Enable location to see nearby restaurants.',
+                style: const TextStyle(color: AppColors.secondaryText),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: () => reason.serviceDisabled
+              ? Geolocator.openLocationSettings()
+              : Geolocator.openAppSettings(),
+          child: const Text(
+            'Open settings',
+            style: TextStyle(color: AppColors.accent),
+          ),
+        ),
+      ],
     );
   }
 }

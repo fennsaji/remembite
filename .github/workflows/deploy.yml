@@ -73,11 +73,20 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           AXIOM_API_KEY:     ${{ secrets.AXIOM_API_KEY }}
           AXIOM_DATASET:     ${{ secrets.AXIOM_DATASET }}
+          R2_ACCOUNT_ID:       ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID:    ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BACKUP_BUCKET:    ${{ secrets.R2_BACKUP_BUCKET }}
         run: |
           {
             printf 'POSTGRES_PASSWORD=%s\n' "$POSTGRES_PASSWORD"
             printf 'AXIOM_API_KEY=%s\n'     "$AXIOM_API_KEY"
             printf 'AXIOM_DATASET=%s\n'     "$AXIOM_DATASET"
+            # Consumed by the `backup` compose service (pg_dump -> R2).
+            printf 'R2_ACCOUNT_ID=%s\n'        "$R2_ACCOUNT_ID"
+            printf 'R2_ACCESS_KEY_ID=%s\n'     "$R2_ACCESS_KEY_ID"
+            printf 'R2_SECRET_ACCESS_KEY=%s\n' "$R2_SECRET_ACCESS_KEY"
+            printf 'R2_BACKUP_BUCKET=%s\n'     "${R2_BACKUP_BUCKET:-remembite-backups}"
           } > .env
 
       # ── Build & push Docker image ───────────────────────────────────────────
@@ -125,6 +134,6 @@ jobs:
           port: 22221
           script: |
             cd /opt/remembite
-            docker compose -f docker-compose.prod.yml --profile logging pull
-            docker compose -f docker-compose.prod.yml --profile logging up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml --profile logging --profile backup pull
+            docker compose -f docker-compose.prod.yml --profile logging --profile backup up -d --remove-orphans
             docker image prune -f

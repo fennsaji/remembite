@@ -14,13 +14,13 @@ Components:
 * Nearby Restaurants list (with star rating)
 * Recently Visited list
 * Floating Action Button: Search Restaurant (search icon) — navigates to `/search`; scan is only accessible from within a restaurant's context
-* AppBar icon: `Icons.map_outlined` (top-right) — navigates to `/map`
-* Bottom Navigation: Home | Favorites | Timeline | Profile
+* AppBar icon: `Icons.map_outlined` (top-right) — navigates to `/map` (Map also has its own pill tab)
+* Bottom Navigation (floating pill): Home | Map | Timeline | Profile — Favorites is reachable by route/navigation only, not from the pill
 
 Behavior:
 
 * Auto-detect nearby restaurants via GPS
-* Manual "Add New Restaurant" button always visible at the bottom of the Search screen — navigates to `/restaurant/add`
+* Manual "Add New Restaurant" button always visible at the bottom of the Search screen — navigates to `/restaurant/add`, which redirects to `/map?mode=add` (see §1.6); there is no standalone add form
 * Default entry point for returning users is the Recently Visited list, not OCR
 * Scan Menu FAB takes user to Search → select restaurant → restaurant screen → scan from there
 * Scan is a restaurant-contextual action — never invoked directly from home without a restaurantId
@@ -93,7 +93,7 @@ Note: In early stages (pre-community scale), admin manually applies edits. Commu
 
 Navigation:
 
-* Accessed via `Icons.map_outlined` in Home screen AppBar (not in bottom navigation)
+* Map tab in the floating pill nav (Home | Map | Timeline | Profile), and via `Icons.map_outlined` in the Home screen AppBar
 
 Default:
 
@@ -128,13 +128,27 @@ Map provider:
 
 * Google Maps (`google_maps_flutter`) — API key required (Maps SDK for Android + iOS)
 
-### 1.6.1 Location Picker (Add Restaurant Flow)
+### 1.6.1 Add Restaurant (shipped flow — supersedes the standalone form)
 
-* Full-screen route `/location-picker` — accessible via "Pick on Map →" button in Add Restaurant
+Adding a restaurant happens entirely inside Map View. `/restaurant/add` is a
+redirect to `/map?mode=add`; the original Add Restaurant form screen
+(name / location / cuisine fields, with inline duplicate detection) is
+**superseded and not implemented**.
+
+* Entering add mode shows a hint: "Tap any restaurant pin to add it to Remembite"
+* User finds the place by panning the map or via the Places Autocomplete search bar
+* Tapping a Google Places pin opens the detail bottom sheet → "Add to Remembite"
+* Name, address, coordinates, cuisine and Google rating come from the Places
+  record, so there are no free-text fields to duplicate-check on the client
+* Permanently-closed places cannot be added
+
+### 1.6.2 Location Picker
+
+* Full-screen route `/location-picker` — used where an explicit coordinate is needed
 * Fixed crosshair overlay; map pans under it; Confirm captures center coordinates
 * Search powered by Google Places Autocomplete API
 * GPS "Use GPS" button snaps to device location
-* Returns `LatLng` to Add Restaurant, which re-fires duplicate detection on return
+* Returns `LatLng` to the caller
 
 ---
 
@@ -325,14 +339,20 @@ Favorites screen must support:
 
 ## 4. Duplicate Detection & Merge Logic
 
-When adding restaurant:
+Note: with the map-based add flow (§1.6.1) restaurants are added from Google
+Places records keyed by place ID, so the client-side "similar restaurant found"
+prompt of the old add form no longer appears. Duplicate detection now runs
+server-side on create, and the merge logic below still applies to records that
+arrive from the crawler or from legacy data.
+
+On create:
 
 * Check existing restaurants within geo radius
 * Perform name similarity match
 
 If duplicate detected:
 
-* Present "View Existing" vs "Create Anyway" options
+* Reuse/return the existing restaurant rather than creating a second record
 * Admin can force merge
 
 Merge behavior:

@@ -21,6 +21,106 @@ use crate::{
     middleware::rate_limit::check_user_limit,
 };
 
+const MAX_BATCH_DISHES: usize = 100;
+const MAX_DISH_NAME_LEN: usize = 200;
+const MAX_DISH_CATEGORY_LEN: usize = 100;
+const MAX_REACTION_NOTES_LEN: usize = 2000;
+
+/// Recompute every cached aggregate on a dish from its underlying rows:
+/// `dishes.vote_count` / `community_score`, and the Bayesian-blended
+/// `dish_attribute_priors` scores. Used by admin flows (restaurant merge)
+/// that attach reactions/votes directly instead of going through
+/// `upsert_reaction` / `upsert_attribute_vote`.
+pub async fn recompute_dish_aggregates(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    dish_id: Uuid,
+    k: f64,
+) -> AppResult<()> {
+    use sqlx::Row;
+
+    sqlx::query(
+        r#"
+        UPDATE dishes SET
+            vote_count = (SELECT COUNT(*) FROM dish_reactions WHERE dish_id = $1),
+            community_score = (
+                SELECT CASE WHEN COUNT(*) = 0 THEN NULL ELSE
+                    (SUM(CASE reaction::text
+                        WHEN 'so_yummy' THEN 5.0
+                        WHEN 'tasty' THEN 4.0
+                        WHEN 'pretty_good' THEN 3.0
+                        WHEN 'meh' THEN 2.0
+                        WHEN 'never_again' THEN 1.0
+                        ELSE 3.0 END) / COUNT(*))
+                END
+                FROM dish_reactions WHERE dish_id = $1
+            ),
+            updated_at = NOW()
+        WHERE id = $1
+        "#,
+    )
+    .bind(dish_id)
+    .execute(&mut **tx)
+    .await?;
+
+    let prior_row = sqlx::query(
+        "SELECT spice_score, sweetness_score FROM dish_attribute_priors WHERE dish_id = $1",
+    )
+    .bind(dish_id)
+    .fetch_optional(&mut **tx)
+    .await?;
+    let Some(prior) = prior_row else { return Ok(()) };
+    let llm_spice: f64 = prior.try_get("spice_score")?;
+    let llm_sweetness: f64 = prior.try_get("sweetness_score")?;
+
+    let vote_avgs = sqlx::query(
+        r#"
+        SELECT
+            AVG(CASE WHEN attribute = 'spice' THEN value END) as avg_spice,
+            COUNT(CASE WHEN attribute = 'spice' THEN 1 END) as n_spice,
+            AVG(CASE WHEN attribute = 'sweetness' THEN value END) as avg_sweetness,
+            COUNT(CASE WHEN attribute = 'sweetness' THEN 1 END) as n_sweetness,
+            COUNT(DISTINCT user_id) as n_distinct_voters
+        FROM dish_attribute_votes WHERE dish_id = $1
+        "#,
+    )
+    .bind(dish_id)
+    .fetch_one(&mut **tx)
+    .await?;
+    let avg_spice: Option<f64> = vote_avgs.try_get("avg_spice")?;
+    let avg_sweetness: Option<f64> = vote_avgs.try_get("avg_sweetness")?;
+    let n_spice: i64 = vote_avgs.try_get("n_spice")?;
+    let n_sweetness: i64 = vote_avgs.try_get("n_sweetness")?;
+    let n_distinct_voters: i64 = vote_avgs.try_get("n_distinct_voters")?;
+
+    let final_spice =
+        avg_spice.map(|s| (k * llm_spice + n_spice as f64 * s) / (k + n_spice as f64));
+    let final_sweetness = avg_sweetness
+        .map(|s| (k * llm_sweetness + n_sweetness as f64 * s) / (k + n_sweetness as f64));
+    // No single "voted attribute" here — use the better-supported one.
+    let n_for_confidence = n_spice.max(n_sweetness) as f64;
+    let confidence_score = (n_for_confidence / (n_for_confidence + k)).min(1.0);
+
+    sqlx::query(
+        r#"
+        UPDATE dish_attribute_priors SET
+            final_spice_score = $1,
+            final_sweetness_score = $2,
+            community_vote_count = $3,
+            confidence_score = $4,
+            updated_at = NOW()
+        WHERE dish_id = $5
+        "#,
+    )
+    .bind(final_spice)
+    .bind(final_sweetness)
+    .bind(n_distinct_voters as i32)
+    .bind(confidence_score)
+    .bind(dish_id)
+    .execute(&mut **tx)
+    .await?;
+    Ok(())
+}
+
 /// A foreign-key violation (e.g. dish_id doesn't exist) is a 404, not a 500 —
 /// everything else (connection errors, etc.) still propagates as-is.
 fn map_fk_violation<T>(result: Result<T, sqlx::Error>, message: &str) -> AppResult<T> {
@@ -42,6 +142,7 @@ pub fn admin_router() -> Router<AppState> {
 pub fn restaurant_dishes_router() -> Router<AppState> {
     Router::new()
         .route("/", get(list_dishes).post(batch_create_dishes))
+        .route("/reaction-summaries", get(restaurant_reaction_summaries))
 }
 
 /// Routes mounted at /dishes
@@ -100,8 +201,33 @@ async fn batch_create_dishes(
     user: AuthUser,
     Json(req): Json<DishBatchCreateRequest>,
 ) -> AppResult<(StatusCode, Json<Vec<DishResponse>>)> {
+    check_user_limit(&state.rl_restaurant_create, user.id)?;
+
     if req.dishes.is_empty() {
         return Err(AppError::BadRequest("At least one dish is required".to_string()));
+    }
+    if req.dishes.len() > MAX_BATCH_DISHES {
+        return Err(AppError::BadRequest(format!(
+            "At most {MAX_BATCH_DISHES} dishes can be created per request"
+        )));
+    }
+    for item in &req.dishes {
+        let name = item.name.trim();
+        if name.is_empty() {
+            return Err(AppError::BadRequest("Dish name is required".to_string()));
+        }
+        if name.chars().count() > MAX_DISH_NAME_LEN {
+            return Err(AppError::BadRequest(format!(
+                "Dish name must be at most {MAX_DISH_NAME_LEN} characters"
+            )));
+        }
+        if let Some(cat) = item.category.as_deref() {
+            if cat.trim().chars().count() > MAX_DISH_CATEGORY_LEN {
+                return Err(AppError::BadRequest(format!(
+                    "Dish category must be at most {MAX_DISH_CATEGORY_LEN} characters"
+                )));
+            }
+        }
     }
 
     // Fetch restaurant to get cuisine type for LLM classification
@@ -135,10 +261,23 @@ async fn batch_create_dishes(
 
     let mut created_dishes = Vec::new();
 
+    // All inserts happen in one transaction so a partial batch never lands.
+    // ClassifyDish jobs are enqueued only after commit — the worker must
+    // never observe a dish row that hasn't been committed yet.
+    let mut tx = state.db.begin().await?;
+
     for item in &req.dishes {
+        let name = item.name.trim().to_string();
+        let category = item
+            .category
+            .as_deref()
+            .map(str::trim)
+            .filter(|c| !c.is_empty())
+            .map(str::to_string);
+
         let key = (
-            item.name.to_lowercase(),
-            item.category.as_deref().unwrap_or("").to_lowercase(),
+            name.to_lowercase(),
+            category.as_deref().unwrap_or("").to_lowercase(),
         );
         if !seen.insert(key) {
             // Duplicate within the restaurant (DB or earlier in this batch) — skip silently
@@ -155,34 +294,42 @@ async fn batch_create_dishes(
         )
         .bind(dish_id)
         .bind(restaurant_id)
-        .bind(&item.name)
-        .bind(&item.category)
+        .bind(&name)
+        .bind(&category)
         .bind(item.price)
         .bind(user.id)
-        .execute(&state.db)
+        .execute(&mut *tx)
         .await?;
-
-        // Enqueue LLM classification job — non-fatal: dish stays in
-        // `classifying` state but can still receive reactions.
-        if let Err(e) = state.job_queue.enqueue(Job::ClassifyDish {
-            dish_id,
-            dish_name: item.name.clone(),
-            cuisine: cuisine.clone(),
-        }).await {
-            tracing::warn!("Failed to enqueue ClassifyDish for {dish_id}: {e}");
-        }
 
         created_dishes.push(DishResponse {
             id: dish_id,
             restaurant_id,
-            name: item.name.clone(),
-            category: item.category.clone(),
+            name,
+            category,
             price: item.price,
             attribute_state: "classifying".to_string(),
             community_score: None,
             vote_count: 0,
             created_at: chrono::Utc::now(),
         });
+    }
+
+    tx.commit().await?;
+
+    // Enqueue LLM classification jobs — non-fatal: dish stays in
+    // `classifying` state but can still receive reactions.
+    for dish in &created_dishes {
+        if let Err(e) = state
+            .job_queue
+            .enqueue(Job::ClassifyDish {
+                dish_id: dish.id,
+                dish_name: dish.name.clone(),
+                cuisine: cuisine.clone(),
+            })
+            .await
+        {
+            tracing::warn!("Failed to enqueue ClassifyDish for {}: {e}", dish.id);
+        }
     }
 
     Ok((StatusCode::CREATED, Json(created_dishes)))
@@ -253,17 +400,20 @@ async fn get_dish(
         false
     };
 
-    let my_notes: Option<String> = if let Some(ref u) = user {
-        sqlx::query_scalar(
-            "SELECT notes FROM dish_reactions WHERE user_id = $1 AND dish_id = $2",
+    let (my_reaction, my_notes): (Option<String>, Option<String>) = if let Some(ref u) = user {
+        let mine = sqlx::query(
+            "SELECT reaction::text as reaction, notes FROM dish_reactions WHERE user_id = $1 AND dish_id = $2",
         )
         .bind(u.id)
         .bind(dish_id)
         .fetch_optional(&state.db)
-        .await?
-        .flatten()
+        .await?;
+        match mine {
+            Some(r) => (r.try_get("reaction")?, r.try_get("notes")?),
+            None => (None, None),
+        }
     } else {
-        None
+        (None, None)
     };
 
     let is_favorited = if let Some(ref u) = user {
@@ -293,6 +443,7 @@ async fn get_dish(
         is_favorited,
         created_at: row.try_get("created_at")?,
         my_notes,
+        my_reaction,
     }))
 }
 
@@ -310,6 +461,14 @@ async fn upsert_reaction(
             "Invalid reaction. Must be one of: {}",
             valid_reactions.join(", ")
         )));
+    }
+
+    if let Some(notes) = req.notes.as_deref() {
+        if notes.trim().chars().count() > MAX_REACTION_NOTES_LEN {
+            return Err(AppError::BadRequest(format!(
+                "Notes must be at most {MAX_REACTION_NOTES_LEN} characters"
+            )));
+        }
     }
 
     // Upsert reaction + recalculate aggregate inside a single transaction.
@@ -507,6 +666,40 @@ async fn upsert_reaction(
     Ok(Json(serde_json::json!({ "ok": true })))
 }
 
+/// Weight used for the weighted reaction score. Mirrors the community-score
+/// weighting used when recomputing dish aggregates.
+fn reaction_weight(reaction: &str) -> f64 {
+    match reaction {
+        "so_yummy" => 5.0,
+        "tasty" => 4.0,
+        "pretty_good" => 3.0,
+        "meh" => 2.0,
+        "never_again" => 1.0,
+        _ => 3.0,
+    }
+}
+
+/// Build a `ReactionSummaryResponse` from `(reaction, count)` pairs.
+/// Pure — shared by the single-dish and batched endpoints so both always
+/// return the identical shape.
+pub(crate) fn build_reaction_summary(
+    counts: impl IntoIterator<Item = (String, i64)>,
+) -> ReactionSummaryResponse {
+    let mut breakdown = std::collections::HashMap::new();
+    let mut total: i64 = 0;
+    let mut weighted_sum: f64 = 0.0;
+
+    for (reaction, count) in counts {
+        total += count;
+        weighted_sum += reaction_weight(&reaction) * count as f64;
+        breakdown.insert(reaction, count);
+    }
+
+    let weighted_score = if total > 0 { weighted_sum / total as f64 } else { 0.0 };
+
+    ReactionSummaryResponse { total, breakdown, weighted_score }
+}
+
 async fn reaction_summary(
     State(state): State<AppState>,
     Path(dish_id): Path<Uuid>,
@@ -519,29 +712,59 @@ async fn reaction_summary(
     .await?;
 
     use sqlx::Row;
-    let mut breakdown = std::collections::HashMap::new();
-    let mut total: i64 = 0;
-    let mut weighted_sum: f64 = 0.0;
-
+    let mut counts: Vec<(String, i64)> = Vec::with_capacity(rows.len());
     for row in rows {
-        let reaction: String = row.try_get("reaction")?;
-        let count: i64 = row.try_get("count")?;
-        total += count;
-        let weight = match reaction.as_str() {
-            "so_yummy" => 5.0,
-            "tasty" => 4.0,
-            "pretty_good" => 3.0,
-            "meh" => 2.0,
-            "never_again" => 1.0,
-            _ => 3.0,
-        };
-        weighted_sum += weight * count as f64;
-        breakdown.insert(reaction, count);
+        counts.push((row.try_get("reaction")?, row.try_get("count")?));
     }
 
-    let weighted_score = if total > 0 { weighted_sum / total as f64 } else { 0.0 };
+    Ok(Json(build_reaction_summary(counts)))
+}
 
-    Ok(Json(ReactionSummaryResponse { total, breakdown, weighted_score }))
+/// GET /restaurants/:id/dishes/reaction-summaries
+///
+/// Batched counterpart of `reaction_summary`: returns the same response shape
+/// for every dish of a restaurant, keyed by dish id, in a single grouped query.
+/// Avoids the N+1 of one request per dish tile on the restaurant menu.
+/// Dishes with no reactions are included with a zeroed summary.
+async fn restaurant_reaction_summaries(
+    State(state): State<AppState>,
+    Path(restaurant_id): Path<Uuid>,
+) -> AppResult<Json<std::collections::HashMap<String, ReactionSummaryResponse>>> {
+    let rows = sqlx::query(
+        r#"
+        SELECT d.id AS dish_id, r.reaction::text AS reaction, COUNT(r.id) AS count
+        FROM dishes d
+        LEFT JOIN dish_reactions r ON r.dish_id = d.id
+        WHERE d.restaurant_id = $1
+        GROUP BY d.id, r.reaction
+        "#,
+    )
+    .bind(restaurant_id)
+    .fetch_all(&state.db)
+    .await?;
+
+    use sqlx::Row;
+    // Group the flat (dish, reaction, count) rows per dish first, then reuse
+    // the shared summary builder so the shape matches the single endpoint.
+    let mut grouped: std::collections::HashMap<Uuid, Vec<(String, i64)>> =
+        std::collections::HashMap::new();
+    for row in rows {
+        let dish_id: Uuid = row.try_get("dish_id")?;
+        let reaction: Option<String> = row.try_get("reaction")?;
+        let entry = grouped.entry(dish_id).or_default();
+        // NULL reaction = LEFT JOIN miss (dish with no reactions yet).
+        if let Some(reaction) = reaction {
+            let count: i64 = row.try_get("count")?;
+            entry.push((reaction, count));
+        }
+    }
+
+    let summaries = grouped
+        .into_iter()
+        .map(|(dish_id, counts)| (dish_id.to_string(), build_reaction_summary(counts)))
+        .collect();
+
+    Ok(Json(summaries))
 }
 
 async fn upsert_attribute_vote(
@@ -927,12 +1150,12 @@ async fn admin_recompute_taste_vectors(
 ) -> AppResult<Json<serde_json::Value>> {
     user.require_admin()?;
 
-    state.job_queue.enqueue(Job::RecomputeTasteVectors).await?;
-
-    Ok(Json(serde_json::json!({
-        "ok": true,
-        "message": "Recompute job enqueued"
-    })))
+    // The worker has no implementation for this job, so enqueuing it and
+    // reporting success told admins a backfill had run when nothing happened.
+    let _ = &state;
+    Err(AppError::BadRequest(
+        "Taste-vector recompute is not implemented yet".to_string(),
+    ))
 }
 
 

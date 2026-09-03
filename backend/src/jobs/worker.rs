@@ -64,8 +64,11 @@ async fn process_job(job: Job, state: Arc<AppState>) -> anyhow::Result<()> {
             }
         }
         Job::RecomputeTasteVectors => {
-            tracing::info!("Recompute taste vectors job: full recompute not yet implemented — placeholder");
-            Ok(())
+            // Not implemented — say so loudly rather than logging at info and
+            // returning Ok, which made the admin endpoint report success for
+            // work that never ran.
+            tracing::error!("RecomputeTasteVectors is not implemented — job dropped");
+            Err(anyhow::anyhow!("RecomputeTasteVectors is not implemented"))
         }
     }
 }

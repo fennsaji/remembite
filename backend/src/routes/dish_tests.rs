@@ -115,3 +115,40 @@ async fn reaction_spam_detection_creates_admin_flag() {
     sqlx::query("DELETE FROM restaurants WHERE id = $1").bind(restaurant_id).execute(&state.db).await.ok();
     sqlx::query("DELETE FROM users WHERE id = $1").bind(user_id).execute(&state.db).await.ok();
 }
+
+/// Pure-logic tests for the reaction summary builder shared by the single-dish
+/// endpoint and the batched /restaurants/:id/dishes/reaction-summaries endpoint.
+#[test]
+fn build_reaction_summary_computes_weighted_average() {
+    use super::build_reaction_summary;
+
+    // 2×so_yummy(5) + 1×meh(2) = 12 / 3 = 4.0
+    let summary = build_reaction_summary([
+        ("so_yummy".to_string(), 2i64),
+        ("meh".to_string(), 1i64),
+    ]);
+
+    assert_eq!(summary.total, 3);
+    assert_eq!(summary.breakdown.get("so_yummy"), Some(&2));
+    assert_eq!(summary.breakdown.get("meh"), Some(&1));
+    assert!((summary.weighted_score - 4.0).abs() < 1e-9);
+}
+
+#[test]
+fn build_reaction_summary_empty_is_zeroed() {
+    use super::build_reaction_summary;
+
+    let summary = build_reaction_summary([]);
+    assert_eq!(summary.total, 0);
+    assert!(summary.breakdown.is_empty());
+    assert_eq!(summary.weighted_score, 0.0);
+}
+
+#[test]
+fn build_reaction_summary_unknown_reaction_uses_neutral_weight() {
+    use super::build_reaction_summary;
+
+    let summary = build_reaction_summary([("bogus".to_string(), 2i64)]);
+    assert_eq!(summary.total, 2);
+    assert!((summary.weighted_score - 3.0).abs() < 1e-9);
+}

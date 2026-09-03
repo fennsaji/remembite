@@ -159,6 +159,27 @@ class AuthState extends _$AuthState {
   Future<void> signOut() async {
     await _tokenRefreshSub?.cancel();
     _tokenRefreshSub = null;
+
+    // Tell the server to revoke this device's refresh session, so a token
+    // captured off this device can't be replayed for the rest of its 30-day
+    // life. Best-effort only: signing out must work offline and must not be
+    // blocked by a dead/erroring backend, so any failure is swallowed and we
+    // clear local state regardless. (A missed revoke is recovered by the
+    // server's reuse detection the next time that token is presented.)
+    final current = state.value;
+    if (current != null && current.refreshToken.isNotEmpty) {
+      try {
+        final dio = ref.read(apiClientProvider);
+        await dio.post(
+          '/auth/signout',
+          data: {'refresh_token': current.refreshToken, 'all_devices': false},
+        );
+      } catch (_) {
+        // Offline, expired access token, server down — proceed with local
+        // sign-out either way.
+      }
+    }
+
     await _storage.delete(key: _storageKey);
     state = const AsyncData(null);
   }

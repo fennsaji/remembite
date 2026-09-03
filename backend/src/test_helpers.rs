@@ -51,6 +51,7 @@ pub async fn test_state() -> AppState {
         google_play_package_name: "com.test.remembite".into(),
         google_play_service_account_json: "{}".into(),
         google_pubsub_webhook_token: "test-webhook-token".into(),
+        cors_allowed_origins: Vec::new(),
         bayesian_prior_weight: 5.0,
         google_places_api_key: "".into(),
         crawler_enabled: false,

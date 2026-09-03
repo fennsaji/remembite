@@ -51,8 +51,14 @@ Dio apiClient(Ref ref) {
   dio.interceptors.add(
     InterceptorsWrapper(
       onError: (error, handler) async {
+        // /auth/signout is excluded alongside /auth/refresh for two reasons:
+        // a 401 there would call signOut() from inside signOut() (infinite
+        // recursion), and the retry-after-refresh path would re-send the now
+        // rotated-away refresh_token, revoking nothing. Sign-out is
+        // best-effort by design — let the 401 fall through.
         if (error.response?.statusCode != 401 ||
-            error.requestOptions.path.contains('/auth/refresh')) {
+            error.requestOptions.path.contains('/auth/refresh') ||
+            error.requestOptions.path.contains('/auth/signout')) {
           handler.next(error);
           return;
         }

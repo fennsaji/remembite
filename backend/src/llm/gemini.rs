@@ -132,17 +132,20 @@ Return only the JSON object, no explanation."#
         );
 
         let raw = self.generate(&prompt).await?;
-        if let Ok(attrs) = serde_json::from_str::<DishAttributes>(&raw) {
+        if let Ok(mut attrs) = serde_json::from_str::<DishAttributes>(&raw) {
+            attrs.clamp_scores();
             return Ok(attrs);
         }
         // Retry once on parse failure
         tracing::warn!("Gemini response parse failed on first attempt, retrying. Raw: {raw}");
         let raw2 = self.generate(&prompt).await?;
-        serde_json::from_str::<DishAttributes>(&raw2).map_err(|e| {
+        let mut attrs = serde_json::from_str::<DishAttributes>(&raw2).map_err(|e| {
             AppError::Internal(anyhow::anyhow!(
                 "Failed to parse dish classification response after retry: {e}. Raw: {raw2}"
             ))
-        })
+        })?;
+        attrs.clamp_scores();
+        Ok(attrs)
     }
 
     async fn parse_menu_ocr(&self, raw_text: &str) -> AppResult<Vec<ParsedDish>> {

@@ -3,10 +3,19 @@
 # Postgres runs as a container with a named volume for persistence.
 # Secrets come from /opt/remembite/.env.api on the host.
 
+# Cap local json-file logs so a chatty container can't fill the VPS disk
+# (Vector ships them to Axiom; the on-disk copy is only a buffer).
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    logging: *default-logging
     environment:
       POSTGRES_USER: remembite
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -23,6 +32,7 @@ services:
     image: ghcr.io/fennsaji/remembite-backend:latest
     platform: linux/amd64
     restart: unless-stopped
+    logging: *default-logging
     env_file: .env.api
     ports:
       - "127.0.0.1:20080:8080"
@@ -40,6 +50,7 @@ services:
     image: timberio/vector:0.43.0-alpine
     platform: linux/amd64
     restart: unless-stopped
+    logging: *default-logging
     user: root
     command: ["--config", "/etc/vector/vector.toml"]
     profiles: [logging]
@@ -52,5 +63,48 @@ services:
     depends_on:
       - backend
 
+  # Nightly pg_dump → Cloudflare R2. Enable with `--profile backup`.
+  #
+  # No official image ships both postgres-client and aws-cli, and adding a
+  # Dockerfile here would mean a second image to build and publish in a deploy
+  # workflow this service doesn't own. So: start from postgres:16-alpine (whose
+  # pg_dump matches the server major version exactly — a mismatch is the usual
+  # cause of failed dumps) and apk-install aws-cli in the entrypoint. The
+  # install happens once per container start, not per backup run.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *default-logging
+    profiles: [backup]
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGHOST: postgres
+      PGUSER: remembite
+      PGDATABASE: remembite
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BACKUP_BUCKET: ${R2_BACKUP_BUCKET:-remembite-backups}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      BACKUP_SCHEDULE_SECONDS: ${BACKUP_SCHEDULE_SECONDS:-86400}
+    volumes:
+      - ./scripts/backup-postgres.sh:/usr/local/bin/backup-postgres.sh:ro
+      - postgres_backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        apk add --no-cache bash coreutils aws-cli findutils
+        # Simple sleep loop instead of cron: keeps logs on stdout for Vector,
+        # and one backup per BACKUP_SCHEDULE_SECONDS is all this stack needs.
+        while true; do
+          bash /usr/local/bin/backup-postgres.sh || echo "[backup] run failed, will retry next cycle"
+          sleep "$${BACKUP_SCHEDULE_SECONDS}"
+        done
+
 volumes:
   postgres_data:
+  postgres_backups:

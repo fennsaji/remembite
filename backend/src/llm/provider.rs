@@ -16,6 +16,17 @@ pub struct DishAttributes {
     pub confidence: f32,
 }
 
+impl DishAttributes {
+    /// The prompt asks for 0.0–1.0 but nothing makes the model honour it. An
+    /// out-of-range score would flow straight into the Bayesian blend and the
+    /// taste vector, so clamp at the boundary instead of trusting the model.
+    pub fn clamp_scores(&mut self) {
+        self.spice_score = self.spice_score.clamp(0.0, 1.0);
+        self.sweetness_score = self.sweetness_score.clamp(0.0, 1.0);
+        self.confidence = self.confidence.clamp(0.0, 1.0);
+    }
+}
+
 /// A dish parsed from raw OCR menu text.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParsedDish {

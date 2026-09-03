@@ -225,6 +225,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   // Keyed by placeId — accumulated across panning, pruned when far out of view.
   final Map<String, _NearbyPlace> _nearbyPlaces = {};
   bool _addingPlace = false;
+  bool _locationNoticeShown = false;
   final Map<String, BitmapDescriptor> _markerIcons = {};
   // Tracks in-progress async icon builds to avoid duplicate work
   final Set<String> _buildingIcons = {};
@@ -283,6 +284,42 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   // ── Location ───────────────────────────────────────────────────────────
 
+  /// Previously a disabled service / denied permission silently centred the
+  /// map on Mumbai with no explanation. Tell the user once per screen and
+  /// offer a shortcut to the relevant settings page.
+  void _showLocationFallbackNotice({
+    bool serviceDisabled = false,
+    bool deniedForever = false,
+  }) {
+    if (_locationNoticeShown || !mounted) return;
+    _locationNoticeShown = true;
+    final showSettings = serviceDisabled || deniedForever;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: AppColors.elevated,
+        duration: const Duration(seconds: 6),
+        content: const Text(
+          'Location unavailable — showing Mumbai. '
+          'Enable location for nearby results.',
+          style: TextStyle(color: AppColors.primaryText),
+        ),
+        action: showSettings
+            ? SnackBarAction(
+                label: 'Settings',
+                textColor: AppColors.accent,
+                onPressed: () {
+                  if (serviceDisabled) {
+                    Geolocator.openLocationSettings();
+                  } else {
+                    Geolocator.openAppSettings();
+                  }
+                },
+              )
+            : null,
+      ),
+    );
+  }
+
   Future<void> _fetchLocation() async {
     if (_fetchingLocation) return;
     if (!mounted) return;
@@ -296,6 +333,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             center: _fallback,
             radius: _fetchRadiusForZoom(_currentZoom),
           );
+          _showLocationFallbackNotice(serviceDisabled: true);
         }
         return;
       }
@@ -311,6 +349,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ref.read(_mapSearchParamsProvider.notifier).state = (
             center: _fallback,
             radius: _fetchRadiusForZoom(_currentZoom),
+          );
+          _showLocationFallbackNotice(
+            deniedForever: perm == LocationPermission.deniedForever,
           );
         }
         return;
@@ -368,9 +409,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
+  int _predictionGeneration = 0;
+
   Future<void> _fetchPredictions(String query) async {
     if (_mapsApiKey.isEmpty || query.isEmpty) return;
     if (!mounted) return;
+    // Guard against an older, slower autocomplete response landing after a
+    // newer one and replacing the suggestions for what the user typed last.
+    final generation = ++_predictionGeneration;
     setState(() => _loadingPredictions = true);
     try {
       final pos = _cameraCenter ?? _currentPosition;
@@ -385,7 +431,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         '&key=$_mapsApiKey',
       );
       final response = await http.get(uri);
-      if (!mounted) return;
+      if (!mounted || generation != _predictionGeneration) return;
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final status = body['status'] as String? ?? '';
@@ -399,7 +445,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     } catch (e) {
       debugPrint('[MapScreen] autocomplete error: $e');
     } finally {
-      if (mounted) setState(() => _loadingPredictions = false);
+      if (mounted && generation == _predictionGeneration) {
+        setState(() => _loadingPredictions = false);
+      }
     }
   }
 
@@ -516,11 +564,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   // ── Custom marker icon ─────────────────────────────────────────────────
 
   // Blue used for Google Places pins not yet added to Remembite
-  static const Color _placesMarkerColor = Color(0xFF5B8DD9);
+  static const Color _placesMarkerColor = AppColors.placesMarker;
 
   Future<BitmapDescriptor> _buildMarkerIcon(
     String name, {
-    Color fillColor = const Color(0xFFE6A830),
+    Color fillColor = AppColors.accent,
   }) async {
     final s = _pixelRatio; // scale all logical px → physical px
     const double circleRadius = 16.0;
@@ -540,7 +588,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         style: TextStyle(
           fontSize: labelFontSize * s,
           fontWeight: FontWeight.w600,
-          color: const Color(0xFF1C1410),
+          color: AppColors.background,
         ),
       )
       ..layout();
@@ -1144,12 +1192,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: const Color(
-                                0xFF4CAF50,
+                                0xFF6FA85A,
                               ).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: const Color(
-                                  0xFF4CAF50,
+                                  0xFF6FA85A,
                                 ).withValues(alpha: 0.4),
                               ),
                             ),
@@ -1158,7 +1206,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                               style: GoogleFonts.dmSans(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF4CAF50),
+                                color: AppColors.success,
                               ),
                             ),
                           ),
@@ -1314,6 +1362,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                   setState(() => _addingPlace = false);
                                 } else {
                                   _addingPlace = false;
+                                }
+                                // The outer setState doesn't rebuild the
+                                // sheet's StatefulBuilder — without this
+                                // the button stayed spinning/disabled after
+                                // a failure. The sheet may already have been
+                                // popped, so guard on its context.
+                                if (sheetContext.mounted) {
+                                  setSheetState(() {});
                                 }
                               }
                             },

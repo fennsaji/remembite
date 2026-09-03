@@ -84,7 +84,8 @@ routes/timeline.rs      /users/me/timeline
 
 **Navigation** (`core/router/app_router.dart`):
 - `GoRouter` with redirect: unauthenticated → `/auth/sign-in`; authenticated on auth route → `/home`
-- `ShellRoute` wraps `/home`, `/favorites`, `/timeline`, `/profile` with `MainShell` (floating pill nav)
+- `ShellRoute` wraps the main routes with `MainShell`. The floating pill nav has four tabs — Home (`/home`), Map (`/map`), Timeline (`/timeline`), Profile (`/profile`). Other shell routes (`/favorites`, `/search`, `/settings`, `/restaurant/:id`, `/dish/:id`) are reachable by route/navigation only, not from the pill.
+- `/restaurant/add` is a redirect to `/map?mode=add` — there is no standalone Add Restaurant form; restaurants are added by tapping a Google Places pin on the map (see PRD §1.6)
 - Scan and onboarding routes are outside the shell (full-screen)
 
 **Auth** (`core/network/auth_state.dart`):
@@ -139,6 +140,8 @@ Both must be true before showing a prediction:
 
 UI must match `design/remembite.pen` exactly. Open in Pencil before building any screen. Do not invent UI — implement what is designed.
 
+Exception: the standalone **Add Restaurant** form in `design/remembite.pen` (`cIV3R`) is **superseded** — adding a restaurant now happens in the Map View flow (`/restaurant/add` → `/map?mode=add`). Do not build that screen.
+
 ### Dark Theme
 | Role | Token | Hex |
 |---|---|---|
@@ -156,6 +159,8 @@ UI must match `design/remembite.pen` exactly. Open in Pencil before building any
 | Pro accent | Gold Leaf | `#F0C060` |
 
 ### Light Theme
+Defined but **not wired** — the app ships dark-only and this is deliberate, not a defect.
+A light theme is deferred; do not "fix" it without an explicit decision to ship one.
 | Role | Token | Hex |
 |---|---|---|
 | Background | Linen | `#FAF7F2` |
@@ -179,7 +184,7 @@ UI must match `design/remembite.pen` exactly. Open in Pencil before building any
 
 ### Implementation Rules
 - `AppColorsDark` and `AppColorsLight` in `app/lib/core/theme/app_theme.dart`
-- `typedef AppColors = AppColorsDark` for screens using dark only
+- `typedef AppColors = AppColorsDark` — every screen uses dark only; `main.dart` sets `theme:` alone (no `darkTheme`/`themeMode`), so `AppColorsLight` is currently unreferenced by design
 - Pro surfaces: `LinearGradient` from surface → proSurface at 15% opacity (never flat gold fill)
 - `classifying` state: mutedText color + shimmer animation
 

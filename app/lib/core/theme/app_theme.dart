@@ -21,9 +21,17 @@ class AppColorsDark {
   static const accentMuted = Color(0xFF2A2115); // Gilded tint
 
   static const error = Color(0xFFD95F3B); // Chili
+  /// "Open now" and similar affirmative status. Not in the Turmeric &
+  /// Nightfall palette proper, but the palette has no affirmative colour and
+  /// accent would collide with interactive elements.
+  static const success = Color(0xFF6FA85A);
 
   static const proSurface = Color(0xFF2A2115); // Gilded
   static const proAccent = Color(0xFFF0C060); // Gold Leaf
+
+  /// Map pin for a Google Places result not yet in Remembite — deliberately
+  /// outside the warm palette so it reads as "not ours yet".
+  static const placesMarker = Color(0xFF5B8DD9);
 }
 
 class AppColorsLight {
@@ -41,6 +49,8 @@ class AppColorsLight {
   static const accentMuted = Color(0xFFFFF3D6); // Honey tint
 
   static const error = Color(0xFFC04A28); // Chili Light
+  /// See AppColorsDark.success.
+  static const success = Color(0xFF4E7F3C);
 
   static const proSurface = Color(0xFFFFF3D6); // Honey
   static const proAccent = Color(0xFFB8720E); // Amber Pro
@@ -272,4 +282,14 @@ class AppTheme {
       ),
     );
   }
+}
+
+/// Resolved google_fonts family names. google_fonts registers families under
+/// variant-suffixed names (e.g. `Fraunces_regular`), so a bare
+/// `fontFamily: 'Fraunces'` silently falls back to Roboto. Always go through
+/// these when a raw TextStyle needs a family.
+class AppFonts {
+  AppFonts._();
+  static final String fraunces = GoogleFonts.fraunces().fontFamily!;
+  static final String dmSans = GoogleFonts.dmSans().fontFamily!;
 }

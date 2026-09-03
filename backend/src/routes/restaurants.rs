@@ -18,6 +18,45 @@ use crate::{
     middleware::rate_limit::check_user_limit,
 };
 
+const MAX_RESTAURANT_NAME_LEN: usize = 200;
+const MAX_CITY_LEN: usize = 100;
+
+fn validate_name(name: &str) -> AppResult<()> {
+    let name = name.trim();
+    if name.is_empty() {
+        return Err(AppError::BadRequest("Restaurant name is required".to_string()));
+    }
+    if name.chars().count() > MAX_RESTAURANT_NAME_LEN {
+        return Err(AppError::BadRequest(format!(
+            "Restaurant name must be at most {MAX_RESTAURANT_NAME_LEN} characters"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_city(city: &str) -> AppResult<()> {
+    if city.trim().chars().count() > MAX_CITY_LEN {
+        return Err(AppError::BadRequest(format!(
+            "City must be at most {MAX_CITY_LEN} characters"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_coordinates(latitude: f64, longitude: f64) -> AppResult<()> {
+    if !latitude.is_finite() || !(-90.0..=90.0).contains(&latitude) {
+        return Err(AppError::BadRequest(
+            "latitude must be between -90 and 90".to_string(),
+        ));
+    }
+    if !longitude.is_finite() || !(-180.0..=180.0).contains(&longitude) {
+        return Err(AppError::BadRequest(
+            "longitude must be between -180 and 180".to_string(),
+        ));
+    }
+    Ok(())
+}
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/", post(create_restaurant))
@@ -39,9 +78,9 @@ async fn create_restaurant(
     tracing::info!(user_id = %user.id, name = %req.name, "create_restaurant called");
     check_user_limit(&state.rl_restaurant_create, user.id)?;
 
-    if req.name.trim().is_empty() {
-        return Err(AppError::BadRequest("Restaurant name is required".to_string()));
-    }
+    validate_name(&req.name)?;
+    validate_city(&req.city)?;
+    validate_coordinates(req.latitude, req.longitude)?;
 
     // Duplicate guard: block if a restaurant with the same name exists within ~100 m.
     // Uses bounding box (≈ 0.001° ≈ 111 m) + case-insensitive name match or high similarity.
@@ -298,6 +337,13 @@ async fn update_restaurant(
     user: AuthUser,
     Json(req): Json<RestaurantPatchRequest>,
 ) -> AppResult<Json<serde_json::Value>> {
+    if let Some(name) = req.name.as_deref() {
+        validate_name(name)?;
+    }
+    if let Some(city) = req.city.as_deref() {
+        validate_city(city)?;
+    }
+
     // Verify ownership or admin
     let row = sqlx::query("SELECT created_by FROM restaurants WHERE id = $1")
         .bind(id)
@@ -556,9 +602,28 @@ async fn merge_restaurant(
         .execute(&mut *tx)
         .await?;
 
+        // Polymorphic (entity_type, entity_id) rows have no FK — repoint
+        // them before the source dish disappears, same as step 7b does for
+        // the restaurant itself.
+        for table in ["images", "reports", "edit_suggestions"] {
+            sqlx::query(&format!(
+                "UPDATE {table} SET entity_id = $1 WHERE entity_type = 'dish' AND entity_id = $2"
+            ))
+            .bind(target_dish)
+            .bind(dup_source_dish)
+            .execute(&mut *tx)
+            .await?;
+        }
+
         sqlx::query("DELETE FROM dishes WHERE id = $1")
             .bind(dup_source_dish)
             .execute(&mut *tx)
+            .await?;
+
+        // Reactions/votes were attached without going through
+        // upsert_reaction / upsert_attribute_vote, so the cached aggregates
+        // on the target dish are stale until recomputed here.
+        crate::routes::dishes::recompute_dish_aggregates(&mut tx, target_dish, state.config.bayesian_prior_weight)
             .await?;
     }
 
