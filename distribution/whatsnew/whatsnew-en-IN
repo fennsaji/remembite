@@ -1,7 +1,7 @@
-Private notes now save on their own, even offline - no need to re-tap a reaction first.
-Subscription prices now match your region, and pending payments explain themselves instead of looking stuck.
-Menus load faster, and dish scores refresh right after you react or rate.
-Clearer message when location is off, instead of an empty "nothing nearby" list.
-Search no longer shows stale results.
-Signing out now properly ends your session.
-Updated billing, plus stability fixes.
+Add dishes by hand - no menu scan needed.
+Pull down on a restaurant to refresh its menu.
+Tap any visit in your timeline to jump to the restaurant.
+Menu scan now tells you when it can't read the photo.
+Buttons and rating stars are easier to see.
+Place search now shows results near you first.
+Plus stability fixes.
