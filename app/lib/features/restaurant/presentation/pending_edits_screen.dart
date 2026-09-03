@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/network/api_error.dart';
+import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/pending_edit_count_provider.dart';
 
@@ -132,7 +134,10 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Failed to submit vote. Please try again.',
+              // The server explains *why* a vote was refused (e.g. voting on
+              // your own suggestion); "please try again" told users to retry
+              // something that can never succeed.
+              apiErrorMessage(e),
               style: TextStyle(fontFamily: AppFonts.dmSans),
             ),
             backgroundColor: AppColors.error,
@@ -270,6 +275,9 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
           suggestion: suggestions[i],
           fieldLabel: _fieldLabel(suggestions[i].field),
           isVoting: _votingIds.contains(suggestions[i].id),
+          isOwnSuggestion:
+              suggestions[i].suggestedBy ==
+              ref.watch(authStateProvider).value?.id,
           onVote: (vote) => _vote(suggestions[i].id, vote),
         ),
       ),
@@ -285,12 +293,15 @@ class _EditSuggestionCard extends StatelessWidget {
   final EditSuggestion suggestion;
   final String fieldLabel;
   final bool isVoting;
+  /// The server rejects self-votes, so showing the buttons was a dead end.
+  final bool isOwnSuggestion;
   final void Function(String vote) onVote;
 
   const _EditSuggestionCard({
     required this.suggestion,
     required this.fieldLabel,
     required this.isVoting,
+    required this.isOwnSuggestion,
     required this.onVote,
   });
 
@@ -368,7 +379,17 @@ class _EditSuggestionCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Vote buttons
+          // Vote buttons — replaced by a note on your own suggestion.
+          if (isOwnSuggestion)
+            Text(
+              'Your suggestion — waiting on community votes',
+              style: TextStyle(
+                color: AppColors.mutedText,
+                fontSize: 13,
+                fontFamily: AppFonts.dmSans,
+              ),
+            )
+          else
           Row(
             children: [
               Expanded(
