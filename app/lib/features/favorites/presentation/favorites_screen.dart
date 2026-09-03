@@ -151,7 +151,9 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
         // List or empty state
         Expanded(
           child: filtered.isEmpty
-              ? const _EmptyState()
+              // `all` non-empty means the filters hid everything, not that
+              // there is nothing saved — "tap ♡ on any dish" is wrong there.
+              ? _EmptyState(filtered: all.isNotEmpty)
               : ListView.builder(
                   padding: const EdgeInsets.only(bottom: 100),
                   itemCount: filtered.length,
@@ -375,15 +377,22 @@ class _RestaurantFilterRow extends StatelessWidget {
 // ─────────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  /// True when favorites exist but the active filters match none of them.
+  final bool filtered;
+  const _EmptyState({this.filtered = false});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Tap ♡ on any dish to save it here',
-        style: TextStyle(color: AppColors.mutedText),
-        textAlign: TextAlign.center,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Text(
+          filtered
+              ? 'No favorites match these filters'
+              : 'Tap ♡ on any dish to save it here',
+          style: const TextStyle(color: AppColors.mutedText),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
