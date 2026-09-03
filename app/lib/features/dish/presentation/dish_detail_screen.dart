@@ -18,6 +18,7 @@ import '../../../core/network/auth_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/dish_repository.dart';
 import '../data/image_repository.dart';
+import '../../restaurant/presentation/restaurant_screen.dart';
 import '../../restaurant/presentation/session_state.dart';
 
 part 'dish_detail_screen.g.dart';
@@ -70,8 +71,12 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
   String? _selectedSweetness;
   final _notesController = TextEditingController();
   bool _notesInitialized = false;
+  String _seededNotes = '';
+  bool _notesDirty = false;
   bool _saving = false;
   bool _uploadingPhoto = false;
+  bool _togglingWantToTry = false;
+  bool _togglingFavorite = false;
   bool? _wantToTry;
   bool? _favorited;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
@@ -79,6 +84,10 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _notesController.addListener(() {
+      final dirty = _notesController.text.trim() != _seededNotes;
+      if (dirty != _notesDirty) setState(() => _notesDirty = dirty);
+    });
     _fcmSubscription = FirebaseMessaging.onMessage.listen((message) {
       if (message.data['type'] == 'classification_complete' &&
           message.data['dish_id'] == widget.dishId) {
@@ -95,10 +104,14 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
   }
 
   Future<void> _toggleWantToTry(DishDetail dish) async {
+    if (_togglingWantToTry) return;
     final auth = ref.read(authStateProvider).value;
     if (auth == null) return;
     final prev = _wantToTry ?? dish.isWantToTry;
-    setState(() => _wantToTry = !prev);
+    setState(() {
+      _togglingWantToTry = true;
+      _wantToTry = !prev;
+    });
     try {
       final result = await ref
           .read(dishRepositoryProvider)
@@ -106,14 +119,20 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
       if (mounted) setState(() => _wantToTry = result);
     } catch (_) {
       if (mounted) setState(() => _wantToTry = prev);
+    } finally {
+      if (mounted) setState(() => _togglingWantToTry = false);
     }
   }
 
   Future<void> _toggleFavorite(DishDetail dish) async {
+    if (_togglingFavorite) return;
     final auth = ref.read(authStateProvider).value;
     if (auth == null) return;
     final prev = _favorited ?? dish.isFavorited;
-    setState(() => _favorited = !prev);
+    setState(() {
+      _togglingFavorite = true;
+      _favorited = !prev;
+    });
     try {
       final result = await ref
           .read(dishRepositoryProvider)
@@ -121,6 +140,8 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
       if (mounted) setState(() => _favorited = result);
     } catch (_) {
       if (mounted) setState(() => _favorited = prev);
+    } finally {
+      if (mounted) setState(() => _togglingFavorite = false);
     }
   }
 
@@ -272,7 +293,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
                   : AppColors.secondaryText,
             ),
             tooltip: 'Favorite',
-            onPressed: dishAsync.value == null
+            onPressed: (dishAsync.value == null || _togglingFavorite)
                 ? null
                 : () => _toggleFavorite(dishAsync.value!),
           ),
@@ -286,7 +307,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
                   : AppColors.secondaryText,
             ),
             tooltip: 'Want to Try',
-            onPressed: dishAsync.value == null
+            onPressed: (dishAsync.value == null || _togglingWantToTry)
                 ? null
                 : () => _toggleWantToTry(dishAsync.value!),
           ),
@@ -314,8 +335,17 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
           // compatibility signal) triggers a rebuild.
           if (!_notesInitialized) {
             _notesInitialized = true;
+            _seededNotes = (dish.myNotes ?? '').trim();
             _notesController.text = dish.myNotes ?? '';
+            // Pre-select the user's existing reaction so editing notes alone
+            // (without re-tapping a chip) is still saveable — notes live on
+            // the reaction row server-side.
+            _selectedReaction ??= dish.myReaction;
           }
+          final canSave =
+              _selectedReaction != null ||
+              _selectedSpice != null ||
+              _selectedSweetness != null;
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -440,6 +470,13 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
                   hintStyle: TextStyle(color: AppColors.mutedText),
                 ),
               ),
+              if (_notesDirty && _selectedReaction == null) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'Pick a reaction above to save your notes.',
+                  style: TextStyle(color: AppColors.mutedText, fontSize: 12),
+                ),
+              ],
               const SizedBox(height: 24),
 
               // Dish photos gallery
@@ -481,13 +518,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
 
               // Save button
               ElevatedButton(
-                onPressed:
-                    (_selectedReaction != null ||
-                            _selectedSpice != null ||
-                            _selectedSweetness != null) &&
-                        !_saving
-                    ? () => _save(dish, auth)
-                    : null,
+                onPressed: canSave && !_saving ? () => _save(dish, auth) : null,
                 child: _saving ? const Text('Saving…') : const Text('Save'),
               ),
             ],
@@ -652,7 +683,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
         // Notify restaurant session state for passive rating trigger
         ref
             .read(restaurantSessionStateProvider(dish.restaurantId).notifier)
-            .incrementReaction();
+            .recordReaction(dish.id);
         // Remove intent locally so restaurant screen updates immediately
         await ref
             .read(appDatabaseProvider)
@@ -664,6 +695,7 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
         // popping back left the restaurant screen's community
         // count/breakdown stale until some unrelated refetch happened.
         ref.invalidate(dishReactionSummaryProvider(dish.id));
+        ref.invalidate(restaurantDishesProvider(dish.restaurantId));
       }
 
       if (_selectedSpice != null) {
@@ -682,6 +714,9 @@ class _DishDetailScreenState extends ConsumerState<DishDetailScreen> {
         );
       }
 
+      // Re-opening this dish must show the notes/reaction just saved, not a
+      // cached pre-save detail.
+      ref.invalidate(dishDetailProvider(widget.dishId));
       if (mounted) {
         setState(() => _saving = false);
         context.pop();
@@ -874,7 +909,7 @@ class _ReportDishSheetState extends ConsumerState<_ReportDishSheet> {
             'Report Dish',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: AppColors.primaryText,
-              fontFamily: 'Fraunces',
+              fontFamily: AppFonts.fraunces,
             ),
           ),
           const SizedBox(height: 4),
@@ -885,22 +920,31 @@ class _ReportDishSheetState extends ConsumerState<_ReportDishSheet> {
             ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
           ),
           const SizedBox(height: 16),
-          ..._reportReasons.map(
-            (reason) => RadioListTile<String>(
-              value: reason,
-              groupValue: _selectedReason,
-              onChanged: (v) {
-                if (v != null) setState(() => _selectedReason = v);
-              },
-              title: Text(
-                reason,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: AppColors.primaryText),
-              ),
-              activeColor: AppColors.accent,
-              contentPadding: EdgeInsets.zero,
-              dense: true,
+          // RadioGroup replaces the per-tile groupValue/onChanged pair,
+          // which Flutter deprecated after 3.32.
+          RadioGroup<String>(
+            groupValue: _selectedReason,
+            onChanged: (v) {
+              if (v != null) setState(() => _selectedReason = v);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _reportReasons
+                  .map(
+                    (reason) => RadioListTile<String>(
+                      value: reason,
+                      title: Text(
+                        reason,
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(color: AppColors.primaryText),
+                      ),
+                      activeColor: AppColors.accent,
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  )
+                  .toList(),
             ),
           ),
           const SizedBox(height: 16),
@@ -1183,10 +1227,10 @@ class _CommunityReactionsSection extends ConsumerWidget {
                       const SizedBox(height: 2),
                       Text(
                         '${pairs[i].$2}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppColors.secondaryText,
-                          fontFamily: 'DM Sans',
+                          fontFamily: AppFonts.dmSans,
                         ),
                       ),
                     ],

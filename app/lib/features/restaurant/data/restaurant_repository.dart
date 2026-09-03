@@ -7,6 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_client.dart';
+import '../../dish/data/dish_repository.dart' show ReactionSummary;
 
 part 'restaurant_repository.g.dart';
 
@@ -288,6 +289,23 @@ class RestaurantRepository {
     );
   }
 
+  /// Batched reaction summaries for every dish of a restaurant, keyed by dish
+  /// id. One request for the whole menu instead of one per dish tile (N+1).
+  Future<Map<String, ReactionSummary>> getReactionSummaries(
+    String restaurantId,
+  ) async {
+    final response = await _dio.get(
+      '/restaurants/$restaurantId/dishes/reaction-summaries',
+    );
+    final raw = response.data as Map<String, dynamic>;
+    return raw.map(
+      (dishId, summary) => MapEntry(
+        dishId,
+        ReactionSummary.fromJson(summary as Map<String, dynamic>),
+      ),
+    );
+  }
+
   Future<List<RestaurantRow>> getRecentlyVisited(String userId) =>
       _db.restaurantDao.getRecentlyVisited(userId);
 
@@ -314,3 +332,11 @@ RestaurantRepository restaurantRepository(Ref ref) {
     ref.watch(appDatabaseProvider),
   );
 }
+
+/// Reaction summaries for a whole restaurant menu, keyed by dish id.
+/// Replaces the per-dish `dishReactionSummaryProvider` on the menu list.
+@riverpod
+Future<Map<String, ReactionSummary>> restaurantReactionSummaries(
+  Ref ref,
+  String restaurantId,
+) => ref.watch(restaurantRepositoryProvider).getReactionSummaries(restaurantId);

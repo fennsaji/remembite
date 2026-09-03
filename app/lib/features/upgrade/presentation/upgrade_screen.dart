@@ -12,6 +12,15 @@ class UpgradeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final billingState = ref.watch(billingServiceProvider);
     final billing = ref.read(billingServiceProvider.notifier);
+    // Real store prices, so a Play Console price change or a region's local
+    // currency is what the user actually reads on the paywall.
+    final products = ref.watch(proProductsProvider).valueOrNull;
+    // A pending purchase (UPI, bank transfer) can take hours to clear, so
+    // both cards stay disabled and the screen says so instead of showing an
+    // indefinite "Processing…" that reads like a freeze.
+    final busy =
+        billingState == BillingState.purchasing ||
+        billingState == BillingState.pending;
 
     // `purchasing -> idle` only happens once a purchase completes
     // successfully (idle is also the initial pre-purchase state, but that
@@ -20,7 +29,9 @@ class UpgradeScreen extends ConsumerWidget {
     // there with both buttons back to "Subscribe" and no confirmation or
     // navigation away from the paywall.
     ref.listen<BillingState>(billingServiceProvider, (previous, next) {
-      if (previous == BillingState.purchasing && next == BillingState.idle) {
+      if ((previous == BillingState.purchasing ||
+              previous == BillingState.pending) &&
+          next == BillingState.idle) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("You're Pro! Welcome aboard.")),
         );
@@ -50,7 +61,7 @@ class UpgradeScreen extends ConsumerWidget {
           Text(
             'UNLOCK PRO',
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              fontFamily: 'Fraunces',
+              fontFamily: AppFonts.fraunces,
               color: AppColors.accent,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.2,
@@ -70,7 +81,7 @@ class UpgradeScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           _PlanCard(
             title: 'Annual',
-            price: '₹399',
+            price: products?['remembite_pro_annual']?.price ?? '₹399',
             period: '/year',
             badge: 'Save 32%',
             recommended: true,
@@ -79,22 +90,38 @@ class UpgradeScreen extends ConsumerWidget {
             // tapping Monthly showed "Processing…" on the Annual card
             // instead of the one the user actually tapped.
             loading: billing.purchasingProductId == 'remembite_pro_annual',
-            onSubscribe: billingState == BillingState.purchasing
+            pending:
+                billingState == BillingState.pending &&
+                billing.purchasingProductId == 'remembite_pro_annual',
+            onSubscribe: busy
                 ? null
                 : () => billing.purchase('remembite_pro_annual'),
           ),
           const SizedBox(height: 12),
           _PlanCard(
             title: 'Monthly',
-            price: '₹49',
+            price: products?['remembite_pro_monthly']?.price ?? '₹49',
             period: '/month',
             recommended: false,
             loading: billing.purchasingProductId == 'remembite_pro_monthly',
-            onSubscribe: billingState == BillingState.purchasing
+            pending:
+                billingState == BillingState.pending &&
+                billing.purchasingProductId == 'remembite_pro_monthly',
+            onSubscribe: busy
                 ? null
                 : () => billing.purchase('remembite_pro_monthly'),
           ),
           const SizedBox(height: 16),
+          if (billingState == BillingState.pending)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Your payment is being confirmed. This can take a while — '
+                'Pro unlocks automatically once it clears.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.secondaryText),
+              ),
+            ),
           if (billingState == BillingState.error)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
@@ -156,7 +183,7 @@ class _FeatureRow extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [AppColors.surface, Color(0xFF2A2115)],
+                colors: [AppColors.surface, AppColors.proSurface],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -198,6 +225,7 @@ class _PlanCard extends StatelessWidget {
   final String? badge;
   final bool recommended;
   final bool loading;
+  final bool pending;
   final VoidCallback? onSubscribe;
 
   const _PlanCard({
@@ -207,6 +235,7 @@ class _PlanCard extends StatelessWidget {
     this.badge,
     required this.recommended,
     required this.loading,
+    this.pending = false,
     this.onSubscribe,
   });
 
@@ -217,7 +246,7 @@ class _PlanCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: recommended
             ? const LinearGradient(
-                colors: [Color(0xFF1A1612), Color(0xFF2A2115)],
+                colors: [AppColors.surface, AppColors.proSurface],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
@@ -311,7 +340,11 @@ class _PlanCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text(loading ? 'Processing…' : 'Subscribe'),
+              child: Text(
+                pending
+                    ? 'Payment pending…'
+                    : (loading ? 'Processing…' : 'Subscribe'),
+              ),
             ),
           ),
         ],

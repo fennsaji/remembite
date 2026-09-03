@@ -7,7 +7,7 @@ part of 'session_state.dart';
 // **************************************************************************
 
 String _$restaurantSessionStateHash() =>
-    r'1bc5ee8f9de085c07850be71663e3ea052dd44f7';
+    r'e0c4a68631fa3775543e7b19e1f572d4c53c8b22';
 
 /// Copied from Dart SDK
 class _SystemHash {

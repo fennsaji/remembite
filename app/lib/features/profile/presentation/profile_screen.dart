@@ -396,8 +396,10 @@ class _TasteInsightsCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.proSurface, AppColors.surface],
+          // surface → proSurface, same direction as every other Pro surface
+          // (this one ran the gradient backwards).
+          gradient: const LinearGradient(
+            colors: [AppColors.surface, AppColors.proSurface],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

@@ -44,9 +44,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _debounce = Timer(const Duration(milliseconds: 400), _search);
   }
 
+  int _searchGeneration = 0;
+
   Future<void> _search() async {
     final q = _controller.text.trim();
     if (q.isEmpty) return;
+    // Two requests can be in flight at once (type, pause, type again). Only
+    // the newest one may write results — otherwise a slow response for an
+    // older query overwrites what the user is currently looking at.
+    final generation = ++_searchGeneration;
     setState(() => _loading = true);
     try {
       // Use last known position (instant, no permission prompt) for proximity boost.
@@ -54,11 +60,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       final results = await ref
           .read(searchRepositoryProvider)
           .search(q, lat: pos?.latitude, lng: pos?.longitude);
-      if (mounted) setState(() => _results = results);
+      if (mounted && generation == _searchGeneration) {
+        setState(() => _results = results);
+      }
     } catch (_) {
-      if (mounted) setState(() => _results = null);
+      if (mounted && generation == _searchGeneration) {
+        setState(() => _results = null);
+      }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && generation == _searchGeneration) {
+        setState(() => _loading = false);
+      }
     }
   }
 

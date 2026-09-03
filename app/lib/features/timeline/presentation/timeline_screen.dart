@@ -24,12 +24,8 @@ class TimelineScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         automaticallyImplyLeading: false,
-        title: Text(
-          'Visit Timeline',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(color: AppColors.primaryText),
-        ),
+        // See the note in favorites_screen — AppBarTheme owns this style.
+        title: const Text('Visit Timeline'),
       ),
       body: RefreshIndicator(
         color: AppColors.accent,

@@ -27,9 +27,18 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  // Session-only: preference not persisted across restarts (Phase 7)
-  bool _syncEnabled = true;
+  // Session-only: preference not persisted across restarts (Phase 7).
+  // Seeded from the sync worker rather than hardcoded — leaving Settings
+  // with sync paused and coming back showed the switch ON again, so the
+  // next tap paused an already-paused worker while the UI said otherwise.
+  late bool _syncEnabled;
   bool _exportLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncEnabled = !ref.read(syncWorkerProvider.notifier).isPaused;
+  }
 
   Future<void> _launchUrl(String url) async {
     try {
@@ -84,14 +93,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.primaryText,
         elevation: 0,
-        title: Text(
-          'Settings',
-          style: GoogleFonts.dmSans(
-            color: AppColors.primaryText,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        // See the note in favorites_screen — AppBarTheme owns this style.
+        title: const Text('Settings'),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -184,7 +187,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               subtitle: 'Syncs your data across devices',
               trailing: Switch(
                 value: _syncEnabled,
-                activeColor: AppColors.accent,
+                activeThumbColor: AppColors.accent,
                 onChanged: (value) {
                   setState(() => _syncEnabled = value);
                   if (value) {
@@ -333,13 +336,15 @@ class _ProBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.15),
+        // Gold Leaf, matching the Pro badge on the dish detail screen —
+        // these two rendered in different colours before.
+        color: AppColors.proAccent.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         'PRO',
         style: GoogleFonts.dmSans(
-          color: AppColors.accent,
+          color: AppColors.proAccent,
           fontSize: 10,
           fontWeight: FontWeight.w600,
         ),

@@ -2,22 +2,33 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'session_state.g.dart';
 
-typedef RestaurantSessionRecord = ({int reactionCount, bool ratingShown});
+typedef RestaurantSessionRecord = ({
+  Set<String> reactedDishIds,
+  bool ratingShown,
+});
+
+extension RestaurantSessionRecordX on RestaurantSessionRecord {
+  /// Number of *distinct* dishes reacted to this session. Re-reacting to
+  /// the same dish (e.g. changing 🔥 → 😐) does not count twice, so the
+  /// passive rating prompt can't fire after a single dish.
+  int get reactionCount => reactedDishIds.length;
+}
 
 @riverpod
 class RestaurantSessionState extends _$RestaurantSessionState {
   @override
   RestaurantSessionRecord build(String restaurantId) =>
-      (reactionCount: 0, ratingShown: false);
+      (reactedDishIds: const {}, ratingShown: false);
 
-  void incrementReaction() {
+  void recordReaction(String dishId) {
+    if (state.reactedDishIds.contains(dishId)) return;
     state = (
-      reactionCount: state.reactionCount + 1,
+      reactedDishIds: {...state.reactedDishIds, dishId},
       ratingShown: state.ratingShown,
     );
   }
 
   void markRatingShown() {
-    state = (reactionCount: state.reactionCount, ratingShown: true);
+    state = (reactedDishIds: state.reactedDishIds, ratingShown: true);
   }
 }

@@ -133,7 +133,7 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
           SnackBar(
             content: Text(
               'Failed to submit vote. Please try again.',
-              style: const TextStyle(fontFamily: 'DM Sans'),
+              style: TextStyle(fontFamily: AppFonts.dmSans),
             ),
             backgroundColor: AppColors.error,
           ),
@@ -166,7 +166,7 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
           'Community Edits',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: AppColors.primaryText,
-            fontFamily: 'Fraunces',
+            fontFamily: AppFonts.fraunces,
           ),
         ),
         actions: [
@@ -201,17 +201,17 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
                 'Could not load edits.',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: AppColors.primaryText,
-                  fontFamily: 'DM Sans',
+                  fontFamily: AppFonts.dmSans,
                 ),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: _fetchSuggestions,
-                child: const Text(
+                child: Text(
                   'Retry',
                   style: TextStyle(
                     color: AppColors.accent,
-                    fontFamily: 'DM Sans',
+                    fontFamily: AppFonts.dmSans,
                   ),
                 ),
               ),
@@ -240,7 +240,7 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
                 'No pending edits',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: AppColors.primaryText,
-                  fontFamily: 'DM Sans',
+                  fontFamily: AppFonts.dmSans,
                 ),
               ),
               const SizedBox(height: 8),
@@ -249,7 +249,7 @@ class _PendingEditsScreenState extends ConsumerState<PendingEditsScreen> {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.mutedText,
-                  fontFamily: 'DM Sans',
+                  fontFamily: AppFonts.dmSans,
                 ),
               ),
             ],
@@ -324,7 +324,7 @@ class _EditSuggestionCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: AppColors.secondaryText,
                     letterSpacing: 0.8,
-                    fontFamily: 'DM Sans',
+                    fontFamily: AppFonts.dmSans,
                   ),
                 ),
               ),
@@ -350,7 +350,7 @@ class _EditSuggestionCard extends StatelessWidget {
                     color: netVotes >= 0
                         ? AppColors.accent
                         : AppColors.mutedText,
-                    fontFamily: 'DM Sans',
+                    fontFamily: AppFonts.dmSans,
                   ),
                 ),
               ),
@@ -363,7 +363,7 @@ class _EditSuggestionCard extends StatelessWidget {
             suggestion.proposedValue,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: AppColors.primaryText,
-              fontFamily: 'DM Sans',
+              fontFamily: AppFonts.dmSans,
             ),
           ),
           const SizedBox(height: 16),
@@ -443,7 +443,7 @@ class _VoteButton extends StatelessWidget {
                     label,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: activeColor,
-                      fontFamily: 'DM Sans',
+                      fontFamily: AppFonts.dmSans,
                     ),
                   ),
                 ],

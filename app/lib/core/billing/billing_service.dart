@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -11,7 +12,10 @@ part 'billing_service.g.dart';
 
 const _kProductIds = {'remembite_pro_monthly', 'remembite_pro_annual'};
 
-enum BillingState { idle, loading, purchasing, error }
+/// `pending` = the store accepted the purchase but payment hasn't cleared
+/// yet (e.g. cash / bank-transfer methods on Play). It can take hours; Pro
+/// unlocks automatically when the store re-delivers as `purchased`.
+enum BillingState { idle, loading, purchasing, pending, error }
 
 @riverpod
 class BillingService extends _$BillingService {
@@ -101,7 +105,7 @@ class BillingService extends _$BillingService {
           _purchasingProductId = null;
           state = BillingState.idle;
         case PurchaseStatus.pending:
-          state = BillingState.purchasing;
+          state = BillingState.pending;
       }
     }
   }
@@ -144,4 +148,21 @@ class BillingService extends _$BillingService {
       // so the store re-delivers it on the next app launch for retry.
     }
   }
+}
+
+/// Live store product details keyed by product id.
+///
+/// The prices shown on the paywall must come from the store, not from
+/// hardcoded strings — Play prices vary by region, can be changed in the
+/// console, and may carry a promotional price. `BillingService.products` is
+/// filled asynchronously inside `_init()` and setting `state` to the same
+/// `BillingState` wouldn't notify listeners, so the UI reads prices through
+/// this provider instead.
+@riverpod
+Future<Map<String, ProductDetails>> proProducts(Ref ref) async {
+  if (!await InAppPurchase.instance.isAvailable()) return const {};
+  final response = await InAppPurchase.instance.queryProductDetails(
+    _kProductIds,
+  );
+  return {for (final p in response.productDetails) p.id: p};
 }

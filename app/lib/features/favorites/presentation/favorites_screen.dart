@@ -71,14 +71,9 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         automaticallyImplyLeading: false,
-        title: Text(
-          'Favorites',
-          style: GoogleFonts.fraunces(
-            color: AppColors.primaryText,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        // Style comes from AppBarTheme.titleTextStyle so every tab-level
+        // screen's title matches; these three each overrode it differently.
+        title: const Text('Favorites'),
         actions: [
           IconButton(
             icon: const Icon(Icons.sort, color: AppColors.secondaryText),
